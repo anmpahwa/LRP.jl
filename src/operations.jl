@@ -1,35 +1,53 @@
-"""
-    insertnode!(nₒ::Node, nₜ::Node, nₕ::Node, s::Solution)
-
-Insert node `nₒ` between tail node `nₜ` and head node `nₕ` in solution `s`.
-"""
-function insertnode!(nₒ::Node, nₜ::Node, nₕ::Node, s::Solution)
-    A  = s.A 
+# Insert operation
+# insert customer node c between tail node nₜ and head node nₕ in route r
+function insertnode!(c::CustomerNode, nₜ::Node, nₕ::Node, r::Route, s::Solution)
+    A  = s.A
+    V  = s.V
     aₒ = A[(nₜ.i, nₕ.i)]
-    aₜ = A[(nₜ.i, nₒ.i)]
-    aₕ = A[(nₒ.i, nₕ.i)]
-    nₜ.h = nₒ.i
-    nₕ.t = nₒ.i
-    nₒ.t = nₜ.i
-    nₒ.h = nₕ.i
-    s.c += aₜ.c + aₕ.c - aₒ.c
+    aₜ = A[(nₜ.i, c.i)]
+    aₕ = A[(c.i, nₕ.i)]
+    v  = V[r.o]
+    Δˡ = aₜ.l + aₕ.l - aₒ.l
+    Δᵗ = aₜ.t + aₕ.t - aₒ.t
+    Δᶠ = aₜ.f + aₕ.f - aₒ.f
+    Δᶜ = v.πᵐ * Δˡ + v.πʷ * Δᵗ + v.πᶠ * Δᶠ
+    iscustomer(nₜ) ? nₜ.h = c.i : r.s = c.i
+    iscustomer(nₕ) ? nₕ.t = c.i : r.e = c.i
+    c.t = nₜ.i
+    c.h = nₕ.i
+    c.r = r
+    r.n += 1
+    r.q += c.q
+    r.l += Δˡ
+    r.t += Δᵗ
+    r.f += Δᶠ
+    r.c += Δᶜ
     return
 end
 
-"""
-    removenode!(nₒ::Node, nₜ::Node, nₕ::Node, s::Solution)
-
-Remove node `nₒ` from its position between tail node `nₜ` and head node `nₕ` in solution `s`.
-"""
-function removenode!(nₒ::Node, nₜ::Node, nₕ::Node, s::Solution)
-    A  = s.A 
+# Remove operation
+# remove customer node c between tail node nₜ and head node nₕ in route r
+function removenode!(c::CustomerNode, nₜ::Node, nₕ::Node, r::Route, s::Solution)
+    A  = s.A
+    V  = s.V
     aₒ = A[(nₜ.i, nₕ.i)]
-    aₜ = A[(nₜ.i, nₒ.i)]
-    aₕ = A[(nₒ.i, nₕ.i)]
-    nₜ.h = nₒ.h
-    nₕ.t = nₒ.t
-    nₒ.t = nₒ.i
-    nₒ.h = nₒ.i
-    s.c -= aₜ.c + aₕ.c - aₒ.c
+    aₜ = A[(nₜ.i, c.i)]
+    aₕ = A[(c.i, nₕ.i)]
+    v  = V[r.o]
+    Δˡ = aₜ.l + aₕ.l - aₒ.l
+    Δᵗ = aₜ.t + aₕ.t - aₒ.t
+    Δᶠ = aₜ.f + aₕ.f - aₒ.f
+    Δᶜ = v.πᵐ * Δˡ + v.πʷ * Δᵗ + v.πᶠ * Δᶠ
+    iscustomer(nₜ) ? nₜ.h = c.h : r.s = c.h
+    iscustomer(nₕ) ? nₕ.t = c.t : r.e = c.t
+    c.t = 0
+    c.h = 0
+    # c.r = Route() # Note: It is not necessary to assign customer to a null route. Avoid for speedup.
+    r.n -= 1
+    r.q -= c.q
+    r.l -= Δˡ
+    r.t -= Δᵗ
+    r.f -= Δᶠ
+    r.c -= Δᶜ
     return
 end

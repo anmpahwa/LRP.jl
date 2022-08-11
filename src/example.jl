@@ -5,23 +5,26 @@ using Random
 let
 # Developing an optimal TSP route 
     # Define instance
-    instance = "eil101"
+    instance = "att48"
     # Define a random number generator
     rng = MersenneTwister(1234)
     # Build instance as graph
     G = build(instance)
-    N, A = G
-    # Define inital solution method and build the initial solution
-    method = :cw_init
-    sₒ = initialsolution(rng, G, method)
+    D, C, A = G
     # Define ALNS parameters
+    χₒ  = ObjectiveFunctionParameters(
+        d = 0.                          ,
+        v = 0.                          ,
+        r = 0.                          ,
+        c = 0.                          ,
+    )
     χ   = ALNSParameters(
         k̲   =   2                       ,
         k̅   =   500                     ,
         k̲ₛ  =   80                      ,
         k̅ₛ  =   250                     ,   
         Ψᵣ  =   [
-                    :random_remove! , 
+                    :node_remove! , 
                     :worst_remove!  , 
                     :shaw_remove!
                 ]                       , 
@@ -32,8 +35,7 @@ let
                     :regret₃insert!
                 ]                       ,
         Ψₛ  =   [
-                    :move!          ,
-                    :opt!           ,
+                    :move!              ,
                     :swap!
                 ]                       ,
         σ₁  =   33                      ,
@@ -47,9 +49,13 @@ let
         μ̲   =   0.1                     ,
         μ̅   =   0.4                     ,
         ρ   =   0.1                     ,
+        χₒ  =   χₒ  
     )
+    # Define inital solution method and build the initial solution
+    method = :cw_init
+    sₒ = initialsolution(rng, G, χₒ, method)
     # Run ALNS and fetch best solution
-    S = ALNS(rng, χ, sₒ)
+    S = ALNS(rng, sₒ, χ)
     s⃰ = S[end]
 
 # Visualizations
@@ -60,11 +66,11 @@ let
     # Animate ALNS solution search process from inital to best solution
     display(animate(S))
     # Show convergence plots
-    display(convergence(S))
+    display(convergence(S, χₒ))
 
 # Fetch objective function values
-    println("Initial: $(f(sₒ))")
-    println("Optimal: $(f(s⃰))")
+    println("Initial: $(f(sₒ, χₒ))")
+    println("Optimal: $(f(s⃰,  χₒ))")
     
     return
 end
