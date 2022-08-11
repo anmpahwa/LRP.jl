@@ -1,12 +1,20 @@
 using LRP
 using Revise
-using Test
 using Random
 
-@testset "TSP.jl" begin
-    K = 5
-    instances = ["att48", "eil101", "ch150", "d198", "a280"]
-    methods = [:cw_init, :nn_init, :random_init, :regret₂init, :regret₃init]
+let
+# Developing an optimal TSP route 
+    # Define instance
+    instance = "eil101"
+    # Define a random number generator
+    rng = MersenneTwister(1234)
+    # Build instance as graph
+    G = build(instance)
+    N, A = G
+    # Define inital solution method and build the initial solution
+    method = :cw_init
+    sₒ = initialsolution(rng, G, method)
+    # Define ALNS parameters
     χ   = ALNSParameters(
         k̲   =   2                       ,
         k̅   =   500                     ,
@@ -25,6 +33,7 @@ using Random
                 ]                       ,
         Ψₛ  =   [
                     :move!          ,
+                    :opt!           ,
                     :swap!
                 ]                       ,
         σ₁  =   33                      ,
@@ -39,17 +48,23 @@ using Random
         μ̅   =   0.4                     ,
         ρ   =   0.1                     ,
     )
-    for k ∈ 1:K
-        instance = instances[k]
-        method = methods[k]
-        println("\n Solving $instance")
-        G = build(instance)
-        sₒ= initialsolution(G, method)     
-        @test isfeasible(sₒ)
-        S = ALNS(χ, sₒ)
-        s⃰ = S[end]
-        @test isfeasible(s⃰)
-        @test f(s⃰) ≤ f(sₒ)
-    end
+    # Run ALNS and fetch best solution
+    S = ALNS(rng, χ, sₒ)
+    s⃰ = S[end]
+
+# Visualizations
+    # Visualize initial solution
+    display(visualize(sₒ)) 
+    # Visualize best solution   
+    display(visualize(s⃰))
+    # Animate ALNS solution search process from inital to best solution
+    display(animate(S))
+    # Show convergence plots
+    display(convergence(S))
+
+# Fetch objective function values
+    println("Initial: $(f(sₒ))")
+    println("Optimal: $(f(s⃰))")
+    
     return
 end
