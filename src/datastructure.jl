@@ -183,8 +183,36 @@ end
 Returns true if node service constraint, node flow constraint, and
 sub-tour elimination constraint are not violated.
 """
-function isfeasible(s::Solution) 
-    V = vectorize(s)
-    pop!(V)
-    return allunique(V)
+function isfeasible(s::Solution)
+    D = s.D
+    C = s.C
+    V = s.V
+    # Customer node service and flow constraints
+    x = zeros(Int64, eachindex(C))
+    for d ∈ D
+        for v ∈ V
+            R = v.R
+            for r ∈ R
+                if isclose(r) continue end
+                nₛ = C[r.s]
+                nₑ = C[r.e]
+                nₒ = nₛ
+                while true
+                    k = nₒ.i
+                    x[k] += 1
+                    if isequal(nₒ, nₑ) break end
+                    nₒ = C[nₒ.h]
+                end
+            end
+        end
+    end
+    if any(!isone, x) return false end
+    # Vehicle capacity constraint
+    for v ∈ V
+        q = 0
+        R = v.R
+        for r ∈ R q += r.q end
+        if q > v.q return false end
+    end
+    return true
 end
