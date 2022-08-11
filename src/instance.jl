@@ -38,7 +38,7 @@ function build(instance)
     file = joinpath(dirname(@__DIR__), "instances/$instance/customer_nodes.csv")
     csv = CSV.File(file, types=[Int64, Float64, Float64, Int64])
     df = DataFrame(csv)
-    ix = (df[begin,1]:df[end,1])::UnitRange{Int64}
+    ix = (df[1,1]:df[nrow(df),1])::UnitRange{Int64}
     rₒ = Route()
     C = OffsetVector{CustomerNode}(undef, ix)
     for k ∈ 1:nrow(df)

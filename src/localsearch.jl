@@ -67,8 +67,8 @@ function move!(rng::AbstractRNG, k̅, s::Solution, χₒ::ObjectiveFunctionParam
         i = argmin(x)
         Δ = x[i]
         r = R[i]
-        t = p[i][begin]
-        h = p[i][end]
+        t = p[i][1]
+        h = p[i][2]
         nₜ = t ≤ length(D) ? D[t] : C[t]
         nₕ = h ≤ length(D) ? D[h] : C[h]
         insertnode!(c, nₜ, nₕ, r, s)
