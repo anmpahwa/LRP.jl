@@ -5,7 +5,7 @@ using Random
 let
 # Developing an optimal TSP route 
     # Define instance
-    instance = "att48"
+    instance = "m-n101-k10"
     # Define a random number generator
     rng = MersenneTwister(1234)
     # Build instance as graph
@@ -14,7 +14,7 @@ let
     # Define ALNS parameters
     χₒ  = ObjectiveFunctionParameters(
         d = 0.                          ,
-        v = 0.                          ,
+        v = 1000.                       ,
         r = 0.                          ,
         c = 0.                          ,
     )
@@ -24,7 +24,7 @@ let
         k̲ₛ  =   80                      ,
         k̅ₛ  =   250                     ,   
         Ψᵣ  =   [
-                    :node_remove! , 
+                    :node_remove!   , 
                     :worst_remove!  , 
                     :shaw_remove!
                 ]                       , 
@@ -52,25 +52,25 @@ let
         χₒ  =   χₒ  
     )
     # Define inital solution method and build the initial solution
-    method = :cw_init
+    method = :regret₃init
     sₒ = initialsolution(rng, G, χₒ, method)
     # Run ALNS and fetch best solution
     S = ALNS(rng, sₒ, χ)
     s⃰ = S[end]
+            
+# Fetch objective function values
+    println("Initial: $(f(sₒ, χₒ))")
+    println("Optimal: $(f(s⃰,  χₒ))")
 
 # Visualizations
     # Visualize initial solution
     display(visualize(sₒ)) 
-    # Visualize best solution   
+    # Visualize best solution
     display(visualize(s⃰))
     # Animate ALNS solution search process from inital to best solution
-    display(animate(S))
+    #display(animate(S))
     # Show convergence plots
     display(convergence(S, χₒ))
-
-# Fetch objective function values
-    println("Initial: $(f(sₒ, χₒ))")
-    println("Optimal: $(f(s⃰,  χₒ))")
     
     return
 end
