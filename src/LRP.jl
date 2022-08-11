@@ -17,7 +17,7 @@ include("operations.jl")
 include("remove.jl")
 include("insert.jl")
 include("localsearch.jl")
-include("AlNS.jl")
+include("ALNS.jl")
 include("visualizer.jl")
 
 export  Node, CustomerNode, DepotNode, Arc, Route, Vehicle, Solution,
