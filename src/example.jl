@@ -5,7 +5,7 @@ using Random
 let
 # Developing an optimal TSP route 
     # Define instance
-    instance = "m-n101-k10"
+    instance = "cmt10"
     # Define a random number generator
     rng = MersenneTwister(1234)
     # Build instance as graph
@@ -14,23 +14,28 @@ let
     # Define ALNS parameters
     χₒ  = ObjectiveFunctionParameters(
         d = 0.                          ,
-        v = 1000.                       ,
+        v = 100000.                     ,
         r = 0.                          ,
         c = 0.                          ,
     )
     χ   = ALNSParameters(
-        k̲   =   2                       ,
-        k̅   =   500                     ,
-        k̲ₛ  =   80                      ,
-        k̅ₛ  =   250                     ,   
+        k̲   =   6                       ,
+        k̅   =   1500                    ,
+        k̲ₛ  =   240                     ,
+        k̅ₛ  =   750                     ,   
         Ψᵣ  =   [
-                    :node_remove!   , 
-                    :worst_remove!  , 
-                    :shaw_remove!
+                    :randomnode!    , 
+                    :relatedpair!   ,
+                    :relatednode!   , 
+                    :worstnode!     ,  
+                    :randomroute!   ,
+                    :relatedroute!  ,
+                    :worstroute!    ,
+                    :randomvehicle! 
                 ]                       , 
         Ψᵢ  =   [
-                    :best_insert!   ,
-                    :greedy_insert! ,
+                    :best!          ,
+                    :greedy!        ,
                     :regret₂insert! ,
                     :regret₃insert!
                 ]                       ,
@@ -52,7 +57,7 @@ let
         χₒ  =   χₒ  
     )
     # Define inital solution method and build the initial solution
-    method = :regret₃init
+    method = :regret₂init
     sₒ = initialsolution(rng, G, χₒ, method)
     # Run ALNS and fetch best solution
     S = ALNS(rng, sₒ, χ)
@@ -68,7 +73,7 @@ let
     # Visualize best solution
     display(visualize(s⃰))
     # Animate ALNS solution search process from inital to best solution
-    #display(animate(S))
+    display(animate(S))
     # Show convergence plots
     display(convergence(S, χₒ))
     
