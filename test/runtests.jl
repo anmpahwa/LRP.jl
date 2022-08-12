@@ -3,10 +3,11 @@ using Revise
 using Test
 using Random
 
+# Traveling Salesman Problem instances
 @testset "TSP" begin
     K = 5
     instances = ["att48", "eil101", "ch150", "d198", "a280"]
-    methods   = [:cw_init, :nn_init, :random_init, :regret₂init, :regret₃init]
+    methods   = [:cw, :nn, :random, :regret₂init, :regret₃init]
     χₒ  = ObjectiveFunctionParameters(
         d = 0.                          ,
         v = 0.                          ,
@@ -19,13 +20,14 @@ using Random
         k̲ₛ  =   80                      ,
         k̅ₛ  =   250                     ,   
         Ψᵣ  =   [
-                    :node_remove!   , 
-                    :worst_remove!  , 
-                    :shaw_remove!
+                    :randomnode!    , 
+                    :relatedpair!   ,
+                    :relatednode!   , 
+                    :worstnode!     
                 ]                       , 
         Ψᵢ  =   [
-                    :best_insert!   ,
-                    :greedy_insert! ,
+                    :best!          ,
+                    :greedy!        ,
                     :regret₂insert! ,
                     :regret₃insert!
                 ]                       ,
@@ -61,13 +63,14 @@ using Random
     return
 end
 
-@testset "VRP" begin
+# Single Depot Vehicle Routing Problem
+@testset "SDVRP" begin
     K = 3
     instances = ["m-n101-k10", "tai150a", "cmt10"]
-    methods   = [:cw_init, :regret₂init, :regret₃init]
+    methods   = [:cw, :regret₂init, :regret₃init]
     χₒ  = ObjectiveFunctionParameters(
         d = 0.                          ,
-        v = 1000000.                    ,
+        v = 10000.                      ,
         r = 0.                          ,
         c = 0.                          ,
     )
@@ -77,13 +80,18 @@ end
         k̲ₛ  =   80                      ,
         k̅ₛ  =   250                     ,   
         Ψᵣ  =   [
-                    :node_remove!   , 
-                    :worst_remove!  , 
-                    :shaw_remove!
+                    :randomnode!    , 
+                    :relatedpair!   ,
+                    :relatednode!   , 
+                    :worstnode!     ,  
+                    :randomroute!   ,
+                    :relatedroute!  ,
+                    :worstroute!    ,
+                    :randomvehicle! ,  
                 ]                       , 
         Ψᵢ  =   [
-                    :best_insert!   ,
-                    :greedy_insert! ,
+                    :best!          ,
+                    :greedy!        ,
                     :regret₂insert! ,
                     :regret₃insert!
                 ]                       ,
