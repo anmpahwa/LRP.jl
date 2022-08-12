@@ -115,7 +115,7 @@ Base.isequal(p::Node, q::Node) = isequal(p.i,q.i)
 isclose(r::Route) = iszero(r.n)                                                     # A route is defined closed if it serves no customer
 isclose(v::Vehicle) = all(isclose, v.R)                                             # A vehicle is defined closed if all its routes are closed
 isclose(d::DepotNode) = all(isclose, d.V)                                           # A depot is defined closed if all its vehicles are closed
-isclose(c::CustomerNode) = !(iszero(c.t) & iszero(c.h))                             # A customer is defined closed if its tail node and head node index is zero
+isclose(c::CustomerNode) = !(iszero(c.t) & iszero(c.h))                             # A customer is defined closed if its tail node and head node index is non-zero
 isopen(x) = !isclose(x)
 
 # node type
