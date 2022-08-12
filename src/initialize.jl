@@ -6,10 +6,10 @@ Returns initial LRP solution using given `method` on graph with depot nodes `D`,
 `χₒ` includes the objective function parameters for objective function evaluation.
 
 Available methods include,
-- Clarke and Wright Savings Algorithm   : `:cw_init`
-- Nearest Neighborhood Algorithm        : `:nn_init`
-- Random Initialization                 : `:random_init`
-- Regret K Insertion                    : `:regret₂init`, `:regret₃init`
+- Clarke and Wright Savings Algorithm   : `:cw`
+- Nearest Neighborhood Algorithm        : `:nn`
+- Random Initialization                 : `:random`
+- Regret N Insertion                    : `:regret₂init`, `:regret₃init`
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
@@ -19,7 +19,7 @@ initialsolution(G, χₒ::ObjectiveFunctionParameters, method::Symbol) = initial
 
 # Clarke and Wright Savings Algorithm
 # Create initial solution merging routes that render the most savings until no merger can render further savings
-function cw_init(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
+function cw(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
     s = Solution(G...)
     D = s.D
     C = s.C
@@ -130,7 +130,7 @@ end
 
 # Nearest Neighborhood Algorithm
 # Create initial solution with node-route combination that results in least increase in cost until all customer nodes have been added to the solution
-function nn_init(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
+function nn(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
     s = Solution(G...)
     D = s.D
     C = s.C
@@ -186,7 +186,7 @@ end
 
 # Random Initialization
 # Create initial solution with randomly selcted node-route combination until all customer nodes have been added to the solution
-function random_init(rng::AbstractRNG, G)
+function random(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
     s = Solution(G...)
     D = s.D
     C = s.C
@@ -212,7 +212,6 @@ function random_init(rng::AbstractRNG, G)
     # Step 3: Return initial solution
     return s
 end
-random_init(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters) = random_init(rng, G)
 
 # Regret-N Insertion
 # Create initial solution by iteratively adding customer nodes with highest regret cost at its best position until all customer nodes have been added to the solution

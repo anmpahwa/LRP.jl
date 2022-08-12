@@ -5,8 +5,8 @@ Return solution inserting open customer nodes to the solution `s` using the give
 `χₒ` includes the objective function parameters for objective function evaluation.
 
 Available methods include,
-- Best Insertion    : `best_insert!`
-- Greedy Insertion  : `greedy_insert!`
+- Best Insertion    : `best!`
+- Greedy Insertion  : `greedy!`
 - Regret Insertion  : `regret₂insert!`, `regret₃insert!`
 
 Optionally specify a random number generator `rng` as the first argument
@@ -17,7 +17,7 @@ insert!(s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol) = inser
 
 # Best insertion
 # Iteratively insert randomly selected customer node at its best position until all open customer nodes have been added to the solution
-function best_insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters)
+function best!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -82,7 +82,7 @@ end
 
 # Greedy insertion
 # Iteratively insert customer nodes with least insertion cost until all open customer nodes have been added to the solution
-function greedy_insert!(s::Solution, χₒ::ObjectiveFunctionParameters)
+function greedy!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -141,11 +141,10 @@ function greedy_insert!(s::Solution, χₒ::ObjectiveFunctionParameters)
     end
     return s
 end
-greedy_insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = greedy_insert!(s, χₒ)
 
 # Regret-N insertion
 # Iteratively add customer nodes with highest regret cost at its best position until all open customer nodes have been added to the solution
-function regretₙinsert!(N, s::Solution, χₒ::ObjectiveFunctionParameters)
+function regretₙinsert!(rng::AbstractRNG, N::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -239,5 +238,5 @@ function regretₙinsert!(N, s::Solution, χₒ::ObjectiveFunctionParameters)
     end
     return s
 end
-regret₂insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(2, s, χₒ)
-regret₃insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(3, s, χₒ)
+regret₂insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(rng, 2, s, χₒ)
+regret₃insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(rng, 3, s, χₒ)
