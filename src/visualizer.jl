@@ -91,9 +91,9 @@ function animate(S::Vector{Solution})
         figs[k] = fig
     end
     anim =  @animate for fig in figs
-        plot(fig, show_msg=false)
+        plot(fig)
     end
-    gif(anim, fps = 10)
+    gif(anim, fps = 10, show_msg=false)
 end
 
 """
