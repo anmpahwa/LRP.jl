@@ -144,7 +144,7 @@ end
 
 # Regret-N insertion
 # Iteratively add customer nodes with highest regret cost at its best position until all open customer nodes have been added to the solution
-function regretₙinsert!(rng::AbstractRNG, N::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -238,5 +238,5 @@ function regretₙinsert!(rng::AbstractRNG, N::Int, s::Solution, χₒ::Objectiv
     end
     return s
 end
-regret₂insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(rng, 2, s, χₒ)
-regret₃insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(rng, 3, s, χₒ)
+regret₂insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(rng, Int64(2), s, χₒ)
+regret₃insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(rng, Int64(3), s, χₒ)

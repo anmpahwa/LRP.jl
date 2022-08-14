@@ -1,5 +1,5 @@
 """
-    remove!([rng], q::Int, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)
+    remove!([rng], q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)
 
 Return solution removing q customer nodes from solution s using the given `method`.
 `χₒ` includes the objective function parameters for objective function evaluation.
@@ -18,13 +18,13 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-remove!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)::Solution = getfield(LRP, method)(rng, q, s, χₒ)
-remove!(q::Int, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s, χₒ, method)
+remove!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)::Solution = getfield(LRP, method)(rng, q, s, χₒ)
+remove!(q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s, χₒ, method)
 
 # -------------------------------------------------- NODE REMOVAL --------------------------------------------------
 # Random Node Removal
 # Randomly select q customer nodes to remove
-function randomnode!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomnode!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     # Step 1: Randomly select customer nodes to remove until q customer nodes have been removed
@@ -44,7 +44,7 @@ end
 
 # Related Node Pair Removal (related in pairs)
 # Randomly remove q/2 customer nodes and the corresponding most related customer nodes
-function relatedpair!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relatedpair!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     A = s.A
@@ -79,7 +79,7 @@ end
 
 # Related Node Removal (related to pivot)
 # For a randomly selected customer node, remove q most related customer nodes
-function relatednode!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relatednode!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     A = s.A
@@ -104,7 +104,7 @@ end
 
 # Worst Node Removal
 # Remove q customer nodes with highest removal cost
-function worstnode!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function worstnode!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -145,7 +145,7 @@ end
 # -------------------------------------------------- ROUTE REMOVAL --------------------------------------------------
 # Random Route Removal
 # Iteratively select a random route and remove customer nodes from it until at least q customer nodes are removed
-function randomroute!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomroute!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -172,7 +172,7 @@ end
 
 # Related Route Removal
 # For a randomly selected route, remove customer nodes from most related route until q customer nodes are removed
-function relatedroute!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -205,7 +205,7 @@ end
 
 # Worst Route Removal
 # Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
-function worstroute!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function worstroute!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -236,7 +236,7 @@ end
 # -------------------------------------------------- VEHICLE REMOVAL --------------------------------------------------
 # Random Vehicle Removal
 # Iteratively select a random vehicle and remove customer nodes from it until at least q customer nodes are removed
-function randomvehicle!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -265,7 +265,7 @@ end
 # -------------------------------------------------- DEPOT REMOVAL --------------------------------------------------
 # Random Depot Removal
 # Iteratively select a random depot and remove customer nodes from it until at least q customer nodes are removed
-function randomdepot!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     # Step 1: Iteratively select a random depot and remove customer nodes from it until at least q customer nodes are removed
@@ -293,7 +293,7 @@ end
 
 # Related Depot Removal
 # Select a random closed depot node to open and remove q customer nodes most related to this depot node
-function relateddepot!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     A = s.A
