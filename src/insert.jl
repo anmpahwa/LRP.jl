@@ -27,10 +27,10 @@ function best!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters
     I = length(R)
     J = length(L)
     K = length(V)
-    p = fill((0, 0), (I,J)) # p[i,j]: best insertion postion of customer node L[j] in route R[i]
-    x = fill(Inf, (I,J))    # x[i,j]: insertion cost of customer node L[j] at best position in route R[i]
-    w = ones(Int64, J)      # w[j]  : selection weight for customer node L[j]
-    ϕ = ones(Int64, K)      # ϕ[k]  : selection weight for vehicle V[k]
+    x = fill(Inf, (I,J))            # x[i,j]: insertion cost of customer node L[j] at best position in route R[i]
+    p = fill(Int64.((0, 0)), (I,J)) # p[i,j]: best insertion postion of customer node L[j] in route R[i]
+    w = ones(Int64, J)              # w[j]  : selection weight for customer node L[j]
+    ϕ = ones(Int64, K)              # ϕ[k]  : selection weight for vehicle V[k]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ 1:J
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
@@ -92,9 +92,9 @@ function greedy!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParamete
     I = length(R)
     J = length(L)
     K = length(V)
-    p = fill((0, 0), (I,J)) # p[i,j] : best insertion postion of customer node L[j] in route R[i]
-    x = fill(Inf, (I,J))    # x[i,j]: insertion cost of customer node L[j] at best position route R[i]
-    ϕ = ones(Int64, K)      # ϕ[k]  : selection weight for vehicle V[k]
+    x = fill(Inf, (I,J))            # x[i,j]: insertion cost of customer node L[j] at best position route R[i]
+    p = fill(Int64.((0, 0)), (I,J)) # p[i,j] : best insertion postion of customer node L[j] in route R[i]
+    ϕ = ones(Int64, K)              # ϕ[k]  : selection weight for vehicle V[k]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ 1:J
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
@@ -144,7 +144,7 @@ end
 
 # Regret-N insertion
 # Iteratively add customer nodes with highest regret cost at its best position until all open customer nodes have been added to the solution
-function regretₙinsert!(rng::AbstractRNG, N::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function regretₙinsert!(rng::AbstractRNG, N::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -155,7 +155,7 @@ function regretₙinsert!(rng::AbstractRNG, N::Integer, s::Solution, χₒ::Obje
     J = length(L)
     K = length(V)
     xᵢ = fill(Inf, (I,J))               # xᵢ[i,j]: insertion cost of customer node C[j] at best position in route R[i]
-    pᵢ = fill((0, 0), (I,J))            # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
+    pᵢ = fill(Int64.((0, 0)), (I,J))    # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
     xₙ = fill(Inf, (N,J))               # xₙ[i,n]: insertion cost of customer node C[j] at nᵗʰ best position
     rₙ = zeros(Int64, (N,J))            # rₙ[i,j]: N best insertion route index of customer node C[j]
     xᵣ = fill(-Inf, J)                  # x[j]   : regret-N cost of customer node C[j]

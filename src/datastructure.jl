@@ -194,14 +194,14 @@ function isfeasible(s::Solution)
             R = v.R
             for r ∈ R
                 if isclose(r) continue end
-                nₛ = C[r.s]
-                nₑ = C[r.e]
-                nₒ = nₛ
+                cₛ = C[r.s]
+                cₑ = C[r.e]
+                c  = cₛ
                 while true
-                    k = nₒ.i
+                    k = c.i
                     x[k] += 1
-                    if isequal(nₒ, nₑ) break end
-                    nₒ = C[nₒ.h]
+                    if isequal(c, cₑ) break end
+                    c = C[c.h]
                 end
             end
         end

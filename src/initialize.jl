@@ -215,7 +215,7 @@ end
 
 # Regret-N Insertion
 # Create initial solution by iteratively adding customer nodes with highest regret cost at its best position until all customer nodes have been added to the solution
-function regretₙinit(rng::AbstractRNG, N, G, χₒ::ObjectiveFunctionParameters)
+function regretₙinit(rng::AbstractRNG, N::Int, G, χₒ::ObjectiveFunctionParameters)
     s = Solution(G...)
     D = s.D
     C = s.C
@@ -228,7 +228,7 @@ function regretₙinit(rng::AbstractRNG, N, G, χₒ::ObjectiveFunctionParameter
     J = eachindex(C)
     K = length(V)
     xᵢ = fill(Inf, (I,J))               # xᵢ[i,j]: insertion cost of customer node C[j] at best position in route R[i]
-    pᵢ = fill((0, 0), (I,J))            # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
+    pᵢ = fill(Int64.((0, 0)), (I,J))    # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
     xₙ = fill(Inf, (N,J))               # xₙ[i,n]: insertion cost of customer node C[j] at nᵗʰ best position
     rₙ = zeros(Int64, (N,J))            # rₙ[i,j]: N best insertion route index of customer node C[j]
     xᵣ = fill(-Inf, J)                  # x[j]   : regret-N cost of customer node C[j]

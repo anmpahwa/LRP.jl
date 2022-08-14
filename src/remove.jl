@@ -1,7 +1,7 @@
 """
-    remove!([rng], q, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)
+    remove!([rng], q::Int, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)
 
-Return solution removing q nodes from solution s using the given `method`.
+Return solution removing q customer nodes from solution s using the given `method`.
 `χₒ` includes the objective function parameters for objective function evaluation.
 
 Available methods include,
@@ -18,21 +18,21 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-remove!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)::Solution = getfield(LRP, method)(rng, q, s, χₒ)
-remove!(q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s, χₒ, method)
+remove!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)::Solution = getfield(LRP, method)(rng, q, s, χₒ)
+remove!(q::Int, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s, χₒ, method)
 
 # -------------------------------------------------- NODE REMOVAL --------------------------------------------------
 # Random Node Removal
 # Randomly select q customer nodes to remove
-function randomnode!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomnode!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     # Step 1: Randomly select customer nodes to remove until q customer nodes have been removed
     n = 0
     while n < q
-        c  = rand(rng, C)
+        c = rand(rng, C)
         if isopen(c) continue end
-        r  = c.r
+        r = c.r
         nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
         nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
         removenode!(c, nₜ, nₕ, r, s)
@@ -44,7 +44,7 @@ end
 
 # Related Node Pair Removal (related in pairs)
 # Randomly remove q/2 customer nodes and the corresponding most related customer nodes
-function relatedpair!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relatedpair!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     A = s.A
@@ -63,9 +63,9 @@ function relatedpair!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::Objectiv
     end 
     # Step 3: For each q/2 customer node initially removed, remove the most related closed customer node  
     while n < q
-        i,j= Tuple(argmax(x))
-        c  = C[j]
-        r  = c.r
+        i,j = Tuple(argmax(x))
+        c = C[j]
+        r = c.r
         nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
         nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
         removenode!(c, nₜ, nₕ, r, s)
@@ -79,24 +79,20 @@ end
 
 # Related Node Removal (related to pivot)
 # For a randomly selected customer node, remove q most related customer nodes
-function relatednode!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relatednode!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     A = s.A
     # Step 1: Randomly select a pivot customer node
-    i  = rand(rng, eachindex(C))
-    c₁ = C[i]
+    i = rand(rng, eachindex(C))
     # Step 2: For each customer node, evaluate relatedness to this pivot customer node
     x = fill(-Inf, eachindex(C))    # x[j]: relatedness of customer node C[i] with customer node C[j]  
-    for (j,c₂) ∈ pairs(C)
-        a = A[(i,j)]
-        x[j] = relatedness(c₁, c₂, a)
-    end
+    for j ∈ eachindex(C) x[j] = relatedness(C[i], C[j], A[(i,j)]) end
     # Step 3: Remove q most related customer nodes
     for _ ∈ 1:q
-        k  = argmax(x)
-        c  = C[k]
-        r  = c.r
+        k = argmax(x)
+        c = C[k]
+        r = c.r
         nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
         nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
         removenode!(c, nₜ, nₕ, r, s)
@@ -108,7 +104,7 @@ end
 
 # Worst Node Removal
 # Remove q customer nodes with highest removal cost
-function worstnode!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function worstnode!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -119,10 +115,9 @@ function worstnode!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveF
         # Step 1.1: For every closed customer node evaluate removal cost
         z = f(s, χₒ)
         for (k,c) ∈ pairs(C)
-            if isopen(c) continue end
-            if iszero(ϕ[c.r.o]) continue end
+            r = c.r
+            if isopen(c) || iszero(ϕ[r.o]) continue end
             # Step 1.1.1: Remove closed customer node c between tail node nₜ and head node nₕ in route r
-            r  = c.r
             nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
             nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
             removenode!(c, nₜ, nₕ, r, s)
@@ -133,9 +128,9 @@ function worstnode!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveF
             insertnode!(c, nₜ, nₕ, r, s)
         end
         # Step 1.2: Remove the customer node with highest removal cost
-        k  = argmax(x)
-        c  = C[k]
-        r  = c.r
+        k = argmax(x)
+        c = C[k]
+        r = c.r
         nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
         nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
         removenode!(c, nₜ, nₕ, r, s)
@@ -150,7 +145,7 @@ end
 # -------------------------------------------------- ROUTE REMOVAL --------------------------------------------------
 # Random Route Removal
 # Iteratively select a random route and remove customer nodes from it until at least q customer nodes are removed
-function randomroute!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomroute!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -177,29 +172,28 @@ end
 
 # Related Route Removal
 # For a randomly selected route, remove customer nodes from most related route until q customer nodes are removed
-function relatedroute!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relatedroute!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
     R = [r for v ∈ V for r ∈ v.R]
     # Step 1: Randomly select a pivot route
-    w  = [if isclose(r) 0 else 1 end for r ∈ R]
-    i  = sample(rng, eachindex(R), Weights(w))  
-    r₁ = R[i]
+    w = [if isclose(r) 0 else 1 end for r ∈ R]
+    i = sample(rng, eachindex(R), Weights(w))  
     # Step 2: For each route, evaluate relatedness to this pivot route
     x = fill(-Inf, length(R))
-    for (j,r₂) ∈ pairs(R) x[j] = isclose(r₂) ? -Inf : relatedness(r₁, r₂) end
+    for j ∈ eachindex(R) x[j] = iszero(w[j]) ? -Inf : relatedness(R[i], R[j]) end
     n = 0
     while n < q
-        k  = argmax(x)
-        r₂ = R[k]
-        v  = V[r₂.o]
-        d  = D[v.o]
+        k = argmax(x)
+        r = R[k]
+        v = V[r.o]
+        d = D[v.o]
         while true
             nₜ = d
-            c  = C[r₂.s]
-            nₕ = isequal(r₂.e, c.i) ? D[c.h] : C[c.h]
-            removenode!(c, nₜ, nₕ, r₂, s)
+            c  = C[r.s]
+            nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
+            removenode!(c, nₜ, nₕ, r, s)
             n += 1
             if isequal(nₕ, d) break end
         end 
@@ -211,7 +205,7 @@ end
 
 # Worst Route Removal
 # Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
-function worstroute!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function worstroute!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -242,7 +236,7 @@ end
 # -------------------------------------------------- VEHICLE REMOVAL --------------------------------------------------
 # Random Vehicle Removal
 # Iteratively select a random vehicle and remove customer nodes from it until at least q customer nodes are removed
-function randomvehicle!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomvehicle!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = s.V
@@ -271,7 +265,7 @@ end
 # -------------------------------------------------- DEPOT REMOVAL --------------------------------------------------
 # Random Depot Removal
 # Iteratively select a random depot and remove customer nodes from it until at least q customer nodes are removed
-function randomdepot!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomdepot!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     # Step 1: Iteratively select a random depot and remove customer nodes from it until at least q customer nodes are removed
@@ -299,26 +293,22 @@ end
 
 # Related Depot Removal
 # Select a random closed depot node to open and remove q customer nodes most related to this depot node
-function relateddepot!(rng::AbstractRNG, q::Integer, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relateddepot!(rng::AbstractRNG, q::Int, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     A = s.A
     if all(isopen, D) return s end
     # Step 1: Select a random closed depot node
-    w  = [if isopen(d) 0 else 1 end for d ∈ D]
-    i  = sample(rng, eachindex(D), Weights(w))
-    dₒ = D[i]
+    w = [if isopen(d) 0 else 1 end for d ∈ D]
+    i = sample(rng, eachindex(D), Weights(w))
     # Step 2: Evaluate relatedness of this depot node to every customer node
     x = fill(-Inf, eachindex(C))
-    for (j,cₒ) ∈ pairs(C)
-        a = A[(i,j)]
-        x[j] = relatedness(dₒ, cₒ, a)
-    end
+    for j ∈ eahchindex(C) x[j] = relatedness(D[i], C[j], A[(i,j)]) end
     # Step 3: Remove q customer nodes most related to this depot node
     for _ ∈ 1:q   
-        k  = argmax(x)
-        c  = C[k]
-        r  = c.r
+        k = argmax(x)
+        c = C[k]
+        r = c.r
         nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
         nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
         removenode!(c, nₜ, nₕ, r, s)
@@ -335,8 +325,8 @@ function relatedness(d₁::DepotNode, d₂::DepotNode, a::Arc)
     f = a.f
     q = abs(d₁.q - d₂.q)
     ϕ = false
-    r = 1/(0.482 * l + 35.0 * t + 3.826 * f - 1.0 * q - 1.0 * ϕ)
-    return r
+    z = 1/(0.482 * l + 35.0 * t + 3.826 * f - 1.0 * q - 1.0 * ϕ)
+    return z
 end
 function relatedness(c₁::CustomerNode, c₂::CustomerNode, a::Arc)
     l = a.l
@@ -347,31 +337,33 @@ function relatedness(c₁::CustomerNode, c₂::CustomerNode, a::Arc)
     r = 1/(0.482 * l + 35.0 * t + 3.826 * f - 1.0 * q - 1.0 * ϕ)
     return r
 end
-function relatedness(cₒ::CustomerNode, dₒ::DepotNode, a::Arc)
+function relatedness(c::CustomerNode, d::DepotNode, a::Arc)
     l = a.l
     t = a.t
     f = a.f
-    q = abs(cₒ.q - dₒ.q)
+    q = abs(c.q - d.q)
     ϕ = false
-    for v ∈ dₒ.V 
-        ϕ = isequal(cₒ.r.o, v.i) 
+    r = c.r
+    for v ∈ d.V 
+        ϕ = isequal(r.o, v.i) 
         ϕ ? break : continue
     end
-    r = 1/(0.482 * l + 35.0 * t + 3.826 * f - 1.0 * q - 1.0 * ϕ)
-    return r
+    z = 1/(0.482 * l + 35.0 * t + 3.826 * f - 1.0 * q - 1.0 * ϕ)
+    return z
 end
-function relatedness(dₒ::DepotNode, cₒ::CustomerNode, a::Arc)
+function relatedness(d::DepotNode, c::CustomerNode, a::Arc)
     l = a.l
     t = a.t
     f = a.f
-    q = abs(cₒ.q - dₒ.q)
+    q = abs(c.q - d.q)
     ϕ = false
-    for v ∈ dₒ.V 
-        ϕ = isequal(cₒ.r.o, v.i) 
+    r = c.r
+    for v ∈ d.V 
+        ϕ = isequal(r.o, v.i) 
         ϕ ? break : continue
     end
-    r = 1/(0.482 * l + 35.0 * t + 3.826 * f - 1.0 * q - 1.0 * ϕ)
-    return r
+    z = 1/(0.482 * l + 35.0 * t + 3.826 * f - 1.0 * q - 1.0 * ϕ)
+    return z
 end
 function relatedness(r₁::Route, r₂::Route)
     l = abs(r₁.l - r₂.l)
@@ -379,6 +371,6 @@ function relatedness(r₁::Route, r₂::Route)
     f = abs(r₁.f - r₂.f)
     q = abs(r₁.q - r₂.q)
     ϕ = isequal(r₁.o, r₂.o)
-    r = 1/(0.482 * l + 35.0 * t + 3.826 * f - 1.0 * q - 1.0 * ϕ)
-    return r
+    z = 1/(0.482 * l + 35.0 * t + 3.826 * f - 1.0 * q - 1.0 * ϕ)
+    return z
 end
