@@ -86,7 +86,7 @@ end
 # 2-opt
 # Iteratively take 2 arcs and reconfigure them (total possible reconfigurations 2²-1 = 3) if the 
 # reconfigure results in reduction in objective function value for k̅ iterations until improvement
-function opt!(rng::AbstractRNG, k̅, s::Solution, χₒ::ObjectiveFunctionParameters)
+function opt!(rng::AbstractRNG, k̅::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
     D = s.D
     C = s.C
     V = [v for d ∈ D for v ∈ d.V]
@@ -193,45 +193,50 @@ function opt!(rng::AbstractRNG, k̅, s::Solution, χₒ::ObjectiveFunctionParame
 end
 
 # Split
-# Iteratively split routes by moving depot node at best position if the split
-# results in reduction in objective function value for k̅ iterations until improvement
-function split!(rng::AbstractRNG, k̅, s::Solution, χₒ::ObjectiveFunctionParameters)
+# Iteratively split routes by moving a randomly selected depot node at best position if the
+# split results in reduction in objective function value for k̅ iterations until improvement
+function split!(rng::AbstractRNG, k̅::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+    z = f(s, χₒ)
+    z̅ = z
     D = s.D
     C = s.C
-    V = [v for d ∈ D for v ∈ d.V]
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
-    z = f(s)
-    x = Inf
-    p = (0, 0)
+    w = [if isopen(d) 1 else 0 end for d ∈ D]
     for _ ∈ 1:k̅
-        r = sample(rng, R)
-        if isclose(r) continue end
-        v = V[r.o]
-        d = D[v.o]
-        cₜ = C[r.t]
-        cₕ = C[r.h]
-        removenode!(d, cₜ, cₕ, r)
-        nₜ = cₕ
-        nₕ = C[c.h]
-        while true
-            insertnode!(d, nₜ, nₕ, r)
-            z′ = f(s, χₒ)
-            Δ = z′ - z
-            if Δ < x x, p = Δ, (nₜ.i, nₕ.i) end
-            removenode!(d, nₜ, nₕ, r)
-            if isequal(nₕ, cₜ) break end
-            nₜ = nₕ
-            nₕ = C[c.h]
+        d = sample(rng, D, Weights(w))
+        V = d.V
+        for v ∈ V
+            R = v.R
+            for r ∈ R
+                if isclose(r) continue end
+                cₛ = C[r.s]
+                cₑ = C[r.e]
+                x = 0.
+                p = (cₑ.i, cₛ.i)
+                removenode!(d, cₑ, cₛ, r, s)
+                cₜ = cₛ
+                cₕ = C[cₜ.h]
+                while true
+                    insertnode!(d, cₜ, cₕ, r, s)
+                    z′ = f(s, χₒ) 
+                    Δ  = z′ - z
+                    if Δ < x x, p = Δ, (cₜ.i, cₕ.i) end
+                    removenode!(d, cₜ, cₕ, r, s)
+                    if isequal(cₕ, cₑ) break end
+                    cₜ = cₕ
+                    cₕ = C[cₜ.h]
+                end
+                t = p[1]
+                h = p[2]
+                cₜ = C[t]
+                cₕ = C[h]
+                insertnode!(d, cₜ, cₕ, r, s)
+                z = f(s, χₒ) 
+            end
         end
-        insertnode!(d, cₜ, cₕ, r)
-        if Δ ≥ 0 continue end
-        t = p[i][1]
-        h = p[i][2]
-        nₜ = t ≤ length(D) ? D[t] : C[t]
-        nₕ = h ≤ length(D) ? D[h] : C[h]
-        removenode!(d, cₜ, cₕ, r)
-        insertnode!(d, nₜ, nₕ, r)
-        break
+        j = d.i
+        w[j] = 0
+        Δ = z - z̅
+        Δ ≥ 0 ? continue : break
     end
     return s
 end

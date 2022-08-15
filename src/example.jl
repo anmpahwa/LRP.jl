@@ -40,7 +40,8 @@ let
                     :regret₃insert!
                 ]                       ,
         Ψₛ  =   [
-                    :move!              ,
+                    :move!          ,
+                    :split!         ,
                     :swap!
                 ]                       ,
         σ₁  =   33                      ,

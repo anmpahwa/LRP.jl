@@ -32,7 +32,8 @@ using Random
                     :regret₃insert!
                 ]                       ,
         Ψₛ  =   [
-                    :move!              ,
+                    :move!          ,
+                    :split!         ,
                     :swap!
                 ]                       ,
         σ₁  =   33                      ,
@@ -96,8 +97,9 @@ end
                     :regret₃insert!
                 ]                       ,
         Ψₛ  =   [
-                    :move!              ,
-                    :swap!
+                    :move!          ,
+                    :split!         ,
+                    :swap!          
                 ]                       ,
         σ₁  =   33                      ,
         σ₂  =   9                       ,
