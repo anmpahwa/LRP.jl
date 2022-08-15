@@ -118,7 +118,7 @@ isclose(d::DepotNode) = all(isclose, d.V)                                       
 isclose(c::CustomerNode) = !(iszero(c.t) & iszero(c.h))                             # A customer is defined closed if its tail node and head node index is non-zero
 isopen(x) = !isclose(x)
 
-# node type
+# Node type
 isdepot(n::Node) = typeof(n) == DepotNode
 iscustomer(n::Node) = typeof(n) == CustomerNode
 
@@ -210,3 +210,6 @@ function isfeasible(s::Solution)
     end
     return true
 end
+
+# Hash solution
+Base.hash(s::Solution) = hash(vectorize(s))
