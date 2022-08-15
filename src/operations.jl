@@ -4,8 +4,8 @@ function insertnode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::DepotNode, r::Ro
     if isclose(nₒ) throw(ArgumentError("Customer node nₒ ($(nₒ.i)) is closed")) end
     if s.V[r.o] ∉ nₜ.V throw(ArgumentError("Route r $(r.i) does not belong to a vehicle origination from the depot tail node nₜ ($(nₜ.i))")) end
     if s.V[r.o] ∉ nₕ.V throw(ArgumentError("Route r $(r.i) does not belong to a vehicle origination from the depot head node nₕ ($(nₕ.i))")) end
-    if !isequal(r.e, nₜ.i) throw(ArgumentError("Tail index of depot head node nₕ ($(nₕ.i)) != Index of depot tail node nₜ ($(nₜ.i)) ")) end
-    if !isequal(r.s, nₕ.i) throw(ArgumentError("Head index of depot tail node nₜ ($(nₜ.i)) != Index of depot head node nₕ ($(nₕ.i)) ")) end
+    if !isequal(r.e, nₜ.i) throw(ArgumentError("Tail index of depot head node nₕ ($(nₕ.i)) does not match the index of depot tail node nₜ ($(nₜ.i)) ")) end
+    if !isequal(r.s, nₕ.i) throw(ArgumentError("Head index of depot tail node nₜ ($(nₜ.i)) does not match the index of depot head node nₕ ($(nₕ.i)) ")) end
     A = s.A
     V = s.V
     v = V[r.o]
@@ -34,8 +34,8 @@ function insertnode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::CustomerNode,
     if isclose(nₒ) throw(ArgumentError("Customer node nₒ ($(nₒ.i)) is closed")) end
     if !isequal(nₜ.r, r) throw(ArgumentError("Customer tail node nₜ ($(nₜ.i)) does not belong to route r ($(r.i)")) end
     if !isequal(nₕ.r, r) throw(ArgumentError("Customer head node nₕ ($(nₕ.i)) does not belong to route r ($(r.i)")) end
-    if !isequal(nₜ.h, nₕ.i) throw(ArgumentError("Head index of customer tail node nₜ ($(nₜ.i)) != Index of customer head node nₕ ($(nₕ.i)) ")) end
-    if !isequal(nₕ.t, nₜ.i) throw(ArgumentError("Tail index of customer head node nₕ ($(nₕ.i)) != Index of customer tail node nₜ ($(nₜ.i)) ")) end
+    if !isequal(nₜ.h, nₕ.i) throw(ArgumentError("Head index of customer tail node nₜ ($(nₜ.i)) does not match the index of customer head node nₕ ($(nₕ.i)) ")) end
+    if !isequal(nₕ.t, nₜ.i) throw(ArgumentError("Tail index of customer head node nₕ ($(nₕ.i)) does not match the index of customer tail node nₜ ($(nₜ.i)) ")) end
     A = s.A
     V = s.V
     v = V[r.o]
@@ -61,11 +61,11 @@ function insertnode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::CustomerNode,
 end
 # Insert customer node nₒ between depot node nₜ and customer node nₕ in route r
 function insertnode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::CustomerNode, r::Route, s::Solution)
-    if isclose(nₒ) throw(ArgumentError("Node nₒ ($(nₒ.i)) is closed")) end
+    if isclose(nₒ) throw(ArgumentError("Customer node nₒ ($(nₒ.i)) is closed")) end
     if s.V[r.o] ∉ nₜ.V throw(ArgumentError("Route r $(r.i) does not belong to a vehicle origination from the depot tail node nₜ ($(nₜ.i))")) end
     if !isequal(nₕ.r, r) throw(ArgumentError("Customer head node nₕ ($(nₕ.i)) does not belong to route r ($(r.i)")) end
-    if !isequal(nₕ.t, nₜ.i) throw(ArgumentError("Tail index of customer head node nₕ ($(nₕ.i)) != Index of depot tail node nₜ ($(nₜ.i)) ")) end
-    if !isequal(r.s, nₕ.i) throw(ArgumentError("Head index of depot tail node nₜ ($(nₜ.i)) != Index of customer head node nₕ ($(nₕ.i)) ")) end
+    if !isequal(nₕ.t, nₜ.i) throw(ArgumentError("Tail index of customer head node nₕ ($(nₕ.i)) does not match the index of depot tail node nₜ ($(nₜ.i)) ")) end
+    if !isequal(r.s, nₕ.i) throw(ArgumentError("Head index of depot tail node nₜ ($(nₜ.i)) does not match the index of customer head node nₕ ($(nₕ.i)) ")) end
     A = s.A
     V = s.V
     v = V[r.o]
@@ -94,8 +94,8 @@ function insertnode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::DepotNode, r:
     if isclose(nₒ) throw(ArgumentError("Customer node nₒ ($(nₒ.i)) is closed")) end
     if !isequal(nₜ.r, r) throw(ArgumentError("Customer tail node nₜ ($(nₜ.i)) does not belong to route r ($(r.i)")) end
     if s.V[r.o] ∉ nₕ.V throw(ArgumentError("Route r $(r.i) does not belong to a vehicle origination from the depot head node nₕ ($(nₕ.i))")) end
-    if !isequal(r.e, nₜ.i) throw(ArgumentError("Tail index of depot head node nₕ ($(nₕ.i)) != Index of customer tail node nₜ ($(nₜ.i)) ")) end
-    if !isequal(nₜ.h, nₕ.i) throw(ArgumentError("Head index of customer tail node nₜ ($(nₜ.i)) != Index of depot head node nₕ ($(nₕ.i)) ")) end
+    if !isequal(r.e, nₜ.i) throw(ArgumentError("Tail index of depot head node nₕ ($(nₕ.i)) does not match the index of customer tail node nₜ ($(nₜ.i)) ")) end
+    if !isequal(nₜ.h, nₕ.i) throw(ArgumentError("Head index of customer tail node nₜ ($(nₜ.i)) does not match the index of depot head node nₕ ($(nₕ.i)) ")) end
     A = s.A
     V = s.V
     v = V[r.o]
@@ -124,8 +124,8 @@ function insertnode!(nₒ::DepotNode, nₜ::CustomerNode, nₕ::CustomerNode, r:
     if s.V[r.o] ∉ nₒ.V throw(ArgumentError("Route r ($(r.i)) does not belong to a vehicle origination from the depot node nₒ ($(nₒ.i))")) end
     if !isequal(nₜ.r, r) throw(ArgumentError("Customer tail node nₜ ($(nₜ.i)) does not belong to route r ($(r.i)")) end
     if !isequal(nₕ.r, r) throw(ArgumentError("Customer head node nₕ ($(nₕ.i)) does not belong to route r ($(r.i)")) end
-    if !isequal(nₜ.h, nₕ.i) throw(ArgumentError("Head index of customer tail node nₜ ($(nₜ.i)) != Index of customer head node nₕ ($(nₕ.i)) ")) end
-    if !isequal(nₕ.t, nₜ.i) throw(ArgumentError("Tail index of customer head node nₕ ($(nₕ.i)) != Index of customer tail node nₜ ($(nₜ.i)) ")) end
+    if !isequal(nₜ.h, nₕ.i) throw(ArgumentError("Head index of customer tail node nₜ ($(nₜ.i)) does not match the index of customer head node nₕ ($(nₕ.i)) ")) end
+    if !isequal(nₕ.t, nₜ.i) throw(ArgumentError("Tail index of customer head node nₕ ($(nₕ.i)) does not match the index of customer tail node nₜ ($(nₜ.i)) ")) end
     A = s.A
     V = s.V
     v = V[r.o]
@@ -136,8 +136,10 @@ function insertnode!(nₒ::DepotNode, nₜ::CustomerNode, nₕ::CustomerNode, r:
     Δᵗ = aₜ.t + aₕ.t - aₒ.t
     Δᶠ = aₜ.f + aₕ.f - aₒ.f
     Δᶜ = v.πᵐ * Δˡ + v.πʷ * Δᵗ + v.πᶠ * Δᶠ
+    r.s  = nₕ.i
+    r.e  = nₜ.i
     nₜ.h = nₒ.i
-    nₜ.t = nₒ.i
+    nₕ.t = nₒ.i
     r.l += Δˡ
     r.t += Δᵗ
     r.f += Δᶠ
@@ -165,8 +167,8 @@ function removenode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::DepotNode, r::Ro
     Δᵗ = aₜ.t + aₕ.t - aₒ.t
     Δᶠ = aₜ.f + aₕ.f - aₒ.f
     Δᶜ = v.πᵐ * Δˡ + v.πʷ * Δᵗ + v.πᶠ * Δᶠ
-    r.s = nₒ.h
-    r.e = nₒ.t
+    r.s = nₕ.i
+    r.e = nₜ.i
     nₒ.t = 0
     nₒ.h = 0
     # nₒ.r = Route()
@@ -198,8 +200,8 @@ function removenode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::CustomerNode,
     Δᵗ = aₜ.t + aₕ.t - aₒ.t
     Δᶠ = aₜ.f + aₕ.f - aₒ.f
     Δᶜ = v.πᵐ * Δˡ + v.πʷ * Δᵗ + v.πᶠ * Δᶠ
-    nₜ.h = nₒ.h 
-    nₕ.t = nₒ.t
+    nₜ.h = nₕ.i
+    nₕ.t = nₜ.i
     nₒ.t = 0
     nₒ.h = 0
     # nₒ.r = Route()
@@ -231,8 +233,8 @@ function removenode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::CustomerNode, r:
     Δᵗ = aₜ.t + aₕ.t - aₒ.t
     Δᶠ = aₜ.f + aₕ.f - aₒ.f
     Δᶜ = v.πᵐ * Δˡ + v.πʷ * Δᵗ + v.πᶠ * Δᶠ
-    r.s  = nₒ.h
-    nₕ.t = nₒ.t
+    r.s  = nₕ.i
+    nₕ.t = nₜ.i
     nₒ.t = 0
     nₒ.h = 0
     # nₒ.r = Route()
@@ -264,8 +266,8 @@ function removenode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::DepotNode, r:
     Δᵗ = aₜ.t + aₕ.t - aₒ.t
     Δᶠ = aₜ.f + aₕ.f - aₒ.f
     Δᶜ = v.πᵐ * Δˡ + v.πʷ * Δᵗ + v.πᶠ * Δᶠ
-    nₜ.h = nₒ.h 
-    r.e  = nₒ.t
+    nₜ.h = nₕ.i
+    r.e  = nₜ.i
     nₒ.t = 0
     nₒ.h = 0
     # nₒ.r = Route()
@@ -282,8 +284,8 @@ function removenode!(nₒ::DepotNode, nₜ::CustomerNode, nₕ::CustomerNode, r:
     if s.V[r.o] ∉ nₒ.V throw(ArgumentError("Route r ($(r.i)) does not belong to a vehicle origination from the depot node nₒ ($(nₒ.i))")) end
     if !isequal(nₜ.r, r) throw(ArgumentError("Customer tail node nₜ ($(nₜ.i)) does not belong to route r ($(r.i))")) end
     if !isequal(nₕ.r, r) throw(ArgumentError("Customer head node nₕ ($(nₕ.i)) does not belong to route r ($(r.i))")) end 
-    if !isequal(r.s, nₒ.i) throw(ArgumentError("Head index of depot node nₒ ($(nₒ.i)) does not match the index of customer tail node nₜ ($(nₜ.i))")) end
-    if !isequal(r.e, nₒ.i) throw(ArgumentError("Tail index of depot node nₒ ($(nₒ.i)) does not match the index of customer head node nₒ ($(nₕ.i))")) end
+    if !isequal(r.s, nₕ.i) throw(ArgumentError("Head index of depot node nₒ ($(nₒ.i)) does not match the index of customer head node nₕ ($(nₕ.i))")) end
+    if !isequal(r.e, nₜ.i) throw(ArgumentError("Tail index of depot node nₒ ($(nₒ.i)) does not match the index of customer tail node nₜ ($(nₜ.i))")) end
     if !isequal(nₜ.h, nₒ.i) throw(ArgumentError("Head index of customer tail node nₜ ($(nₜ.i)) does not match the index of the depot node nₒ ($(nₒ.i))")) end
     if !isequal(nₕ.t, nₒ.i) throw(ArgumentError("Tail index of customer head node nₕ ($(nₕ.i)) does not match the index of the depot node nₒ ($(nₒ.i))")) end
     A = s.A
@@ -296,8 +298,10 @@ function removenode!(nₒ::DepotNode, nₜ::CustomerNode, nₕ::CustomerNode, r:
     Δᵗ = aₜ.t + aₕ.t - aₒ.t
     Δᶠ = aₜ.f + aₕ.f - aₒ.f
     Δᶜ = v.πᵐ * Δˡ + v.πʷ * Δᵗ + v.πᶠ * Δᶠ
-    nₜ.h = nₒ.i
-    nₜ.t = nₒ.i
+    nₜ.h = nₕ.i
+    nₕ.t = nₜ.i
+    r.s  = 0
+    r.e  = 0
     r.l -= Δˡ
     r.t -= Δᵗ
     r.f -= Δᶠ
