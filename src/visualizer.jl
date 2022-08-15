@@ -99,10 +99,10 @@ end
 """
     convergence(S::Vector{Solution}, χₒ::ObjectiveFunctionParameters)
 
-Plots objective function values for solutions in `S` using objective function parameters `χₒ`.
+Plots objective function values for solutions in `S`.
 """
-function convergence(S::Vector{Solution}, χₒ::ObjectiveFunctionParameters)
-    Y = [f(s, χₒ) for s ∈ S]
+function convergence(S::Vector{Solution})
+    Y = f.(S)
     X = 0:(length(S)-1)
     plot(X,Y)
 end

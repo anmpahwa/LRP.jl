@@ -1,8 +1,7 @@
 """
-    insert!([rng], s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)
+    insert!([rng], s::Solution, method::Symbol)
 
 Return solution inserting open customer nodes to the solution `s` using the given `method`.
-`χₒ` includes the objective function parameters for objective function evaluation.
 
 Available methods include,
 - Best Insertion    : `best!`
@@ -12,12 +11,12 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)::Solution = getfield(LRP, method)(rng, s, χₒ)
-insert!(s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol) = insert!(Random.GLOBAL_RNG, s, χₒ, method)
+insert!(rng::AbstractRNG, s::Solution, method::Symbol)::Solution = getfield(LRP, method)(rng, s)
+insert!(s::Solution, method::Symbol) = insert!(Random.GLOBAL_RNG, s, method)
 
 # Best insertion
 # Iteratively insert randomly selected customer node at its best position until all open customer nodes have been added to the solution
-function best!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters)
+function best!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     V = s.V
@@ -34,7 +33,7 @@ function best!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ 1:J
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
-        z = f(s, χₒ)
+        z = f(s)
         for (j,c) ∈ pairs(L)
             if isclose(c) continue end
             for (i,r) ∈ pairs(R)
@@ -49,7 +48,7 @@ function best!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters
                     # Step 2.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.2: Compute the insertion cost
-                    z⁺ = f(s, χₒ)
+                    z⁺ = f(s)
                     Δ  = z⁺ - z
                     # Step 2.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < x[i,j] x[i,j], p[i,j] = Δ, (nₜ.i, nₕ.i) end
@@ -82,7 +81,7 @@ end
 
 # Greedy insertion
 # Iteratively insert customer nodes with least insertion cost until all open customer nodes have been added to the solution
-function greedy!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters)
+function greedy!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     V = s.V
@@ -98,7 +97,7 @@ function greedy!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParamete
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ 1:J
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
-        z = f(s, χₒ)
+        z = f(s)
         for (j,c) ∈ pairs(L)
             if isclose(c) continue end
             for (i,r) ∈ pairs(R)
@@ -113,7 +112,7 @@ function greedy!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParamete
                     # Step 2.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.2: Compute the insertion cost
-                    z⁺ = f(s, χₒ)
+                    z⁺ = f(s)
                     Δ  = z⁺ - z
                     # Step 2.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < x[i,j] x[i,j], p[i,j] = Δ, (nₜ.i, nₕ.i) end
@@ -144,7 +143,7 @@ end
 
 # Regret-N insertion
 # Iteratively add customer nodes with highest regret cost at its best position until all open customer nodes have been added to the solution
-function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
@@ -163,7 +162,7 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution, χₒ::Object
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ 1:J
         # Step 2.1: Iterate through all open customer nodes and every route
-        z = f(s, χₒ)
+        z = f(s)
         for (j,c) ∈ pairs(L)
             if isclose(c) continue end
             for (i,r) ∈ pairs(R)
@@ -179,7 +178,7 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution, χₒ::Object
                     # Step 2.1.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r, and compute the insertion cost
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.1.2: Compute the insertion cost
-                    z⁺ = f(s, χₒ)
+                    z⁺ = f(s)
                     Δ  = z⁺ - z
                     # Step 2.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < xᵢ[i,j] xᵢ[i,j], pᵢ[i,j] = Δ, (nₜ.i, nₕ.i) end
@@ -238,5 +237,5 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution, χₒ::Object
     end
     return s
 end
-regret₂insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(rng, Int64(2), s, χₒ)
-regret₃insert!(rng::AbstractRNG, s::Solution, χₒ::ObjectiveFunctionParameters) = regretₙinsert!(rng, Int64(3), s, χₒ)
+regret₂insert!(rng::AbstractRNG, s::Solution) = regretₙinsert!(rng, Int64(2), s)
+regret₃insert!(rng::AbstractRNG, s::Solution) = regretₙinsert!(rng, Int64(3), s)

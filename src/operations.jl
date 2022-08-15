@@ -27,7 +27,7 @@ function insertnode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::DepotNode, r::Ro
     r.t += Δᵗ
     r.f += Δᶠ
     r.c += Δᶜ
-    return
+    return s
 end
 # Insert customer node nₒ between customer tail node nₜ and customer head node nₕ in route r
 function insertnode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::CustomerNode, r::Route, s::Solution)
@@ -57,7 +57,7 @@ function insertnode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::CustomerNode,
     r.t += Δᵗ
     r.f += Δᶠ
     r.c += Δᶜ
-    return
+    return s
 end
 # Insert customer node nₒ between depot node nₜ and customer node nₕ in route r
 function insertnode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::CustomerNode, r::Route, s::Solution)
@@ -87,7 +87,7 @@ function insertnode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::CustomerNode, r:
     r.t += Δᵗ
     r.f += Δᶠ
     r.c += Δᶜ
-    return
+    return s
 end
 # Insert customer node nₒ between tail customer node nₜ and head customer node nₕ in route r
 function insertnode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::DepotNode, r::Route, s::Solution)
@@ -117,7 +117,7 @@ function insertnode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::DepotNode, r:
     r.t += Δᵗ
     r.f += Δᶠ
     r.c += Δᶜ
-    return
+    return s
 end
 # Insert depot node nₒ between customer tail node nₜ and customer head node nₕ in route r
 function insertnode!(nₒ::DepotNode, nₜ::CustomerNode, nₕ::CustomerNode, r::Route, s::Solution)
@@ -144,6 +144,7 @@ function insertnode!(nₒ::DepotNode, nₜ::CustomerNode, nₕ::CustomerNode, r:
     r.t += Δᵗ
     r.f += Δᶠ
     r.c += Δᶜ
+    return s
 end
 
 # REMOVE OPERATION
@@ -178,7 +179,7 @@ function removenode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::DepotNode, r::Ro
     r.t -= Δᵗ
     r.f -= Δᶠ
     r.c -= Δᶜ
-    return
+    return s
 end
 # Remove customer node nₒ between customer tail node nₜ and customer head node nₕ in route r
 function removenode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::CustomerNode, r::Route, s::Solution)
@@ -211,7 +212,7 @@ function removenode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::CustomerNode,
     r.t -= Δᵗ
     r.f -= Δᶠ
     r.c -= Δᶜ
-    return
+    return s
 end
 # Remove customer node nₒ between depot tail node nₜ and customer head node nₕ in route r
 function removenode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::CustomerNode, r::Route, s::Solution)
@@ -244,7 +245,7 @@ function removenode!(nₒ::CustomerNode, nₜ::DepotNode, nₕ::CustomerNode, r:
     r.t -= Δᵗ
     r.f -= Δᶠ
     r.c -= Δᶜ
-    return
+    return s
 end
 # Remove customer node nₒ between customer tail node nₜ and depot head node nₕ in route r
 function removenode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::DepotNode, r::Route, s::Solution)
@@ -277,7 +278,7 @@ function removenode!(nₒ::CustomerNode, nₜ::CustomerNode, nₕ::DepotNode, r:
     r.t -= Δᵗ
     r.f -= Δᶠ
     r.c -= Δᶜ
-    return
+    return s
 end
 # Remove depot node nₒ between customer tail node nₜ and customer head node nₕ in route r
 function removenode!(nₒ::DepotNode, nₜ::CustomerNode, nₕ::CustomerNode, r::Route, s::Solution)
@@ -306,4 +307,5 @@ function removenode!(nₒ::DepotNode, nₜ::CustomerNode, nₕ::CustomerNode, r:
     r.t -= Δᵗ
     r.f -= Δᶠ
     r.c -= Δᶜ
+    return s
 end

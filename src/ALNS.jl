@@ -1,5 +1,5 @@
 """
-    ALNS([rng::AbstractRNG], s::Solution, χ::ALNSParameters)
+    ALNS([rng::AbstractRNG], χ::ALNSParameters, s::Solution)
 
 Adaptive Large Neighborhood Search (ALNS)
 
@@ -10,24 +10,23 @@ iteration.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function ALNS(rng::AbstractRNG, s::Solution, χ::ALNSParameters)
+function ALNS(rng::AbstractRNG, χ::ALNSParameters, s::Solution)
     # Step 0: Pre-initialize
-    k̲, k̅, k̲ₛ, k̅ₛ = χ.k̲, χ.k̅, χ.k̲ₛ, χ.k̅ₛ 
-    Ψᵣ, Ψᵢ, Ψₛ = χ.Ψᵣ, χ.Ψᵢ, χ.Ψₛ
+    k̲, k̅, l̲, l̅ = χ.k̲, χ.k̅, χ.l̲, χ.l̅
+    Ψᵣ, Ψᵢ, Ψₗ = χ.Ψᵣ, χ.Ψᵢ, χ.Ψₗ
     σ₁, σ₂, σ₃ = χ.σ₁, χ.σ₂, χ.σ₃
     ω, τ, 𝜃 = χ.ω, χ.τ, χ.𝜃
     C̲, C̅ = χ.C̲, χ.C̅
     μ̲, μ̅ = χ.μ̲, χ.μ̅
     ρ  = χ.ρ
-    χₒ = χ.χₒ
     # Step 1: Initialize
     S  = Solution[]
     H  = UInt64[]
     s⃰  = deepcopy(s)
     h  = hash(s)
-    j̅  = k̅÷k̲
-    jₛ = k̲ₛ÷k̲
-    T  = ω * f(s, χₒ)/log(ℯ, 1/τ)
+    j̅  = k̅ ÷ k̲
+    jₗ = l̲ ÷ k̲
+    T  = ω * f(s)/log(ℯ, 1/τ)
     wᵣ = ones(length(Ψᵣ))
     wᵢ = ones(length(Ψᵢ))
     pᵣ = zeros(length(Ψᵣ))
@@ -57,10 +56,10 @@ function ALNS(rng::AbstractRNG, s::Solution, χ::ALNSParameters)
             η = rand(rng)
             q = Int64(floor(((1 - η) * min(C̲, μ̲ * length(s.C)) + η * min(C̅, μ̅ * length(s.C)))))
             s′= deepcopy(s)
-            remove!(rng, q, s′, χₒ, R)
-            insert!(rng, s′, χₒ, I)
+            remove!(rng, q, s′, R)
+            insert!(rng, s′, I)
             # Step 2.2.3: If the new solution is better than the best found then update the best and current solutions, and update the operator scores by σ₁.
-            if f(s′, χₒ) < f(s⃰, χₒ)
+            if f(s′) < f(s⃰)
                 s = s′
                 s⃰ = s
                 h = hash(s)
@@ -68,7 +67,7 @@ function ALNS(rng::AbstractRNG, s::Solution, χ::ALNSParameters)
                 πᵢ[i] += σ₂
                 push!(H, h)
             # Step 2.2.4: Else if the new solution is better than current solution, update the current solution. If the new solution is also newly found then update the operator scores by σ₂.
-            elseif f(s′, χₒ) < f(s, χₒ)
+            elseif f(s′) < f(s)
                 s = s′
                 h = hash(s)
                 if h ∉ H
@@ -79,7 +78,7 @@ function ALNS(rng::AbstractRNG, s::Solution, χ::ALNSParameters)
             # Step 2.2.5: Else accept the new solution with simulated annealing acceptance criterion. Further, if the new solution is also newly found then update operator scores by σ₃.
             else
                 η = rand(rng)
-                pr = exp(-(f(s′, χₒ) - f(s, χₒ))/T)
+                pr = exp(-(f(s′) - f(s))/T)
                 if η > pr
                     s = s′
                     h = hash(s)
@@ -100,10 +99,10 @@ function ALNS(rng::AbstractRNG, s::Solution, χ::ALNSParameters)
         for r ∈ 1:length(Ψᵣ) if !iszero(cᵣ[r]) wᵣ[r] = ρ * πᵣ[r] / cᵣ[r] + (1 - ρ) * wᵣ[r] end end
         for i ∈ 1:length(Ψᵢ) if !iszero(cᵢ[i]) wᵢ[i] = ρ * πᵢ[i] / cᵢ[i] + (1 - ρ) * wᵢ[i] end end
         # Step 2.4: Local search.
-        if iszero(j%jₛ)
-            for ls ∈ Ψₛ localsearch!(rng, k̅ₛ, s, χₒ, ls) end
+        if iszero(j%jₗ)
+            for L ∈ Ψₗ localsearch!(rng, l̅, s, L) end
             h = hash(s)
-            if f(s, χₒ) < f(s⃰, χₒ)
+            if f(s) < f(s⃰)
                 s⃰ = s
                 push!(S, s⃰) 
             end
@@ -113,4 +112,4 @@ function ALNS(rng::AbstractRNG, s::Solution, χ::ALNSParameters)
     # Step 3: Return vector of solutions
     return S
 end
-ALNS(s::Solution, χ::ALNSParameters) = ALNS(Random.GLOBAL_RNG, s, χ)
+ALNS(χ::ALNSParameters, s::Solution) = ALNS(Random.GLOBAL_RNG, χ, s)

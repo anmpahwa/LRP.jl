@@ -1,8 +1,7 @@
 """
-    remove!([rng], q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)
+    remove!([rng], q::Int64, s::Solution, method::Symbol)
 
 Return solution removing q customer nodes from solution s using the given `method`.
-`χₒ` includes the objective function parameters for objective function evaluation.
 
 Available methods include,
 - Random Node Removal   : `randomnode!`
@@ -18,13 +17,13 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-remove!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol)::Solution = getfield(LRP, method)(rng, q, s, χₒ)
-remove!(q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s, χₒ, method)
+remove!(rng::AbstractRNG, q::Int64, s::Solution, method::Symbol)::Solution = getfield(LRP, method)(rng, q, s)
+remove!(q::Int64, s::Solution, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s, method)
 
 # -------------------------------------------------- NODE REMOVAL --------------------------------------------------
 # Random Node Removal
 # Randomly select q customer nodes to remove
-function randomnode!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomnode!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     # Step 1: Randomly select customer nodes to remove until q customer nodes have been removed
@@ -44,13 +43,13 @@ end
 
 # Related Node Pair Removal (related in pairs)
 # Randomly remove q/2 customer nodes and the corresponding most related customer nodes
-function relatedpair!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relatedpair!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     A = s.A
     # Step 1: Randomly select initial q/2 customer nodes to remove
     n = ceil(Int64, q/2)
-    randomnode!(rng, n, s, χₒ)
+    randomnode!(rng, n, s)
     # Step 2: Compute relatedness for every closed customer node to every open customer node
     x = fill(-Inf, (eachindex(C), eachindex(C)))
     for (i,c₁) ∈ pairs(C)
@@ -79,7 +78,7 @@ end
 
 # Related Node Removal (related to pivot)
 # For a randomly selected customer node, remove q most related customer nodes
-function relatednode!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relatednode!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     A = s.A
@@ -104,7 +103,7 @@ end
 
 # Worst Node Removal
 # Remove q customer nodes with highest removal cost
-function worstnode!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
@@ -113,7 +112,7 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFun
     # Step 1: Iterate until q customer nodes have been removed
     for _ ∈ 1:q
         # Step 1.1: For every closed customer node evaluate removal cost
-        z = f(s, χₒ)
+        z = f(s)
         for (k,c) ∈ pairs(C)
             r = c.r
             if isopen(c) || iszero(ϕ[r.o]) continue end
@@ -122,7 +121,7 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFun
             nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
             removenode!(c, nₜ, nₕ, r, s)
             # Step 1.1.2: Evaluate the removal cost
-            z⁻ = f(s, χₒ)
+            z⁻ = f(s)
             x[k] = z - z⁻
             # Step 1.1.3: Re-insert customer node c between tail node nₜ and head node nₕ in route r
             insertnode!(c, nₜ, nₕ, r, s)
@@ -145,7 +144,7 @@ end
 # -------------------------------------------------- ROUTE REMOVAL --------------------------------------------------
 # Random Route Removal
 # Iteratively select a random route and remove customer nodes from it until at least q customer nodes are removed
-function randomroute!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
@@ -172,13 +171,13 @@ end
 
 # Related Route Removal
 # For a randomly selected route, remove customer nodes from most related route until q customer nodes are removed
-function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
     R = [r for v ∈ V for r ∈ v.R]
     # Step 1: Randomly select a pivot route
-    w = [if isclose(r) 0 else 1 end for r ∈ R]
+    w = isopen.(R)
     i = sample(rng, eachindex(R), Weights(w))  
     # Step 2: For each route, evaluate relatedness to this pivot route
     x = fill(-Inf, length(R))
@@ -205,7 +204,7 @@ end
 
 # Worst Route Removal
 # Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
-function worstroute!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
@@ -236,7 +235,7 @@ end
 # -------------------------------------------------- VEHICLE REMOVAL --------------------------------------------------
 # Random Vehicle Removal
 # Iteratively select a random vehicle and remove customer nodes from it until at least q customer nodes are removed
-function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
@@ -265,7 +264,7 @@ end
 # -------------------------------------------------- DEPOT REMOVAL --------------------------------------------------
 # Random Depot Removal
 # Iteratively select a random depot and remove customer nodes from it until at least q customer nodes are removed
-function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     # Step 1: Iteratively select a random depot and remove customer nodes from it until at least q customer nodes are removed
@@ -293,13 +292,13 @@ end
 
 # Related Depot Removal
 # Select a random closed depot node to open and remove q customer nodes most related to this depot node
-function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution, χₒ::ObjectiveFunctionParameters)
+function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     A = s.A
     if all(isopen, D) return s end
     # Step 1: Select a random closed depot node
-    w = [if isopen(d) 0 else 1 end for d ∈ D]
+    w = isclose.(D)
     i = sample(rng, eachindex(D), Weights(w))
     # Step 2: Evaluate relatedness of this depot node to every customer node
     x = fill(-Inf, eachindex(C))

@@ -124,57 +124,51 @@ iscustomer(n::Node) = typeof(n) == CustomerNode
 
 # Objective function evaluation
 """
-    f(r::Route, χₒ::ObjectiveFunctionParameters)
+    f(r::Route)
 
-Objective function evaluation for route `r` using objective function 
-parameters `χₒ`.
+Objective function evaluation for route `r`.
 """
-f(r::Route, χ::ObjectiveFunctionParameters) = r.c
+f(r::Route) = r.c
 """
-    f(v::Vehicle, χₒ::ObjectiveFunctionParameters)
+    f(v::Vehicle)
 
-Objective function evaluation for vehicle `v` using objective function 
-parameters `χₒ`.
+Objective function evaluation for vehicle `v`..
 """
-function f(v::Vehicle, χₒ::ObjectiveFunctionParameters)
+function f(v::Vehicle)
     if isclose(v) return 0. end
-    α = χₒ.v
     z = v.πᵛ
     q = 0
     for r ∈ v.R 
-        z += f(r, χₒ)
+        z += f(r)
         q += r.q
     end
-    if q > v.q z += α * (q - v.q) end
+    if q > v.q z += z * (q - v.q) end
     return z
 end
 """
-    f(d::DepotNode, χₒ::ObjectiveFunctionParameters)
+    f(d::DepotNode)
 
-Objective function evaluation for depot node `d` using objective function 
-parameters `χₒ`.
+Objective function evaluation for depot node `d`.
 """
-function f(d::DepotNode, χₒ::ObjectiveFunctionParameters)
+function f(d::DepotNode)
     if isclose(d) return 0. end
-    α = χₒ.d
     z = d.πᵈ
     q = 0
     for v ∈ d.V
-        z += f(v, χₒ)
+        z += f(v)
         for r ∈ v.R q += r.q end 
     end
-    if q > d.q z += α * (q - d.q) end
+    if q > d.q z += z * (q - d.q) end
     return z
 end
 """
-    f(s::Solution, χₒ::ObjectiveFunctionParameters)
+    f(s::Solution)
 
-Objective function evaluation for solution `s` using objective function 
-parameters `χₒ`.
+Objective function evaluation for solution `s`.
 """
-function f(s::Solution, χₒ::ObjectiveFunctionParameters)
+function f(s::Solution)
     z = 0.
-    for d ∈ s.D return z += f(d, χₒ) end
+    for d ∈ s.D return z += f(d) end
     return z
 end
 """

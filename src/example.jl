@@ -5,24 +5,18 @@ using Random
 let 
 # Developing an optimal Traveling Salesman Problem solution
     # Define instance
-    instance = "a280"
+    instance = "att48"
     # Define a random number generator
     rng = MersenneTwister(1234)
     # Build instance as graph
     G = build(instance)
     D, C, A = G
     # Define ALNS parameters
-    χₒ  = ObjectiveFunctionParameters(
-        d = 0.                          ,
-        v = 0.                          ,
-        r = 0.                          ,
-        c = 0.                          ,
-    )
     χ   = ALNSParameters(
         k̲   =   6                       ,
+        l̲   =   240                     ,
+        l̅   =   750                     ,
         k̅   =   1500                    ,
-        k̲ₛ  =   240                     ,
-        k̅ₛ  =   750                     ,   
         Ψᵣ  =   [
                     :randomnode!    , 
                     :relatedpair!   ,
@@ -35,7 +29,7 @@ let
                     :regret₂insert! ,
                     :regret₃insert!
                 ]                       ,
-        Ψₛ  =   [
+        Ψₗ  =   [
                     :move!          ,
                     :intraopt!      ,
                     :split!         ,
@@ -51,19 +45,18 @@ let
         C̅   =   60                      ,
         μ̲   =   0.1                     ,
         μ̅   =   0.4                     ,
-        ρ   =   0.1                     ,
-        χₒ  =   χₒ  
+        ρ   =   0.1
     )
     # Define inital solution method and build the initial solution
     method = :cw
-    sₒ = initialsolution(rng, G, χₒ, method)
+    sₒ = initialsolution(rng, G, method)
     # Run ALNS and fetch best solution
     S = ALNS(rng, sₒ, χ)
     s⃰ = S[end]
             
 # Fetch objective function values
-    println("Initial: $(f(sₒ, χₒ))")
-    println("Optimal: $(f(s⃰,  χₒ))")
+    println("Initial: $(f(sₒ))")
+    println("Optimal: $(f(s⃰))")
 
 # Visualizations
     # Visualize initial solution
@@ -73,7 +66,7 @@ let
     # Animate ALNS solution search process from inital to best solution
     display(animate(S))
     # Show convergence plots
-    display(convergence(S, χₒ))
+    display(convergence(S))
     return
 end
 
@@ -87,17 +80,11 @@ let
     G = build(instance)
     D, C, A = G
     # Define ALNS parameters
-    χₒ  = ObjectiveFunctionParameters(
-        d = 0.                          ,
-        v = 100000.                     ,
-        r = 0.                          ,
-        c = 0.                          ,
-    )
     χ   = ALNSParameters(
         k̲   =   6                       ,
+        l̲   =   240                     ,
+        l̅   =   750                     ,
         k̅   =   1500                    ,
-        k̲ₛ  =   240                     ,
-        k̅ₛ  =   750                     ,   
         Ψᵣ  =   [
                     :randomnode!    , 
                     :relatedpair!   ,
@@ -114,7 +101,7 @@ let
                     :regret₂insert! ,
                     :regret₃insert!
                 ]                       ,
-        Ψₛ  =   [
+        Ψₗ  =   [
                     :move!          ,
                     :intraopt!      ,
                     :interopt!      ,
@@ -131,19 +118,18 @@ let
         C̅   =   60                      ,
         μ̲   =   0.1                     ,
         μ̅   =   0.4                     ,
-        ρ   =   0.1                     ,
-        χₒ  =   χₒ  
+        ρ   =   0.1
     )
     # Define inital solution method and build the initial solution
     method = :random
-    sₒ = initialsolution(rng, G, χₒ, method)
+    sₒ = initialsolution(rng, G, method)
     # Run ALNS and fetch best solution
     S = ALNS(rng, sₒ, χ)
     s⃰ = S[end]
             
 # Fetch objective function values
-    println("Initial: $(f(sₒ, χₒ))")
-    println("Optimal: $(f(s⃰,  χₒ))")
+    println("Initial: $(f(sₒ))")
+    println("Optimal: $(f(s⃰))")
 
 # Visualizations
     # Visualize initial solution
@@ -153,6 +139,6 @@ let
     # Animate ALNS solution search process from inital to best solution
     display(animate(S))
     # Show convergence plots
-    display(convergence(S, χₒ))
+    display(convergence(S))
     return
 end

@@ -4,17 +4,11 @@ using Test
 using Random
 
 let
-    χₒ  = ObjectiveFunctionParameters(
-        d = 0.                          ,
-        v = 10000.                      ,
-        r = 0.                          ,
-        c = 0.                          ,
-    )
     χ   = ALNSParameters(
         k̲   =   1                       ,
+        l̲   =   40                      ,
+        l̅   =   50                      ,
         k̅   =   250                     ,
-        k̲ₛ  =   40                      ,
-        k̅ₛ  =   50                      ,   
         Ψᵣ  =   [
                     :randomnode!    , 
                     :relatedpair!   ,
@@ -31,7 +25,7 @@ let
                     :regret₂insert! ,
                     :regret₃insert!
                 ]                       ,
-        Ψₛ  =   [
+        Ψₗ  =   [
                     :move!          ,
                     :intraopt!      ,
                     :interopt!      ,
@@ -48,8 +42,7 @@ let
         C̅   =   60                      ,
         μ̲   =   0.1                     ,
         μ̅   =   0.4                     ,
-        ρ   =   0.1                     ,
-        χₒ  =   χₒ  
+        ρ   =   0.1
     )
     
     # Traveling Salesman Problem instances
@@ -62,12 +55,12 @@ let
             method = methods[k]
             println("\n Solving $instance")
             G = build(instance)
-            sₒ= initialsolution(G, χₒ, method)     
+            sₒ= initialsolution(G, method)     
             @test isfeasible(sₒ)
-            S = ALNS(sₒ, χ)
+            S = ALNS(χ, sₒ)
             s⃰ = S[end]
             @test isfeasible(s⃰)
-            @test f(s⃰, χₒ) ≤ f(sₒ, χₒ)
+            @test f(s⃰) ≤ f(sₒ)
         end
     end
 
@@ -81,12 +74,12 @@ let
             method = methods[k]
             println("\n Solving $instance")
             G = build(instance)
-            sₒ= initialsolution(G, χₒ, method)     
+            sₒ= initialsolution(G, method)     
             @test isfeasible(sₒ)
-            S = ALNS(sₒ, χ)
+            S = ALNS(χ, sₒ)
             s⃰ = S[end]
             @test isfeasible(s⃰)
-            @test f(s⃰, χₒ) ≤ f(sₒ, χₒ)
+            @test f(s⃰) ≤ f(sₒ)
         end
     end
     return

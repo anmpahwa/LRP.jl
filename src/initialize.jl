@@ -1,9 +1,8 @@
 # Initial solution
 """
-    initialsolution([rng], (D::Vector{DepotNode}, C:Vector{CustomerNode}, A::Dict{Tuple{Int64, Int64}, Arc}), χₒ::ObjectiveFunctionParameters, method)
+    initialsolution([rng], (D::Vector{DepotNode}, C:Vector{CustomerNode}, A::Dict{Tuple{Int64, Int64}, Arc}), method)
 
 Returns initial LRP solution using given `method` on graph with depot nodes `D`, customer nodes `C`, and arcs `A`.
-`χₒ` includes the objective function parameters for objective function evaluation.
 
 Available methods include,
 - Clarke and Wright Savings Algorithm   : `:cw`
@@ -14,12 +13,12 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-initialsolution(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters, method::Symbol)::Solution = getfield(LRP, method)(rng, G, χₒ)
-initialsolution(G, χₒ::ObjectiveFunctionParameters, method::Symbol) = initialsolution(Random.GLOBAL_RNG, G, χₒ, method)
+initialsolution(rng::AbstractRNG, G, method::Symbol)::Solution = getfield(LRP, method)(rng, G)
+initialsolution(G, method::Symbol) = initialsolution(Random.GLOBAL_RNG, G, method)
 
 # Clarke and Wright Savings Algorithm
 # Create initial solution merging routes that render the most savings until no merger can render further savings
-function cw(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
+function cw(rng::AbstractRNG, G)
     s = Solution(G...)
     D = s.D
     C = s.C
@@ -39,7 +38,7 @@ function cw(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
             push!(v.R, r)
             insertnode!(c, d, d, r, s)
             # Step 2.1.2: Compute assignment cost
-            x[i,j] = f(s, χₒ)
+            x[i,j] = f(s)
             # Step 2.1.3: Unassign customer node c from vehicle v of depot node d
             removenode!(c, d, d, r, s)
             pop!(v.R)
@@ -61,7 +60,7 @@ function cw(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
     ϕ = ones(Int64, K)                  # ϕ[k]  : selection weight for route R[k]  
     while true
         # Step 3.1: Iterate through every route-pair combination
-        z = f(s, χₒ)
+        z = f(s)
         for (i,r₁) ∈ pairs(R)
             if isclose(r₁) continue end
             for (j,r₂) ∈ pairs(R)
@@ -83,7 +82,7 @@ function cw(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
                     if isequal(c, cₑ) break end
                 end
                 # Step 3.1.2: Compute savings from merging route r₁ into route r₂
-                z⁻ = f(s, χₒ)
+                z⁻ = f(s)
                 Δ  = z - z⁻
                 y[i,j] = Δ
                 # Step 3.1.3: Unmerge routes r₁ and r₂
@@ -130,7 +129,7 @@ end
 
 # Nearest Neighborhood Algorithm
 # Create initial solution with node-route combination that results in least increase in cost until all customer nodes have been added to the solution
-function nn(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
+function nn(rng::AbstractRNG, G)
     s = Solution(G...)
     D = s.D
     C = s.C
@@ -147,7 +146,7 @@ function nn(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
     # Step 2: Iterate until all customer nodes have been added to the routes
     for _ ∈ eachindex(C)
         # Step 2.1: Iteratively compute cost of appending each open customer node in each route
-        z = f(s, χₒ)
+        z = f(s)
         for (j,c) ∈ pairs(C)
             if isclose(c) continue end
             for (i,r) ∈ pairs(R)
@@ -159,7 +158,7 @@ function nn(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
                 nₕ = d
                 insertnode!(c, nₜ, nₕ, r, s)
                 # Step 2.2.2: Compute increase in cost
-                z⁺ = f(s, χₒ)
+                z⁺ = f(s)
                 Δ  = z⁺ - z
                 x[i,j] = Δ
                 # Step 2.2.3: Pop customer node c from the route r
@@ -186,7 +185,7 @@ end
 
 # Random Initialization
 # Create initial solution with randomly selcted node-route combination until all customer nodes have been added to the solution
-function random(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters)
+function random(rng::AbstractRNG, G)
     s = Solution(G...)
     D = s.D
     C = s.C
@@ -215,7 +214,7 @@ end
 
 # Regret-N Insertion
 # Create initial solution by iteratively adding customer nodes with highest regret cost at its best position until all customer nodes have been added to the solution
-function regretₙinit(rng::AbstractRNG, N::Int64, G, χₒ::ObjectiveFunctionParameters)
+function regretₙinit(rng::AbstractRNG, N::Int64, G)
     s = Solution(G...)
     D = s.D
     C = s.C
@@ -236,7 +235,7 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G, χₒ::ObjectiveFunctionPa
     # Step 2: Iterate until all customer nodes have been inserted into the route
     for _ ∈ eachindex(C)
         # Step 2.1: Iterate through all open customer nodes and every route
-        z = f(s, χₒ)
+        z = f(s)
         for (j,c) ∈ pairs(C)
             if isclose(c) continue end
             for (i,r) ∈ pairs(R)
@@ -252,7 +251,7 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G, χₒ::ObjectiveFunctionPa
                     # Step 2.1.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r, and compute the insertion cost
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.1.2: Compute the insertion cost
-                    z⁺ = f(s, χₒ)
+                    z⁺ = f(s)
                     Δ  = z⁺ - z
                     # Step 2.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < xᵢ[i,j] xᵢ[i,j], pᵢ[i,j] = Δ, (nₜ.i, nₕ.i) end
@@ -312,5 +311,5 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G, χₒ::ObjectiveFunctionPa
     # Step 3: Return initial solution
     return s
 end
-regret₂init(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters) = regretₙinit(rng, Int64(2), G, χₒ)
-regret₃init(rng::AbstractRNG, G, χₒ::ObjectiveFunctionParameters) = regretₙinit(rng, Int64(3), G, χₒ)
+regret₂init(rng::AbstractRNG, G) = regretₙinit(rng, Int64(2), G)
+regret₃init(rng::AbstractRNG, G) = regretₙinit(rng, Int64(3), G)
