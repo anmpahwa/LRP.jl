@@ -6,8 +6,8 @@ using Random
 let
     χ   = ALNSParameters(
         k̲   =   1                       ,
-        l̲   =   40                      ,
-        l̅   =   50                      ,
+        l̲   =   50                      ,
+        l̅   =   125                     ,
         k̅   =   250                     ,
         Ψᵣ  =   [
                     :randomnode!    , 
@@ -66,9 +66,9 @@ let
 
     # Single Depot Vehicle Routing Problem
     @testset "SDVRP" begin
-        K = 3
-        instances = ["m-n101-k10", "tai150a", "cmt10"]
-        methods   = [:cw, :regret₂init, :regret₃init]
+        K = 5
+        instances = ["m-n101-k10", "tai150a", "cmt10", "x-n251-k28", "x-n303-k21"]
+        methods   = [:cw, :nn, :random, :regret₂init, :regret₃init]
         for k ∈ 1:K
             instance = instances[k]
             method = methods[k]
