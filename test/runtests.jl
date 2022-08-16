@@ -44,7 +44,6 @@ let
         μ̅   =   0.4                     ,
         ρ   =   0.1
     )
-    
     # Traveling Salesman Problem instances
     @testset "TSP" begin
         K = 5
@@ -63,9 +62,8 @@ let
             @test f(s⃰) ≤ f(sₒ)
         end
     end
-
-    # Single Depot Vehicle Routing Problem
-    @testset "SDVRP" begin
+    # Vehicle Routing Problem
+    @testset "VRP" begin
         K = 5
         instances = ["m-n101-k10", "tai150a", "cmt10", "x-n251-k28", "x-n303-k21"]
         methods   = [:cw, :nn, :random, :regret₂init, :regret₃init]
@@ -75,7 +73,6 @@ let
             println("\n Solving $instance")
             G = build(instance)
             sₒ= initialsolution(G, method)     
-            @test isfeasible(sₒ)
             S = ALNS(χ, sₒ)
             s⃰ = S[end]
             @test isfeasible(s⃰)
