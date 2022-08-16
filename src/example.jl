@@ -2,6 +2,7 @@ using LRP
 using Revise
 using Random
 
+# Traveling Salesman Problem
 let 
 # Developing an optimal Traveling Salesman Problem solution
     # Define instance
@@ -11,12 +12,19 @@ let
     # Build instance as graph
     G = build(instance)
     D, C, A = G
+    # Visualize instance
+    display(visualize(Solution(G...)))
+    # Define inital solution method and build the initial solution
+    method = :cw
+    sₒ = initialsolution(rng, G, method)
     # Define ALNS parameters
+    x = length(C) + length(D)
+    n = ceil(x, digits=-(length(digits(x))-1))
     χ   = ALNSParameters(
-        k̲   =   6                       ,
-        l̲   =   240                     ,
-        l̅   =   750                     ,
-        k̅   =   1500                    ,
+        k̲   =   n ÷ 25                  ,
+        l̲   =   2n                      ,
+        l̅   =   5n                      ,
+        k̅   =   10n                     ,
         Ψᵣ  =   [
                     :randomnode!    , 
                     :relatedpair!   ,
@@ -47,17 +55,12 @@ let
         μ̅   =   0.4                     ,
         ρ   =   0.1
     )
-    # Define inital solution method and build the initial solution
-    method = :cw
-    sₒ = initialsolution(rng, G, method)
     # Run ALNS and fetch best solution
-    S = ALNS(rng, sₒ, χ)
-    s⃰ = S[end]
-            
+    S = ALNS(rng, χ, sₒ)
+    s⃰ = S[end]      
 # Fetch objective function values
     println("Initial: $(f(sₒ))")
     println("Optimal: $(f(s⃰))")
-
 # Visualizations
     # Visualize initial solution
     display(visualize(sₒ)) 
@@ -70,30 +73,35 @@ let
     return
 end
 
+# Vehicle Routing Problem
 let
-# Developing an optimal Single-Depot Vehicle Routing Problem solution 
+# Developing an optimal Vehicle Routing Problem solution 
     # Define instance
-    instance = "cmt10"
+    instance = "m-n101-k10"
     # Define a random number generator
     rng = MersenneTwister(1234)
     # Build instance as graph
     G = build(instance)
     D, C, A = G
+    # Visualize instance
+    display(visualize(Solution(G...)))
+    # Define inital solution method and build the initial solution
+    method = :random
+    sₒ = initialsolution(rng, G, method)
     # Define ALNS parameters
+    x = length(C) + length(D)
+    n = ceil(x, digits=-(length(digits(x))-1))
     χ   = ALNSParameters(
-        k̲   =   6                       ,
-        l̲   =   240                     ,
-        l̅   =   750                     ,
-        k̅   =   1500                    ,
+        k̲   =   n ÷ 25                  ,
+        l̲   =   2n                      ,
+        l̅   =   5n                      ,
+        k̅   =   10n                     ,
         Ψᵣ  =   [
                     :randomnode!    , 
                     :relatedpair!   ,
                     :relatednode!   , 
                     :worstnode!     ,  
-                    :randomroute!   ,
-                    :relatedroute!  ,
-                    :worstroute!    ,
-                    :randomvehicle! 
+                    :relatedroute!  
                 ]                       , 
         Ψᵢ  =   [
                     :best!          ,
@@ -120,17 +128,12 @@ let
         μ̅   =   0.4                     ,
         ρ   =   0.1
     )
-    # Define inital solution method and build the initial solution
-    method = :random
-    sₒ = initialsolution(rng, G, method)
     # Run ALNS and fetch best solution
-    S = ALNS(rng, sₒ, χ)
-    s⃰ = S[end]
-            
+    S = ALNS(rng, χ, sₒ)
+    s⃰ = S[end]          
 # Fetch objective function values
     println("Initial: $(f(sₒ))")
     println("Optimal: $(f(s⃰))")
-
 # Visualizations
     # Visualize initial solution
     display(visualize(sₒ)) 
