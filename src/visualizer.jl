@@ -28,11 +28,13 @@ function vectorize(s::Solution)
 end
 
 """
-    visualize(s::Solution)
+    visualize(s::Solution; backend=gr)
 
-Plots solution depicting route and unvisited nodes.
+Plots solution depicting route and unvisited nodes (if any).
+Uses given backend to plot (default backend gr).
 """
-function visualize(s::Solution)
+function visualize(s::Solution; backend=gr)
+    backend()
     D = s.D
     C = s.C
     fig = plot(legend=:none)
@@ -78,31 +80,35 @@ function visualize(s::Solution)
 end
 
 """
-    animate(S::Vector{Solution})
+    animate(S::Vector{Solution}, fps=10)
 
-Iteratively plots solutions in `S` to develop a gif.
+Iteratively plots solutions in `S` to develop a gif at given `fps`.
 """
-function animate(S::Vector{Solution})
+function animate(S::Vector{Solution}, fps=10)
     K = 0:(length(S)-1)
-    figs = Vector{Plots.Plot{Plots.GRBackend}}(undef, length(S))
+    figs = Vector(undef, length(S))
     for (k, s) ∈ enumerate(S)
-        fig = visualize(s)
-        plot!(title="iter:$(K[k])")
+        fig = visualize(s, backend=gr)
+        plot!(title="Iteration #$(K[k])", titlefontsize=11)
         figs[k] = fig
     end
-    anim =  @animate for fig in figs
+    anim = @animate for fig in figs
         plot(fig)
     end
-    gif(anim, fps = 10, show_msg=false)
+    gif(anim, fps=fps, show_msg=false)
 end
 
 """
-    convergence(S::Vector{Solution}, χₒ::ObjectiveFunctionParameters)
+    convergence(S::Vector{Solution}; backend=gr)
 
 Plots objective function values for solutions in `S`.
+Uses given backend to plot (default backend gr).
 """
-function convergence(S::Vector{Solution})
-    Y = f.(S)
+function convergence(S::Vector{Solution}; backend=gr)
+    backend()
+    Y = [f(s) for s ∈ S]
     X = 0:(length(S)-1)
-    plot(X,Y)
+    fig = plot(legend=:none)
+    plot!(X,Y, xlabel="iterations", ylabel="objective function value")
+    return fig
 end
