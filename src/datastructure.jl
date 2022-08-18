@@ -32,8 +32,6 @@ mutable struct Route
     c::Float64                                                                      # Route cost
 end
     
-# TODO: Make vehicles completely heterogenous (add vehicle efficiency and speed)
-
 @doc """
     Vehicle(i::Int64, o::Int64, q::Int64, πᵐ::Float64, πʷ::Float64, πᶠ::Float64, πᵛ::Float64, R::Vector{Route})
 
@@ -168,7 +166,7 @@ Objective function evaluation for solution `s`.
 """
 function f(s::Solution)
     z = 0.
-    for d ∈ s.D return z += f(d) end
+    for d ∈ s.D z += f(d) end
     return z
 end
 """
