@@ -207,7 +207,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(hₒ, d₂) break end
             tₙ = c₂ 
             c₂ = C[hₒ.i]
-            hₒ = isdepot(hₒ) ? C[r₂.s] : (isequal(r₂.e, hₒ.i) ? D[hₒ.h] : C[hₒ.h])
+            hₒ = isequal(r₂.e, c₂.i) ? D[c₂.h] : C[c₂.h]
         end
         c₅ = n₅
         tₒ = c₂
@@ -220,7 +220,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(hₒ, d₅) break end
             tₙ = c₅
             c₅ = C[hₒ.i]
-            hₒ = isdepot(hₒ) ? C[r₅.s] : (isequal(r₅.e, hₒ.i) ? D[hₒ.h] : C[hₒ.h])
+            hₒ = isequal(r₅.e, c₅.i) ? D[c₅.h] : C[c₅.h]
         end
         # Step 1.3: Compute change in objective function value
         z′ = f(s)
@@ -231,7 +231,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # d₂ → ... → n₁ → n₂ → n₃ → ... → d₂ and d₅ → ... → n₄ → n₅ → n₆ → ... → d₅
         c₂ = n₅
         tₒ = n₁
-        hₒ = n₆
+        hₒ = isequal(r₂.e, c₂.i) ? D[c₂.h] : C[c₂.h]
         tₙ = n₄
         hₙ = n₂
         while true
@@ -240,11 +240,11 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(hₒ, d₂) break end
             tₙ = c₂ 
             c₂ = C[hₒ.i]
-            hₒ = isdepot(hₒ) ? C[r₂.s] : (isequal(r₂.e, hₒ.i) ? D[hₒ.h] : C[hₒ.h])
+            hₒ = isequal(r₂.e, c₂.i) ? D[c₂.h] : C[c₂.h]
         end
         c₅ = n₂
         tₒ = c₂
-        hₒ = n₃
+        hₒ = isequal(r₅.e, c₅.i) ? D[c₅.h] : C[c₅.h]
         tₙ = n₁
         hₙ = d₂
         while true
@@ -253,7 +253,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(hₒ, d₅) break end
             tₙ = c₅
             c₅ = C[hₒ.i]
-            hₒ = isdepot(hₒ) ? C[r₅.s] : (isequal(r₅.e, hₒ.i) ? D[hₒ.h] : C[hₒ.h])
+            hₒ = isequal(r₅.e, c₅.i) ? D[c₅.h] : C[c₅.h]
         end
     end
     # Step 2: Return solution
