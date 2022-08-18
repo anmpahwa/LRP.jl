@@ -45,46 +45,62 @@ function visualize(s::Solution; backend=gr)
         K = length(Z)
         X = zeros(Float64, K)
         Y = zeros(Float64, K)
-        W = fill("color", K)
+        M₁= fill("color", K)
+        M₂= zeros(Int64, K)
+        M₃= fill(:shape, K)
         for k ∈ 1:K
             i = Z[k]
             n = i ≤ length(D) ? D[i] : C[i]
             X[k] = n.x
             Y[k] = n.y
-            if isdepot(n) W[k] = "DarkRed"
-            else W[k] = "DarkBlue"
+            if isdepot(n) 
+                M₁[k] = "#82b446"
+                M₂[k] = 6
+                M₃[k] = :rect
+            else 
+                M₁[k] = "#4682b4"
+                M₂[k] = 5
+                M₃[k] = :circle
             end
         end
-        scatter!(X, Y, markersize=5, markerstrokewidth=0, color=W)
-        plot!(X, Y, color="SteelBlue")
+        scatter!(X, Y, color=M₁, markersize=M₂, markershape=M₃, markerstrokewidth=0)
+        plot!(X, Y, color="#23415a")
     end
     # Closed nodes
     L  = [c.i for c ∈ C if isopen(c)]
     for d ∈ D if isclose(d) push!(L, d.i) end end
-    Z′ = L
-    K′ = length(Z′)
-    X′ = zeros(Float64, K′)
-    Y′ = zeros(Float64, K′)
-    W′ = fill("color", K′)
-    for k ∈ 1:K′
-        i = Z′[k]
+    Z = L
+    K = length(Z)
+    X = zeros(Float64, K)
+    Y = zeros(Float64, K)
+    M₁= fill("color", K)
+    M₂= zeros(Int64, K)
+    M₃= fill(:shape, K)
+    for k ∈ 1:K
+        i = Z[k]
         n = i ≤ length(D) ? D[i] : C[i]
-        X′[k] = n.x
-        Y′[k] = n.y
-        if isdepot(n) W′[k] = "IndianRed"
-        else W′[k] = "LightBlue"
+        X[k] = n.x
+        Y[k] = n.y
+        if isdepot(n) 
+            M₁[k] = "#b4464b"
+            M₂[k] = 6
+            M₃[k] = :rect
+        else 
+            M₁[k] = "#d1e0ec"
+            M₂[k] = 5
+            M₃[k] = :circle
         end
     end
-    scatter!(X′, Y′, markersize=5, markerstrokewidth=0, color=W′)
+    scatter!(X, Y, color=M₁, markersize=M₂, markershape=M₃, markerstrokewidth=0)
     return fig
 end
 
 """
-    animate(S::Vector{Solution}, fps=10)
+    animate(S::Vector{Solution}; fps=10)
 
 Iteratively plots solutions in `S` to develop a gif at given `fps`.
 """
-function animate(S::Vector{Solution}, fps=10)
+function animate(S::Vector{Solution}; fps=10)
     K = 0:(length(S)-1)
     figs = Vector(undef, length(S))
     for (k, s) ∈ enumerate(S)
