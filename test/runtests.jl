@@ -5,7 +5,7 @@ using Random
 
 let
     χ   = ALNSParameters(
-        k̲   =   1                       ,
+        k̲   =   50                       ,
         l̲   =   50                      ,
         l̅   =   125                     ,
         k̅   =   250                     ,
@@ -17,7 +17,9 @@ let
                     :randomroute!   ,
                     :relatedroute!  ,
                     :worstroute!    ,
-                    :randomvehicle! 
+                    :randomvehicle! ,
+                    :randomdepot!   ,
+                    :relateddepot!   
                 ]                       , 
         Ψᵢ  =   [
                     :best!          ,
@@ -52,7 +54,7 @@ let
         for k ∈ 1:K
             instance = instances[k]
             method = methods[k]
-            println("\n Solving $instance")
+            println("\nSolving $instance")
             G = build(instance)
             sₒ= initialsolution(G, method)     
             @test isfeasible(sₒ)
@@ -70,7 +72,7 @@ let
         for k ∈ 1:K
             instance = instances[k]
             method = methods[k]
-            println("\n Solving $instance")
+            println("\nSolving $instance")
             G = build(instance)
             sₒ= initialsolution(G, method)     
             S = ALNS(χ, sₒ)
