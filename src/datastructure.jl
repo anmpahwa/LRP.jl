@@ -163,10 +163,10 @@ sub-tour elimination constraint are not violated.
 function isfeasible(s::Solution)
     D = s.D
     C = s.C
-    V = s.V
     # Customer node service and flow constraints
     x = zeros(Int64, eachindex(C))
     for d ∈ D
+        V = d.V
         for v ∈ V
             R = v.R
             for r ∈ R
@@ -184,12 +184,18 @@ function isfeasible(s::Solution)
         end
     end
     if any(!isone, x) return false end
-    # Vehicle capacity constraint
-    for v ∈ V
-        q = 0
-        R = v.R
-        for r ∈ R q += r.q end
-        if q > v.q return false end
+    # Capacity constraints
+    for d ∈ D 
+        qᵈ = 0
+        for v ∈ d.V 
+            qᵛ = 0
+            for r ∈ v.R 
+                qᵛ += r.q
+                qᵈ += r.q
+            end
+            if qᵛ > v.q return false end
+        end
+        if qᵈ > d.q return false end
     end
     return true
 end
