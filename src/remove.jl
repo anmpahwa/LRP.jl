@@ -296,13 +296,12 @@ function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     A = s.A
-    if all(isopen, D) return s end
     # Step 1: Select a random closed depot node
     w = isclose.(D)
     i = sample(rng, eachindex(D), Weights(w))
     # Step 2: Evaluate relatedness of this depot node to every customer node
     x = fill(-Inf, eachindex(C))
-    for j ∈ eahchindex(C) x[j] = relatedness(D[i], C[j], A[(i,j)]) end
+    for j ∈ eachindex(C) x[j] = relatedness(D[i], C[j], A[(i,j)]) end
     # Step 3: Remove q customer nodes most related to this depot node
     for _ ∈ 1:q   
         k = argmax(x)
@@ -340,7 +339,7 @@ function relatedness(c::CustomerNode, d::DepotNode, a::Arc)
     l = a.l
     t = a.t
     f = a.f
-    q = abs(c.q - d.q)
+    q = 0
     ϕ = false
     r = c.r
     for v ∈ d.V 
@@ -354,7 +353,7 @@ function relatedness(d::DepotNode, c::CustomerNode, a::Arc)
     l = a.l
     t = a.t
     f = a.f
-    q = abs(c.q - d.q)
+    q = 0
     ϕ = false
     r = c.r
     for v ∈ d.V 
