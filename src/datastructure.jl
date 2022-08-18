@@ -122,53 +122,38 @@ iscustomer(n::Node) = typeof(n) == CustomerNode
 
 # Objective function evaluation
 """
-    f(r::Route)
+    f(s::Solution; fixed=true, operational=true, constraint=true)
 
-Objective function evaluation for route `r`.
+Objective function evaluation for solution `s`. Include `fixed`, 
+`operational`, and `constraint` violation cost if `true`.
 """
-f(r::Route) = r.c
-"""
-    f(v::Vehicle)
-
-Objective function evaluation for vehicle `v`..
-"""
-function f(v::Vehicle)
-    if isclose(v) return 0. end
-    z = v.πᵛ
-    q = 0
-    for r ∈ v.R 
-        z += f(r)
-        q += r.q
+function f(s::Solution; fixed=true, operational=true, constraint=true)
+    z  = 0.
+    ϕᶠ = fixed
+    ϕᵒ = operational
+    ϕᶜ = constraint
+    for d ∈ s.D
+        if isclose(d) continue end 
+        z += ϕᶠ * d.πᵈ
+        qᵈ = 0
+        for v ∈ d.V 
+            if isclose(v) continue end
+            z += ϕᶠ * v.πᵛ
+            qᵛ = 0
+            for r ∈ v.R 
+                if isclose(r) continue end
+                z  += ϕᵒ * r.c 
+                qᵛ += r.q
+                qᵈ += r.q
+            end
+            z += ϕᶜ * z * (qᵛ > v.q) * (qᵛ - v.q)
+        end
+        z += ϕᶜ * z * (qᵈ > d.q) * (qᵈ - d.q)
     end
-    if q > v.q z += z * (q - v.q) end
-    return z
+    return z 
 end
-"""
-    f(d::DepotNode)
 
-Objective function evaluation for depot node `d`.
-"""
-function f(d::DepotNode)
-    if isclose(d) return 0. end
-    z = d.πᵈ
-    q = 0
-    for v ∈ d.V
-        z += f(v)
-        for r ∈ v.R q += r.q end 
-    end
-    if q > d.q z += z * (q - d.q) end
-    return z
-end
-"""
-    f(s::Solution)
-
-Objective function evaluation for solution `s`.
-"""
-function f(s::Solution)
-    z = 0.
-    for d ∈ s.D z += f(d) end
-    return z
-end
+# Solution feasibility
 """
     infeasible(s::Solution)
 
