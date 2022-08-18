@@ -31,14 +31,17 @@ function cw(rng::AbstractRNG, G)
     # Step 2: Iterate through each customer node
     for (j,c) ∈ pairs(C)
         # Step 2.1: For customer node c, iterate through every vehicle-depot pair evaluating assignment cost
+        z = f(s; fixed=false)
         for (i,v) ∈ pairs(V)
             # Step 2.1.1: Assign customer node c to vehicle v of depot node d
-            d = D[v.o]
+            d = D[v.o] 
             r = Route(j, v, d)
             push!(v.R, r)
             insertnode!(c, d, d, r, s)
             # Step 2.1.2: Compute assignment cost
-            x[i,j] = f(s)
+            z⁺ = f(s; fixed=false)
+            Δ  = z⁺ + v.πᵛ/v.q + d.πᵈ/d.q - z
+            x[i,j] = Δ
             # Step 2.1.3: Unassign customer node c from vehicle v of depot node d
             removenode!(c, d, d, r, s)
             pop!(v.R)
@@ -146,20 +149,20 @@ function nn(rng::AbstractRNG, G)
     # Step 2: Iterate until all customer nodes have been added to the routes
     for _ ∈ eachindex(C)
         # Step 2.1: Iteratively compute cost of appending each open customer node in each route
-        z = f(s)
+        z = f(s; fixed=false)
         for (j,c) ∈ pairs(C)
             if isclose(c) continue end
             for (i,r) ∈ pairs(R)
                 # Step 2.2.1: Append customer node c in the route r
                 if iszero(ϕ[r.o]) continue end
-                v = V[r.o]
-                d = D[v.o]
+                v  = V[r.o]
+                d  = D[v.o]
                 nₜ = isclose(r) ? D[r.e] : C[r.e]
                 nₕ = d
                 insertnode!(c, nₜ, nₕ, r, s)
                 # Step 2.2.2: Compute increase in cost
-                z⁺ = f(s)
-                Δ  = z⁺ - z
+                z⁺ = f(s; fixed=false)
+                Δ  = z⁺ + v.πᵛ/v.q + d.πᵈ/d.q - z
                 x[i,j] = Δ
                 # Step 2.2.3: Pop customer node c from the route r
                 removenode!(c, nₜ, nₕ, r, s)
@@ -235,7 +238,7 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G)
     # Step 2: Iterate until all customer nodes have been inserted into the route
     for _ ∈ eachindex(C)
         # Step 2.1: Iterate through all open customer nodes and every route
-        z = f(s)
+        z = f(s; fixed=false)
         for (j,c) ∈ pairs(C)
             if isclose(c) continue end
             for (i,r) ∈ pairs(R)
@@ -251,8 +254,8 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G)
                     # Step 2.1.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r, and compute the insertion cost
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.1.2: Compute the insertion cost
-                    z⁺ = f(s)
-                    Δ  = z⁺ - z
+                    z⁺ = f(s; fixed=false)
+                    Δ  = z⁺ + v.πᵛ/v.q + d.πᵈ/d.q - z
                     # Step 2.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < xᵢ[i,j] xᵢ[i,j], pᵢ[i,j] = Δ, (nₜ.i, nₕ.i) end
                     # Step 2.1.1.4: Revise N least insertion costs
