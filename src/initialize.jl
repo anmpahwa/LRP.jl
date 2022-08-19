@@ -25,7 +25,7 @@ function cw(rng::AbstractRNG, G)
     V = s.V
     # Step 1: Initialize by assigning customer node to the vehicle-depot pair that results in least assignment cost
     M = typemax(Int64)
-    I = length(V)
+    I = eachindex(V)
     J = eachindex(C)
     x = fill(Inf, (I,J))                # x[i,j]: Cost of assigning customer node C[j] to vehicle V[i] of depot node d
     # Step 2: Iterate through each customer node
@@ -58,7 +58,7 @@ function cw(rng::AbstractRNG, G)
     end
     R = [r for v ∈ V for r ∈ v.R]
     # Step 3: Merge routes iteratively until no merger can render further savings
-    K = length(R)
+    K = eachindex(R)
     y = fill(-Inf, (K,K))               # y[i,j]: Savings from merging route R[i] into R[j] 
     ϕ = ones(Int64, K)                  # ϕ[k]  : selection weight for route R[k]  
     while true
@@ -141,13 +141,13 @@ function nn(rng::AbstractRNG, G)
     M = typemax(Int64)
     for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
     R = [r for v ∈ V for r ∈ v.R]
-    I = length(R)
+    I = eachindex(R)
     J = eachindex(C)
-    K = length(V)
+    K = eachindex(V)
     x = fill(Inf, (I,J))                # x[i,j]: insertion cost of customer node C[j] in route R[i]
     ϕ = ones(Int64, K)                  # ϕ[k]  : selection weight for vehicle V[k]
     # Step 2: Iterate until all customer nodes have been added to the routes
-    for _ ∈ eachindex(C)
+    for _ ∈ J
         # Step 2.1: Iteratively compute cost of appending each open customer node in each route
         z = f(s; fixed=false)
         for (j,c) ∈ pairs(C)
@@ -197,9 +197,10 @@ function random(rng::AbstractRNG, G)
     M = typemax(Int64)
     for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
     R = [r for v ∈ V for r ∈ v.R]
-    w = ones(Int64, eachindex(C))       # w[j]: selection weight for customer node C[j]
+    J = eachindex(C)
+    w = ones(Int64, J)       # w[j]: selection weight for customer node C[j]
     # Step 2: Iteratively append randomly selected ncustomer ode in randomly selected route
-    for _ ∈ eachindex(C)
+    for _ ∈ J
         i = sample(rng, eachindex(R))
         j = sample(rng, eachindex(C), OffsetWeights(w))
         r = R[i]
@@ -226,9 +227,9 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G)
     M = typemax(Int64)
     for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
     R = [r for v ∈ V for r ∈ v.R]
-    I = length(R)
+    I = eachindex(R)
     J = eachindex(C)
-    K = length(V)
+    K = eachindex(V)
     xᵢ = fill(Inf, (I,J))               # xᵢ[i,j]: insertion cost of customer node C[j] at best position in route R[i]
     pᵢ = fill(Int64.((0, 0)), (I,J))    # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
     xₙ = fill(Inf, (N,J))               # xₙ[i,n]: insertion cost of customer node C[j] at nᵗʰ best position
@@ -236,7 +237,7 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G)
     xᵣ = fill(-Inf, J)                  # x[j]   : regret-N cost of customer node C[j]
     ϕ  = ones(Int64, K)                 # ϕ[k]   : selection weight for vehicle V[k]
     # Step 2: Iterate until all customer nodes have been inserted into the route
-    for _ ∈ eachindex(C)
+    for _ ∈ J
         # Step 2.1: Iterate through all open customer nodes and every route
         z = f(s; fixed=false)
         for (j,c) ∈ pairs(C)

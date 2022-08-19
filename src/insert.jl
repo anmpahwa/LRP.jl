@@ -23,15 +23,15 @@ function best!(rng::AbstractRNG, s::Solution)
     R = [r for v ∈ V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     # Step 1: Initialize
-    I = length(R)
-    J = length(L)
-    K = length(V)
+    I = eachindex(R)
+    J = eachindex(L)
+    K = eachindex(V)
     x = fill(Inf, (I,J))            # x[i,j]: insertion cost of customer node L[j] at best position in route R[i]
     p = fill(Int64.((0, 0)), (I,J)) # p[i,j]: best insertion postion of customer node L[j] in route R[i]
     w = ones(Int64, J)              # w[j]  : selection weight for customer node L[j]
     ϕ = ones(Int64, K)              # ϕ[k]  : selection weight for vehicle V[k]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
-    for _ ∈ 1:J
+    for _ ∈ J
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
         z = f(s; fixed=false)
         for (j,c) ∈ pairs(L)
@@ -61,7 +61,7 @@ function best!(rng::AbstractRNG, s::Solution)
             end
         end
         # Step 2.2: Randomly select a customer node to insert at its best position
-        j = sample(rng, 1:J, Weights(w))
+        j = sample(rng, J, Weights(w))
         i = argmin(x[:,j])
         r = R[i]
         c = L[j]
@@ -88,14 +88,14 @@ function greedy!(rng::AbstractRNG, s::Solution)
     R = [r for v ∈ V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     # Step 1: Initialize
-    I = length(R)
-    J = length(L)
-    K = length(V)
+    I = eachindex(R)
+    J = eachindex(L)
+    K = eachindex(V)
     x = fill(Inf, (I,J))            # x[i,j]: insertion cost of customer node L[j] at best position route R[i]
     p = fill(Int64.((0, 0)), (I,J)) # p[i,j] : best insertion postion of customer node L[j] in route R[i]
     ϕ = ones(Int64, K)              # ϕ[k]  : selection weight for vehicle V[k]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
-    for _ ∈ 1:J
+    for _ ∈ J
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
         z = f(s; fixed=false)
         for (j,c) ∈ pairs(L)
@@ -150,9 +150,9 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     R = [r for v ∈ V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     # Step 1: Initialize
-    I = length(R)
-    J = length(L)
-    K = length(V)
+    I = eachindex(R)
+    J = eachindex(L)
+    K = eachindex(V)
     xᵢ = fill(Inf, (I,J))               # xᵢ[i,j]: insertion cost of customer node C[j] at best position in route R[i]
     pᵢ = fill(Int64.((0, 0)), (I,J))    # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
     xₙ = fill(Inf, (N,J))               # xₙ[i,n]: insertion cost of customer node C[j] at nᵗʰ best position
@@ -160,7 +160,7 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     xᵣ = fill(-Inf, J)                  # x[j]   : regret-N cost of customer node C[j]
     ϕ  = ones(Int64, K)                 # ϕ[k]   : selection weight for vehicle V[k]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
-    for _ ∈ 1:J
+    for _ ∈ J
         # Step 2.1: Iterate through all open customer nodes and every route
         z = f(s; fixed=false)
         for (j,c) ∈ pairs(L)

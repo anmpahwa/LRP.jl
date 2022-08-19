@@ -25,14 +25,15 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     V = s.V
     R = [r for v ∈ V for r ∈ v.R]
     # Step 1: Initialize
-    I = length(R)
+    I = eachindex(R)
+    J = eachindex(C)
     x = fill(Inf, I)                # x[i]: insertion cost in route R[i]
     p = fill(Int64.((0, 0)), I)     # p[i]: best insertion postion in route R[i]
-    w = ones(Int64, eachindex(C))   # w[j]: selection weight for node C[j]
+    w = ones(Int64, J)              # w[j]: selection weight for node C[j]
     # Step 2: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 2.1: Randomly select a node
-        j = sample(rng, eachindex(C), OffsetWeights(w))
+        j = sample(rng, J, OffsetWeights(w))
         c = C[j]
         # Step 2.2: Remove this node from its position between tail node nₜ and head node nₕ
         r = c.r
@@ -268,11 +269,13 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     z̅ = z
     D = s.D
     C = s.C
-    w = [if isopen(d) 1 else 0 end for d ∈ D]
+    K = eachindex(D)
+    w = isopen.(D)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 1.1: Select a random depot node d
-        d = sample(rng, D, Weights(w))
+        k = sample(rng, K, Weights(w))
+        d = D[k]
         V = d.V
         # Step 1.2: Iterate through every route originating from this depot node
         for v ∈ V
@@ -312,8 +315,8 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
             end
         end
         # Step 1.3: Revise vectors appropriately
-        j = d.i
-        w[j] = 0
+        k = d.i
+        w[k] = 0
         Δ = z - z̅
         # Step 1.4: If the overall change results in reduction in objective function value, then go to step 2, else return to step 1.1
         Δ ≥ 0 ? continue : break
