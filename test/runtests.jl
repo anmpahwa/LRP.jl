@@ -5,10 +5,10 @@ using Random
 
 let
     χ   = ALNSParameters(
-        k̲   =   n ÷ 25                  ,
-        l̲   =   2n                      ,
-        l̅   =   5n                      ,
-        k̅   =   10n                     ,
+        k̲   =   50                      ,
+        l̲   =   50                      ,
+        l̅   =   250                     ,
+        k̅   =   500                     ,
         Ψᵣ  =   [
                     :randomnode!    , 
                     :relatednode!   , 
