@@ -5,21 +5,23 @@ using Random
 
 let
     χ   = ALNSParameters(
-        k̲   =   50                       ,
-        l̲   =   50                      ,
-        l̅   =   125                     ,
-        k̅   =   250                     ,
+        k̲   =   n ÷ 25                  ,
+        l̲   =   2n                      ,
+        l̅   =   5n                      ,
+        k̅   =   10n                     ,
         Ψᵣ  =   [
                     :randomnode!    , 
-                    :relatedpair!   ,
                     :relatednode!   , 
-                    :worstnode!     ,  
+                    :worstnode!     ,
                     :randomroute!   ,
-                    :relatedroute!  ,
+                    :relatedroute!  ,  
                     :worstroute!    ,
                     :randomvehicle! ,
+                    :relatedvehicle!,
+                    :worstvehicle!  ,
                     :randomdepot!   ,
-                    :relateddepot!   
+                    :relateddepot!  ,
+                    :worstdepot!
                 ]                       , 
         Ψᵢ  =   [
                     :best!          ,
