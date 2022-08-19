@@ -5,7 +5,7 @@ using Random
 let
 # Developing an optimal solution 
     # Define instance
-    instance = "rand200"
+    instance = "x-n303-k21"
     # Define a random number generator
     rng = MersenneTwister(1234)
     # Build instance as graph
@@ -26,15 +26,17 @@ let
         k̅   =   10n                     ,
         Ψᵣ  =   [
                     :randomnode!    , 
-                    :relatedpair!   ,
-                    :relatednode!   , 
-                    :worstnode!     ,
-                    :randomroute!   ,  
-                    :relatedroute!  ,
-                    :worstroute!    ,
+                    :randomroute!   ,
                     :randomvehicle! ,
                     :randomdepot!   ,
-                    :relateddepot!
+                    :relatednode!   , 
+                    :relatedroute!  ,  
+                    :relatedvehicle!,
+                    :relateddepot!  ,
+                    :worstnode!     ,
+                    :worstroute!    ,
+                    :worstvehicle!  ,
+                    :worstdepot!
                 ]                       , 
         Ψᵢ  =   [
                     :best!          ,
