@@ -41,41 +41,6 @@ function randomnode!(rng::AbstractRNG, q::Int64, s::Solution)
     return s
 end
 
-# Related Node Pair Removal (related in pairs)
-# Randomly remove q/2 customer nodes and the corresponding most related customer nodes
-function relatedpair!(rng::AbstractRNG, q::Int64, s::Solution)
-    D = s.D
-    C = s.C
-    A = s.A
-    # Step 1: Randomly select initial q/2 customer nodes to remove
-    n = ceil(Int64, q/2)
-    randomnode!(rng, n, s)
-    # Step 2: Compute relatedness for every closed customer node to every open customer node
-    x = fill(-Inf, (eachindex(C), eachindex(C)))
-    for (i,c₁) ∈ pairs(C)
-        if isclose(c₁) continue end
-        for (j,c₂) ∈ pairs(C)
-            if isopen(c₂) continue end
-            a = A[(i,j)]
-            x[i,j] = relatedness(c₁, c₂, a)
-        end
-    end 
-    # Step 3: For each q/2 customer node initially removed, remove the most related closed customer node  
-    while n < q
-        i,j = Tuple(argmax(x))
-        c = C[j]
-        r = c.r
-        nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
-        nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
-        removenode!(c, nₜ, nₕ, r, s)
-        n += 1
-        x[i,:] .= -Inf
-        x[:,j] .= -Inf
-    end
-    # Step 4: Return solution
-    return s 
-end
-
 # Related Node Removal (related to pivot)
 # For a randomly selected customer node, remove q most related customer nodes
 function relatednode!(rng::AbstractRNG, q::Int64, s::Solution)
