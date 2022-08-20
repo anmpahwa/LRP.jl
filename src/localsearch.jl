@@ -5,10 +5,11 @@ Return solution `s` performing local seach on the solution using given `method` 
 until improvement.
 
 Available methods include,
-- Move  : `move!`
-- Opt   : `2-opt!`
-- Split : `split!`
-- Swap  : `swap!`
+- Move      : `move!`
+- Inter-Opt : `interopt!`
+- Intra-Opt : `intraopt!`
+- Split     : `split!`
+- Swap      : `swap!`
 
 Optionally specify a random number generator `rng` as the first argument (defaults to `Random.GLOBAL_RNG`).
 """
