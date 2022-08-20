@@ -4,9 +4,9 @@
 Return solution inserting open customer nodes to the solution `s` using the given `method`.
 
 Available methods include,
-- Best Insertion    : `best!`
-- Greedy Insertion  : `greedy!`
-- Regret Insertion  : `regret₂insert!`, `regret₃insert!`
+- Best Insertion    : `:best!`
+- Greedy Insertion  : `:greedy!`
+- Regret Insertion  : `:regret₂insert!`, `:regret₃insert!`
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).

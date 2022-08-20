@@ -4,18 +4,18 @@
 Return solution removing q customer nodes from solution s using the given `method`.
 
 Available methods include,
-- Random Node Removal       : `randomnode!`
-- Random Route Removal      : `randomroute!`
-- Random Vehicle Removal    : `randomvehicle!`
-- Random Depot Removal      : `randomdepot!` 
-- Related Node Removal      : `relatednode!`
-- Related Route removal     : `relatedroute!`
-- Related Vehicle Removal   : `relatedvehicle!`
-- Related Depot Removal     : `relateddepot!`
-- Worst Node Removal        : `worstnode!`
-- Worst Route Removal       : `worstroute!`
-- Worst Vehicle Removal     : `worstvehicle!`
-- Worst Depot Removal       : `worstdepot!`
+- Random Node Removal       : `:randomnode!`
+- Random Route Removal      : `:randomroute!`
+- Random Vehicle Removal    : `:randomvehicle!`
+- Random Depot Removal      : `:randomdepot!` 
+- Related Node Removal      : `:relatednode!`
+- Related Route removal     : `:relatedroute!`
+- Related Vehicle Removal   : `:relatedvehicle!`
+- Related Depot Removal     : `:relateddepot!`
+- Worst Node Removal        : `:worstnode!`
+- Worst Route Removal       : `:worstroute!`
+- Worst Vehicle Removal     : `:worstvehicle!`
+- Worst Depot Removal       : `:worstdepot!`
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
