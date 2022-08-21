@@ -39,8 +39,8 @@ function cw(rng::AbstractRNG, G)
             push!(v.R, r)
             insertnode!(c, d, d, r, s)
             # Step 2.1.2: Compute assignment cost
-            z⁺ = f(s; fixed=false)
-            Δ  = z⁺ + v.πᵛ/v.q + d.πᵈ/d.q - z
+            z⁺ = f(s; fixed=false) + v.πᶠ/v.q + d.πᶠ/d.q 
+            Δ  = z⁺ - z
             x[i,j] = Δ
             # Step 2.1.3: Unassign customer node c from vehicle v of depot node d
             removenode!(c, d, d, r, s)
@@ -161,8 +161,8 @@ function nn(rng::AbstractRNG, G)
                 nₕ = d
                 insertnode!(c, nₜ, nₕ, r, s)
                 # Step 2.2.2: Compute increase in cost
-                z⁺ = f(s; fixed=false)
-                Δ  = z⁺ + v.πᵛ/v.q + d.πᵈ/d.q - z
+                z⁺ = f(s; fixed=false) + v.πᶠ/v.q + d.πᶠ/d.q 
+                Δ  = z⁺ - z
                 x[i,j] = Δ
                 # Step 2.2.3: Pop customer node c from the route r
                 removenode!(c, nₜ, nₕ, r, s)
@@ -255,8 +255,8 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G)
                     # Step 2.1.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r, and compute the insertion cost
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.1.2: Compute the insertion cost
-                    z⁺ = f(s; fixed=false)
-                    Δ  = z⁺ + v.πᵛ/v.q + d.πᵈ/d.q - z
+                    z⁺ = f(s; fixed=false) + v.πᶠ/v.q + d.πᶠ/d.q 
+                    Δ  = z⁺ - z
                     # Step 2.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < xᵢ[i,j] xᵢ[i,j], pᵢ[i,j] = Δ, (nₜ.i, nₕ.i) end
                     # Step 2.1.1.4: Revise N least insertion costs

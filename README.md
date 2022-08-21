@@ -3,7 +3,12 @@
 
 # Location Routing Problem (LRP)
 
-Given, a graph `G = (D, C, A, V)` with set of depots `D` with depot fixed cost `d.πᵈ`, depot capacity `d.q`, and depot fleet `d.V` for every depot `d ∈ D`, set of customer nodes `C` with customer demand `c.q` for every customer `c ∈ C`, set of arcs `A = {(i,j); i,j ∈ N={D∪C}}` with arc length `l` for every arc `(i,j) ∈ A`, and set of vehicles `V` with vehicle speed `v.s`, vehicle capacity `v.q`, vehicle fixed cost `v.πᵛ`, vehicle maintenance cost `v.πᵐ` per unit distance, vehicle’s driver wage `v.πʷ` per unit time, vehicle fuel cost `v.πᶠ` per unit fuel use, and vehicle fuel-to-energy efficiency `v.η` for every vehicle `v ∈ V`, the objective is to develop least cost routes from select depot nodes using select vehicles such that every customer node is visited exactly once while also accounting for depot and vehicle capacities.  
+Given, a graph `G = (D, C, A, V)` with 
+set of depots `D` with capacity `d.q`, fleet `d.V`, operational cost `d.πᵒ`, and fixed cost `d.πᶠ` for every depot `d ∈ D`; 
+set of customer nodes `C` with demand `c.q` for every customer `c ∈ C`;
+set of arcs `A = {(i,j); i,j ∈ N={D∪C}}` with length `l` for every arc `(i,j) ∈ A`; and 
+set of vehicles `V` with capacity `v.q`, operational cost `v.πᵒ`, and fixed cost `v.πᶠ` for every vehicle `v ∈ V`, 
+the objective is to develop least cost routes from select depot nodes using select vehicles such that every customer node is visited exactly once while also accounting for depot and vehicle capacities.  
 
 This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an optimal solution for the Locatio Routing Problem given ALNS optimization 
 parameters,

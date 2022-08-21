@@ -1,23 +1,19 @@
 @doc """
     Arc(i::Int64, j::Int64, l::Float64, t::Float64, f::Float64)
 
-An `Arc` is a connection between node `i` and `j` with  arc length `l`, travel 
-time `t`, and fuel use `f`.
+An `Arc` is a connection between node `i` and `j` with length `l`.
 """
 struct Arc
     i::Int64                                                                        # Tail node index
     j::Int64                                                                        # Head node index
     l::Float64                                                                      # Arc length
-    t::Float64                                                                      # Arc travel time
-    f::Float64                                                                      # Arc fuel use
 end
 
 @doc """
     Route(i::Int64, o::Int64, s::Int64, e::Int64, n::Int64, q::Int64, l::Float64, t::Float64, f::Float64, c::Float64)
 
 A `Route` is a ... with index value `i`, origin vehicle index `o`, start node 
-index `s`, end node index `e`, number of customers `n`, load `q`, length `l`, 
-travel time `t`, fuel use `f`, and cost `c`.
+index `s`, end node index `e`, number of customers `n`, load `q`, and length `l`.
 """
 mutable struct Route
     i::Int64                                                                        # Route index
@@ -27,26 +23,20 @@ mutable struct Route
     n::Int64                                                                        # Route size (number of customers)
     q::Int64                                                                        # Route load
     l::Float64                                                                      # Route length
-    t::Float64                                                                      # Route travel time
-    f::Float64                                                                      # Route fuel use
-    c::Float64                                                                      # Route cost
 end
     
 @doc """
     Vehicle(i::Int64, o::Int64, q::Int64, πᵐ::Float64, πʷ::Float64, πᶠ::Float64, πᵛ::Float64, R::Vector{Route})
 
-A `Vehicle` is a delivery vehicle with index value `i`, origin depot node index 
-`o`, vehicle capacity `q`, maintenance cost `πᵐ`, driver's wage `πʷ`, fuel cost 
-`πᶠ`, rental cost `πᵛ`, and set of routes `R`.
+A `Vehicle` is a mode of delivery with index value `i`, origin depot node index 
+`o`, capacity `q`, operational cost `πᵒ`, fixed cost `πᶠ`, and set of routes `R`.
 """
 struct Vehicle
     i::Int64                                                                        # Vehicle index
     o::Int64                                                                        # Vehicle origin (depot node) index
     q::Int64                                                                        # Vehicle capacity
-    πᵐ::Float64                                                                     # Maintenance cost ($ per unit distance)
-    πʷ::Float64                                                                     # Driver wage cost ($ per unit time)
-    πᶠ::Float64                                                                     # Fuel/Energy cost ($ per unit energy)
-    πᵛ::Float64                                                                     # Vehicle rental cost ($)
+    πᵒ::Float64                                                                     # Operational cost
+    πᶠ::Float64                                                                     # Fixed cost
     R::Vector{Route}                                                                # Vector of vehicle routes
 end
 
@@ -61,14 +51,15 @@ abstract type Node end
     DepotNode(i::Int64, x::Float64, y::Float64, q::Float64, πᵈ::Float64, V::Vector{Vehicle})
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index value `i`, 
-capacity `q`, rental cost `πᵈ`, and fleet of vehicles `V`.
+capacity `q`, operational cost `πᵒ`, fixed cost `πᶠ`, and fleet of vehicles `V`.
 """
 struct DepotNode <: Node
     i::Int64                                                                        # Depot node index
     x::Float64                                                                      # Depot node location on the x-axis
     y::Float64                                                                      # Depot node location in the y-axis
     q::Int64                                                                        # Depot capacity
-    πᵈ::Float64                                                                     # Depot rental cost ($)
+    πᵒ::Float64                                                                     # Operational cost
+    πᶠ::Float64                                                                     # Fixed cost
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
 end
 
@@ -91,7 +82,7 @@ end
 @doc """
     Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int64,Int64}, Arc})
 
-A Solution is a graph with depot nodes `D`, customer nodes `C`, and arcs `A`.
+A Solution is a graph with depot nodes `D`, customer nodes `C`, arcs `A`, and vehicles `V`.
 """
 struct Solution
     D::Vector{DepotNode}                                                            # Vector of depot nodes
@@ -101,8 +92,8 @@ struct Solution
 end
 
 # Route definitions
-Route() = Route(0, 0, 0, 0, 0, 0, Inf, Inf, Inf, Inf)                               # Null route      
-Route(i, v::Vehicle, d::DepotNode) = Route(i, v.i, d.i, d.i, 0, 0, 0, 0, 0, 0)      # Empty (closed) route traversed by vehicle v from depot d
+Route() = Route(0, 0, 0, 0, 0, 0, Inf)                                              # Null route      
+Route(i, v::Vehicle, d::DepotNode) = Route(i, v.i, d.i, d.i, 0, 0, 0)               # Empty (closed) route traversed by vehicle v from depot d
 
 # isequal
 Base.isequal(p::Route, q::Route) = isequal(p.i, q.i)
@@ -134,20 +125,21 @@ function f(s::Solution; fixed=true, operational=true, constraint=true)
     ϕᶜ = constraint
     for d ∈ s.D
         if isclose(d) continue end 
-        z += ϕᶠ * d.πᵈ
+        z += ϕᶠ * d.πᶠ
         qᵈ = 0
         for v ∈ d.V 
             if isclose(v) continue end
-            z += ϕᶠ * v.πᵛ
+            z += ϕᶠ * v.πᶠ
             qᵛ = 0
             for r ∈ v.R 
                 if isclose(r) continue end
-                z  += ϕᵒ * r.c 
+                z  += ϕᵒ * r.l * v.πᵒ
                 qᵛ += r.q
                 qᵈ += r.q
             end
             z += ϕᶜ * z * (qᵛ > v.q) * (qᵛ - v.q)
         end
+        z += ϕᵒ * qᵈ * d.πᵒ
         z += ϕᶜ * z * (qᵈ > d.q) * (qᵈ - d.q)
     end
     return z 
