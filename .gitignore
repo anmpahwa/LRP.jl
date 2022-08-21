@@ -2,6 +2,5 @@
 *.jl.cov
 *.jl.mem
 /Manifest.toml
-preprocessing.jl
 Formulation.docx
 ~$rmulation.docx
