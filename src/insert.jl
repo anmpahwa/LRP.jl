@@ -27,7 +27,7 @@ function best!(rng::AbstractRNG, s::Solution)
     J = eachindex(L)
     K = eachindex(V)
     x = fill(Inf, (I,J))            # x[i,j]: insertion cost of customer node L[j] at best position in route R[i]
-    p = fill(Int64.((0, 0)), (I,J)) # p[i,j]: best insertion postion of customer node L[j] in route R[i]
+    p = fill((0, 0), (I,J))         # p[i,j]: best insertion postion of customer node L[j] in route R[i]
     w = ones(Int64, J)              # w[j]  : selection weight for customer node L[j]
     ϕ = ones(Int64, K)              # ϕ[k]  : selection weight for vehicle V[k]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
@@ -92,7 +92,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
     J = eachindex(L)
     K = eachindex(V)
     x = fill(Inf, (I,J))            # x[i,j]: insertion cost of customer node L[j] at best position route R[i]
-    p = fill(Int64.((0, 0)), (I,J)) # p[i,j] : best insertion postion of customer node L[j] in route R[i]
+    p = fill((0, 0), (I,J))         # p[i,j] : best insertion postion of customer node L[j] in route R[i]
     ϕ = ones(Int64, K)              # ϕ[k]  : selection weight for vehicle V[k]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ J
@@ -154,7 +154,7 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     J = eachindex(L)
     K = eachindex(V)
     xᵢ = fill(Inf, (I,J))               # xᵢ[i,j]: insertion cost of customer node C[j] at best position in route R[i]
-    pᵢ = fill(Int64.((0, 0)), (I,J))    # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
+    pᵢ = fill((0, 0), (I,J))            # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
     xₙ = fill(Inf, (N,J))               # xₙ[i,n]: insertion cost of customer node C[j] at nᵗʰ best position
     rₙ = zeros(Int64, (N,J))            # rₙ[i,j]: N best insertion route index of customer node C[j]
     xᵣ = fill(-Inf, J)                  # x[j]   : regret-N cost of customer node C[j]

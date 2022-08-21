@@ -231,7 +231,7 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G)
     J = eachindex(C)
     K = eachindex(V)
     xᵢ = fill(Inf, (I,J))               # xᵢ[i,j]: insertion cost of customer node C[j] at best position in route R[i]
-    pᵢ = fill(Int64.((0, 0)), (I,J))    # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
+    pᵢ = fill((0, 0), (I,J))            # pᵢ[i,j]: best insertion postion of customer node C[j] in route R[i]
     xₙ = fill(Inf, (N,J))               # xₙ[i,n]: insertion cost of customer node C[j] at nᵗʰ best position
     rₙ = zeros(Int64, (N,J))            # rₙ[i,j]: N best insertion route index of customer node C[j]
     xᵣ = fill(-Inf, J)                  # x[j]   : regret-N cost of customer node C[j]

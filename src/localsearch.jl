@@ -29,7 +29,7 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     I = eachindex(R)
     J = eachindex(C)
     x = fill(Inf, I)                # x[i]: insertion cost in route R[i]
-    p = fill(Int64.((0, 0)), I)     # p[i]: best insertion postion in route R[i]
+    p = fill((0, 0), I)             # p[i]: best insertion postion in route R[i]
     w = ones(Int64, J)              # w[j]: selection weight for node C[j]
     # Step 2: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
