@@ -125,22 +125,21 @@ function f(s::Solution; fixed=true, operational=true, constraint=true)
     ϕᶜ = constraint
     for d ∈ s.D
         if isclose(d) continue end 
-        z += ϕᶠ * d.πᶠ
         qᵈ = 0
+        z += ϕᶠ * d.πᶠ
         for v ∈ d.V 
             if isclose(v) continue end
             z += ϕᶠ * v.πᶠ
-            qᵛ = 0
             for r ∈ v.R 
                 if isclose(r) continue end
+                qʳ  = r.q
+                qᵈ += qʳ
                 z  += ϕᵒ * r.l * v.πᵒ
-                qᵛ += r.q
-                z += ϕᶜ * z * (r.q > v.q) * (r.q - v.q)
+                z  += ϕᶜ * z * (qʳ > v.q) * (r.q - v.q)
             end
-            qᵈ += qᵛ
         end
-        z += ϕᵒ * qᵈ * d.πᵒ
-        z += ϕᶜ * z * (qᵈ > d.q) * (qᵈ - d.q)
+        z += ϕᵒ * q * d.πᵒ
+        z += ϕᶜ * z * (q > d.q) * (q - d.q)
     end
     return z 
 end
@@ -158,8 +157,10 @@ function isfeasible(s::Solution)
     # Customer node service and flow constraints
     x = zeros(Int64, eachindex(C))
     for d ∈ D
+        if isclose(d) continue end 
         V = d.V
         for v ∈ V
+            if isclose(v) continue end 
             R = v.R
             for r ∈ R
                 if isclose(r) continue end
@@ -177,15 +178,17 @@ function isfeasible(s::Solution)
     end
     if any(!isone, x) return false end
     # Capacity constraints
-    for d ∈ D 
+    for d ∈ D
+        if isclose(d) continue end 
         qᵈ = 0
-        for v ∈ d.V 
-            qᵛ = 0
+        for v ∈ d.V
+            if isclose(v) continue end 
             for r ∈ v.R 
-                qᵛ += r.q
-                qᵈ += r.q
+                if isclose(r) continue end
+                qʳ  = r.q
+                qᵈ += qʳ
+                if qʳ > v.q return false end
             end
-            if qᵛ > v.q return false end
         end
         if qᵈ > d.q return false end
     end
