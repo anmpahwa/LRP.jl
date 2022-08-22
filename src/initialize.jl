@@ -1,8 +1,8 @@
 # Initial solution
 """
-    initialsolution([rng], (D::Vector{DepotNode}, C:Vector{CustomerNode}, A::Dict{Tuple{Int64, Int64}, Arc}), method)
+    initialsolution([rng], instance, method)
 
-Returns initial LRP solution using given `method` on graph with depot nodes `D`, customer nodes `C`, and arcs `A`.
+Returns initial LRP solution for the given `instance` using the given `method`.
 
 Available methods include,
 - Clarke and Wright Savings Algorithm   : `:cw`
@@ -13,18 +13,17 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-initialsolution(rng::AbstractRNG, G, method::Symbol)::Solution = getfield(LRP, method)(rng, G)
-initialsolution(G, method::Symbol) = initialsolution(Random.GLOBAL_RNG, G, method)
+initialsolution(rng::AbstractRNG, instance, method::Symbol)::Solution = getfield(LRP, method)(rng, instance)
+initialsolution(instance, method::Symbol) = initialsolution(Random.GLOBAL_RNG, instance, method)
 
 # Clarke and Wright Savings Algorithm
 # Create initial solution merging routes that render the most savings until no merger can render further savings
-function cw(rng::AbstractRNG, G)
-    s = Solution(G...)
-    D = s.D
-    C = s.C
-    V = s.V
-    # Step 1: Initialize by assigning customer node to the vehicle-depot pair that results in least assignment cost
+function cw(rng::AbstractRNG, instance)
     M = typemax(Int64)
+    G = build(instance)
+    D, C, A, V = G
+    s = Solution(G...)
+    # Step 1: Initialize by assigning customer node to the vehicle-depot pair that results in least assignment cost
     I = eachindex(V)
     J = eachindex(C)
     x = fill(Inf, (I,J))                # x[i,j]: Cost of assigning customer node C[j] to vehicle V[i] of depot node d
@@ -132,13 +131,12 @@ end
 
 # Nearest Neighborhood Algorithm
 # Create initial solution with node-route combination that results in least increase in cost until all customer nodes have been added to the solution
-function nn(rng::AbstractRNG, G)
-    s = Solution(G...)
-    D = s.D
-    C = s.C
-    V = s.V
-    # Step 1: Initialize an empty route for every vehicle
+function nn(rng::AbstractRNG, instance)
     M = typemax(Int64)
+    G = build(instance)
+    D, C, A, V = G
+    s = Solution(G...)
+    # Step 1: Initialize an empty route for every vehicle
     for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
     R = [r for v ∈ V for r ∈ v.R]
     I = eachindex(R)
@@ -188,13 +186,12 @@ end
 
 # Random Initialization
 # Create initial solution with randomly selcted node-route combination until all customer nodes have been added to the solution
-function random(rng::AbstractRNG, G)
-    s = Solution(G...)
-    D = s.D
-    C = s.C
-    V = s.V
-    # Step 1: Initialize an empty route for every vehicle
+function random(rng::AbstractRNG, instance)
     M = typemax(Int64)
+    G = build(instance)
+    D, C, A, V = G
+    s = Solution(G...)
+    # Step 1: Initialize an empty route for every vehicle
     for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
     R = [r for v ∈ V for r ∈ v.R]
     J = eachindex(C)
@@ -218,11 +215,11 @@ end
 
 # Regret-N Insertion
 # Create initial solution by iteratively adding customer nodes with highest regret cost at its best position until all customer nodes have been added to the solution
-function regretₙinit(rng::AbstractRNG, N::Int64, G)
+function regretₙinit(rng::AbstractRNG, N::Int64, instance)
+    M = typemax(Int64)
+    G = build(instance)
+    D, C, A, V = G
     s = Solution(G...)
-    D = s.D
-    C = s.C
-    V = s.V
     # Step 1: Initialize an empty route for every vehicle
     M = typemax(Int64)
     for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
@@ -315,5 +312,5 @@ function regretₙinit(rng::AbstractRNG, N::Int64, G)
     # Step 3: Return initial solution
     return s
 end
-regret₂init(rng::AbstractRNG, G) = regretₙinit(rng, Int64(2), G)
-regret₃init(rng::AbstractRNG, G) = regretₙinit(rng, Int64(3), G)
+regret₂init(rng::AbstractRNG, instance) = regretₙinit(rng, Int64(2), instance)
+regret₃init(rng::AbstractRNG, instance) = regretₙinit(rng, Int64(3), instance)

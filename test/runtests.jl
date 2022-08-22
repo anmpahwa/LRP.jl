@@ -57,11 +57,10 @@ let
             instance = instances[k]
             method = methods[k]
             println("\nSolving $instance")
-            G = build(instance)
-            sₒ= initialsolution(G, method)     
+            sₒ = initialsolution(instance, method)     
+            S  = ALNS(χ, sₒ)
+            s⃰  = S[end]
             @test isfeasible(sₒ)
-            S = ALNS(χ, sₒ)
-            s⃰ = S[end]
             @test isfeasible(s⃰)
             @test f(s⃰) ≤ f(sₒ)
         end
@@ -75,10 +74,9 @@ let
             instance = instances[k]
             method = methods[k]
             println("\nSolving $instance")
-            G = build(instance)
-            sₒ= initialsolution(G, method)     
-            S = ALNS(χ, sₒ)
-            s⃰ = S[end]
+            sₒ = initialsolution(instance, method)     
+            S  = ALNS(χ, sₒ)
+            s⃰  = S[end]
             @test isfeasible(s⃰)
             @test f(s⃰) ≤ f(sₒ)
         end

@@ -6,16 +6,13 @@ let
 # Developing an optimal solution 
     # Define instance
     instance = "x-n303-k21"
+    # Visualize instance
+    display(visualize(instance))
     # Define a random number generator
     rng = MersenneTwister(1234)
-    # Build instance as graph
-    G = build(instance)
-    D, C, A = G
-    # Visualize instance
-    display(visualize(Solution(G...)))
     # Define inital solution method and build the initial solution
     method = :cw
-    sₒ = initialsolution(rng, G, method)
+    sₒ = initialsolution(rng, instance, method)
     # Define ALNS parameters
     x = length(C) + length(D)
     n = ceil(x, digits=-(length(digits(x))-1))
@@ -76,7 +73,7 @@ let
     display(visualize(s⃰))
     # Animate ALNS solution search process from inital to best solution
     display(animate(S))
-    # Show convergence plots
-    display(convergence(S))
+    # Show convergence plot
+    display(plotconv(S))
     return
 end

@@ -19,10 +19,10 @@ include("remove.jl")
 include("insert.jl")
 include("localsearch.jl")
 include("ALNS.jl")
-include("visualizer.jl")
+include("visualize.jl")
 
-export  Node, CustomerNode, DepotNode, Arc, Route, Vehicle, Solution,
-        ObjectiveFunctionParameters, InitalizationParameters, RemovalParameters, ALNSParameters,
-        build, f, isfeasible, initialsolution, ALNS, vectorize, visualize, animate, convergence
+export  f, isfeasible, 
+        ALNSParameters, initialsolution, ALNS, 
+        visualize, vectorize, animate, plotconv
 
 end
