@@ -135,9 +135,9 @@ function f(s::Solution; fixed=true, operational=true, constraint=true)
                 if isclose(r) continue end
                 z  += ϕᵒ * r.l * v.πᵒ
                 qᵛ += r.q
-                qᵈ += r.q
+                z += ϕᶜ * z * (r.q > v.q) * (r.q - v.q)
             end
-            z += ϕᶜ * z * (qᵛ > v.q) * (qᵛ - v.q)
+            qᵈ += qᵛ
         end
         z += ϕᵒ * qᵈ * d.πᵒ
         z += ϕᶜ * z * (qᵈ > d.q) * (qᵈ - d.q)
