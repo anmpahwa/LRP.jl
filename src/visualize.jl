@@ -44,38 +44,35 @@ function visualize(s::Solution; backend=gr)
     D = s.D
     C = s.C
     fig = plot(legend=:none)
-    # Open nodes
-    V = vectorize(s)
-    for d ∈ s.D
-        Z = V[d.i]
-        K = length(Z)
-        X = zeros(Float64, K)
-        Y = zeros(Float64, K)
-        M₁= fill("color", K)
-        M₂= zeros(Int64, K)
-        M₃= fill(:shape, K)
-        for k ∈ 1:K
-            i = Z[k]
-            n = i ≤ length(D) ? D[i] : C[i]
-            X[k] = n.x
-            Y[k] = n.y
-            if isdepot(n) 
-                M₁[k] = "#82b446"
-                M₂[k] = 6
-                M₃[k] = :rect
-            else 
-                M₁[k] = "#4682b4"
-                M₂[k] = 5
-                M₃[k] = :circle
-            end
+    # Operational nodes: open depot nodes and closed customer nodes
+    Z = reduce(vcat, vectorize(s))
+    K = length(Z)
+    X = zeros(Float64, K)
+    Y = zeros(Float64, K)
+    M₁= fill("color", K)
+    M₂= zeros(Int64, K)
+    M₃= fill(:shape, K)
+    for k ∈ 1:K
+        i = Z[k]
+        n = i ≤ length(D) ? D[i] : C[i]
+        X[k] = n.x
+        Y[k] = n.y
+        if isdepot(n) 
+            M₁[k] = "#82b446"
+            M₂[k] = 6
+            M₃[k] = :rect
+        else 
+            M₁[k] = "#4682b4"
+            M₂[k] = 5
+            M₃[k] = :circle
         end
-        scatter!(X, Y, color=M₁, markersize=M₂, markershape=M₃, markerstrokewidth=0)
-        plot!(X, Y, color="#23415a")
     end
-    # Closed nodes
-    L  = [c.i for c ∈ C if isopen(c)]
-    for d ∈ D if isclose(d) push!(L, d.i) end end
-    Z = L
+    scatter!(X, Y, color=M₁, markersize=M₂, markershape=M₃, markerstrokewidth=0)
+    plot!(X, Y, color="#23415a")
+    # Non-operational nodes: closed depot nodes and open customer nodes
+    Z = Int64[] 
+    for d ∈ D if isclose(d) push!(Z, d.i) end end
+    for c ∈ C if isopen(c) push!(Z, c.i) end end
     K = length(Z)
     X = zeros(Float64, K)
     Y = zeros(Float64, K)
@@ -109,25 +106,27 @@ Returns solution as a sequence of nodes in the order of visits.
 function vectorize(s::Solution)
     D = s.D
     C = s.C
-    V = [Int64[] for _ ∈ D]
+    Z = fill(Int64[], eachindex(D))
     for d ∈ D
+        i = d.i
         if isclose(d) continue end
         for v ∈ d.V
+            if isclose(v) continue end
             for r ∈ v.R
                 if isclose(r) continue end
                 cₛ, cₑ = C[r.s], C[r.e]
-                push!(V[d.i], d.i)
+                push!(Z[i], d.i)
                 c = cₛ
                 while true
-                    push!(V[d.i], c.i)
+                    push!(Z[i], c.i)
                     if isequal(c, cₑ) break end
                     c = C[c.h]
                 end
             end
         end
-        push!(V[d.i], d.i)
+        push!(Z[i], d.i)
     end
-    return V
+    return Z
 end
 
 """
