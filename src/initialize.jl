@@ -176,7 +176,7 @@ function nn(rng::AbstractRNG, instance)
         nₕ = d
         insertnode!(c, nₜ, nₕ, r, s)
         # Step 2.3: Revise cost and selection vectors appropriately
-        for (i,_) ∈ pairs(v.R) x[i,:] .= Inf end
+        for (i,r) ∈ pairs(R) if isequal(r.o, v.i) x[i,:] .= Inf end end
         x[:,j] .= Inf
         for (k,v) ∈ pairs(V) ϕ[k] = isequal(r.o, v.i) ? 1 : 0 end
     end
