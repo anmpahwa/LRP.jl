@@ -135,11 +135,11 @@ function f(s::Solution; fixed=true, operational=true, constraint=true)
                 qʳ  = r.q
                 qᵈ += qʳ
                 z  += ϕᵒ * r.l * v.πᵒ
-                z  += ϕᶜ * z * (qʳ > v.q) * (r.q - v.q)
+                z  += ϕᶜ * z * (qʳ > v.q) * (qʳ - v.q)
             end
         end
-        z += ϕᵒ * q * d.πᵒ
-        z += ϕᶜ * z * (q > d.q) * (q - d.q)
+        z += ϕᵒ * qᵈ * d.πᵒ
+        z += ϕᶜ * z * (qᵈ > d.q) * (qᵈ - d.q)
     end
     return z 
 end
