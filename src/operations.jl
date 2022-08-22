@@ -44,7 +44,6 @@ function removenode!(nₒ::Node, nₜ::Node, nₕ::Node, r::Route, s::Solution)
         r.n -= 1
         r.q -= nₒ.q
     end
-    
     r.l -= aₜ.l + aₕ.l - aₒ.l
     return s
 end
