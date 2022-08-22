@@ -1,8 +1,4 @@
-"""
-    build(instance)
-
-Builds graph as set of depot nodes, customer nodes, and arcs for `instance`.
-"""
+# Builds instance as a graph with set of depot nodes, customer nodes, arcs, vehicles, and routes.
 function build(instance)
     # Depot nodes
     file = joinpath(dirname(@__DIR__), "instances/$instance/depot_nodes.csv")
@@ -53,7 +49,7 @@ function build(instance)
             A[(i,j)] = a
         end
     end
-    # Vehicle
+    # Vehicles
     file = joinpath(dirname(@__DIR__), "instances/$instance/vehicles.csv")
     csv = CSV.File(file, types=[Int64, Int64, Int64, Float64, Float64])
     df = DataFrame(csv)
