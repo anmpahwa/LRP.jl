@@ -106,7 +106,7 @@ Returns solution as a sequence of nodes in the order of visits.
 function vectorize(s::Solution)
     D = s.D
     C = s.C
-    Z = fill(Int64[], eachindex(D))
+    Z = [Int64[] for _ ∈ D]
     for d ∈ D
         i = d.i
         if isclose(d) continue end
