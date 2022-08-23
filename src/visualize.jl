@@ -45,33 +45,34 @@ function visualize(s::Solution; backend=gr)
     C = s.C
     fig = plot(legend=:none)
     # Operational nodes: open depot nodes and closed customer nodes
-    Z = reduce(vcat, vectorize(s))
-    K = length(Z)
-    X = zeros(Float64, K)
-    Y = zeros(Float64, K)
-    M₁= fill("color", K)
-    M₂= zeros(Int64, K)
-    M₃= fill(:shape, K)
-    for k ∈ 1:K
-        i = Z[k]
-        n = i ≤ length(D) ? D[i] : C[i]
-        X[k] = n.x
-        Y[k] = n.y
-        if isdepot(n) 
-            M₁[k] = "#82b446"
-            M₂[k] = 6
-            M₃[k] = :rect
-        else 
-            M₁[k] = "#4682b4"
-            M₂[k] = 5
-            M₃[k] = :circle
+    for Z ∈ vectorize(s)
+        K = length(Z)
+        X = zeros(Float64, K)
+        Y = zeros(Float64, K)
+        M₁= fill("color", K)
+        M₂= zeros(Int64, K)
+        M₃= fill(:shape, K)
+        for k ∈ 1:K
+            i = Z[k]
+            n = i ≤ length(D) ? D[i] : C[i]
+            X[k] = n.x
+            Y[k] = n.y
+            if isdepot(n) 
+                M₁[k] = "#82b446"
+                M₂[k] = 6
+                M₃[k] = :rect
+            else 
+                M₁[k] = "#4682b4"
+                M₂[k] = 5
+                M₃[k] = :circle
+            end
         end
+        scatter!(X, Y, color=M₁, markersize=M₂, markershape=M₃, markerstrokewidth=0)
+        plot!(X, Y, color="#23415a")
     end
-    scatter!(X, Y, color=M₁, markersize=M₂, markershape=M₃, markerstrokewidth=0)
-    plot!(X, Y, color="#23415a")
     # Non-operational nodes: closed depot nodes and open customer nodes
     Z = Int64[] 
-    for d ∈ D if isclose(d) push!(Z, d.i) end end
+    for d ∈ D if !isopt(d) push!(Z, d.i) end end
     for c ∈ C if isopen(c) push!(Z, c.i) end end
     K = length(Z)
     X = zeros(Float64, K)
@@ -109,11 +110,11 @@ function vectorize(s::Solution)
     Z = [Int64[] for _ ∈ D]
     for d ∈ D
         i = d.i
-        if isclose(d) continue end
+        if !isopt(d) continue end
         for v ∈ d.V
-            if isclose(v) continue end
+            if !isopt(v) continue end
             for r ∈ v.R
-                if isclose(r) continue end
+                if !isopt(r) continue end
                 cₛ, cₑ = C[r.s], C[r.e]
                 push!(Z[i], d.i)
                 c = cₛ
