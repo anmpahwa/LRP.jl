@@ -1,4 +1,4 @@
-# Builds instance as a graph with set of depot nodes, customer nodes, arcs, and vehicles.
+# Builds instance as a graph with set of depot nodes, customer nodes, arcs, vehicles, and routes.
 function build(instance)
     # Depot nodes
     file = joinpath(dirname(@__DIR__), "instances/$instance/depot_nodes.csv")
@@ -20,7 +20,6 @@ function build(instance)
     csv = CSV.File(file, types=[Int64, Float64, Float64, Int64])
     df = DataFrame(csv)
     ix = (df[1,1]:df[nrow(df),1])::UnitRange{Int64}
-    rₒ = Route()
     C = OffsetVector{CustomerNode}(undef, ix)
     for k ∈ 1:nrow(df)
         i = df[k,1]::Int64
@@ -29,7 +28,7 @@ function build(instance)
         q = df[k,4]::Int64
         t = 0
         h = 0
-        c = CustomerNode(i, x, y, q, t, h, rₒ)
+        c = CustomerNode(i, x, y, q, t, h, NullRoute)
         C[i] = c
     end
     # Arcs
@@ -64,6 +63,7 @@ function build(instance)
         V[k] = v
         push!(D[o].V, v)
     end
-    G = (D, C, A, V)
+    R = Route[]
+    G = (D, C, A, V, R)
     return G
 end
