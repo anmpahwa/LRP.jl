@@ -3,23 +3,13 @@ function insertnode!(nₒ::Node, nₜ::Node, nₕ::Node, r::Route, s::Solution)
     aₒ = s.A[(nₜ.i, nₕ.i)]
     aₜ = s.A[(nₜ.i, nₒ.i)]
     aₕ = s.A[(nₒ.i, nₕ.i)]
-    if isdepot(nₜ) r.s = nₒ.i 
-    else nₜ.h = nₒ.i
-    end
-    if isdepot(nₕ) r.e = nₒ.i
-    else nₕ.t = nₒ.i
-    end
-    if isdepot(nₒ) 
-        r.s = nₕ.i
-        r.e = nₜ.i
-    else
-        nₒ.h = nₕ.i
-        nₒ.t = nₜ.i
-        nₒ.r = r
-        r.n += 1
-        r.q += nₒ.q
-    end
+    isdepot(nₜ) ? r.s = nₒ.i : nₜ.h = nₒ.i
+    isdepot(nₕ) ? r.e = nₒ.i : nₕ.t = nₒ.i
+    isdepot(nₒ) ? (r.s, r.e) = (nₕ.i, nₜ.i) : (nₒ.h, nₒ.t) = (nₕ.i, nₜ.i)
+    r.n += iscustomer(nₒ) 
+    r.q += iscustomer(nₒ) * nₒ.q
     r.l += aₜ.l + aₕ.l - aₒ.l
+    if iscustomer(nₒ) nₒ.r = r end
     return s
 end
 
@@ -28,22 +18,12 @@ function removenode!(nₒ::Node, nₜ::Node, nₕ::Node, r::Route, s::Solution)
     aₒ = s.A[(nₜ.i, nₕ.i)]
     aₜ = s.A[(nₜ.i, nₒ.i)]
     aₕ = s.A[(nₒ.i, nₕ.i)]
-    if isdepot(nₜ) r.s = nₕ.i
-    else nₜ.h = nₕ.i
-    end
-    if isdepot(nₕ) r.e = nₜ.i
-    else nₕ.t = nₜ.i
-    end
-    if isdepot(nₒ) 
-        r.s = 0
-        r.e = 0
-    else
-        nₒ.h = 0
-        nₒ.t = 0
-        #nₒ.r = Route()
-        r.n -= 1
-        r.q -= nₒ.q
-    end
+    isdepot(nₜ) ? r.s = nₕ.i : nₜ.h = nₕ.i
+    isdepot(nₕ) ? r.e = nₜ.i : nₕ.t = nₜ.i
+    isdepot(nₒ) ? (r.s, r.e) = (0, 0) : (nₒ.h, nₒ.t) = (0, 0)
+    r.n -= iscustomer(nₒ) 
+    r.q -= iscustomer(nₒ) * nₒ.q
     r.l -= aₜ.l + aₕ.l - aₒ.l
+    if iscustomer(nₒ) nₒ.r = NullRoute end
     return s
 end
