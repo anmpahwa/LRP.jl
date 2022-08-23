@@ -89,23 +89,28 @@ struct Solution
     C::OffsetVector{CustomerNode, Vector{CustomerNode}}                             # Vector of customer nodes
     A::Dict{Tuple{Int64,Int64}, Arc}                                                # Set of arcs
     V::Vector{Vehicle}                                                              # Set of vehicles
+    R::Vector{Route}                                                                # Set of routes
 end
 
 # Route definitions
-Route() = Route(0, 0, 0, 0, 0, 0, Inf)                                              # Null route      
+const NullRoute = Route(0, 0, 0, 0, 0, 0, Inf)                                      # Null route      
 Route(i, v::Vehicle, d::DepotNode) = Route(i, v.i, d.i, d.i, 0, 0, 0)               # Empty (closed) route traversed by vehicle v from depot d
 
-# isequal
+# is equal
 Base.isequal(p::Route, q::Route) = isequal(p.i, q.i)
 Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.i,q.i)
 Base.isequal(p::Node, q::Node) = isequal(p.i,q.i)
 
-# isclose
-isclose(r::Route) = iszero(r.n)                                                     # A route is defined closed if it serves no customer
-isclose(v::Vehicle) = all(isclose, v.R)                                             # A vehicle is defined closed if all its routes are closed
-isclose(d::DepotNode) = all(isclose, d.V)                                           # A depot is defined closed if all its vehicles are closed
-isclose(c::CustomerNode) = !(iszero(c.t) & iszero(c.h))                             # A customer is defined closed if its tail node and head node index is non-zero
-isopen(x) = !isclose(x)
+# is operational
+isopt(r::Route) = (r.n ≥ 1)                                                         # A route is defined operational if it serves at least one customer
+isopt(v::Vehicle) = any(isopt, v.R)                                                 # A vehicle is defined operational if any of its routes is operational
+isopt(d::DepotNode) = any(isopt, d.V)                                               # A depot is defined operational if any of its vehicles is operational
+isopen(c::CustomerNode) = isequal(c.r, NullRoute)                                   # A customer is defined open if it is not being served by any vehicle-route
+
+
+# is close
+isclose(d::DepotNode) = !isopt(d)
+isclose(c::CustomerNode) = !isopen(c)
 
 # Node type
 isdepot(n::Node) = typeof(n) == DepotNode
@@ -113,33 +118,29 @@ iscustomer(n::Node) = typeof(n) == CustomerNode
 
 # Objective function evaluation
 """
-    f(s::Solution; fixed=true, operational=true, constraint=true)
+    f(s::Solution)
 
-Objective function evaluation for solution `s`. Include `fixed`, 
-`operational`, and `constraint` violation cost if `true`.
+Objective function evaluation for solution `s`.
 """
-function f(s::Solution; fixed=true, operational=true, constraint=true)
-    z  = 0.
-    ϕᶠ = fixed
-    ϕᵒ = operational
-    ϕᶜ = constraint
+function f(s::Solution)
+    z = 0.
     for d ∈ s.D
-        if isclose(d) continue end 
+        if !isopt(d) continue end 
         qᵈ = 0
-        z += ϕᶠ * d.πᶠ
+        z += d.πᶠ
         for v ∈ d.V 
-            if isclose(v) continue end
-            z += ϕᶠ * v.πᶠ
+            if !isopt(v) continue end
+            z += v.πᶠ
             for r ∈ v.R 
-                if isclose(r) continue end
+                if !isopt(r) continue end
                 qʳ  = r.q
                 qᵈ += qʳ
-                z  += ϕᵒ * r.l * v.πᵒ
-                z  += ϕᶜ * z * (qʳ > v.q) * (qʳ - v.q)
+                z  += r.l * v.πᵒ
+                z  += z * (qʳ > v.q) * (qʳ - v.q)
             end
         end
-        z += ϕᵒ * qᵈ * d.πᵒ
-        z += ϕᶜ * z * (qᵈ > d.q) * (qᵈ - d.q)
+        z += qᵈ * d.πᵒ
+        z += z * (qᵈ > d.q) * (qᵈ - d.q)
     end
     return z 
 end
@@ -157,13 +158,13 @@ function isfeasible(s::Solution)
     # Customer node service and flow constraints
     x = zeros(Int64, eachindex(C))
     for d ∈ D
-        if isclose(d) continue end 
+        if !isopt(d) continue end 
         V = d.V
         for v ∈ V
-            if isclose(v) continue end 
+            if !isopt(v) continue end 
             R = v.R
             for r ∈ R
-                if isclose(r) continue end
+                if !isopt(r) continue end
                 cₛ = C[r.s]
                 cₑ = C[r.e]
                 c  = cₛ
@@ -179,12 +180,12 @@ function isfeasible(s::Solution)
     if any(!isone, x) return false end
     # Capacity constraints
     for d ∈ D
-        if isclose(d) continue end 
+        if !isopt(d) continue end 
         qᵈ = 0
         for v ∈ d.V
-            if isclose(v) continue end 
+            if !isopt(v) continue end 
             for r ∈ v.R 
-                if isclose(r) continue end
+                if !isopt(r) continue end
                 qʳ  = r.q
                 qᵈ += qʳ
                 if qʳ > v.q return false end

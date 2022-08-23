@@ -38,7 +38,7 @@ function relatedness(d::DepotNode, c::CustomerNode, a::Arc)
     return z
 end
 function relatedness(r₁::Route, r₂::Route)
-    if isclose(r₁) || isclose(r₂) return -Inf end
+    if !isopt(r₁) || !isopt(r₂) return -Inf end
     if isequal(r₁, r₂) return Inf end
     l = abs(r₁.l - r₂.l)
     q = abs(r₁.q - r₂.q)
@@ -47,19 +47,19 @@ function relatedness(r₁::Route, r₂::Route)
     return z
 end
 function relatedness(v₁::Vehicle, v₂::Vehicle)
-    if isclose(v₁) || isclose(v₂) return -Inf end
+    if !isopt(v₁) || !isopt(v₂) return -Inf end
     if isequal(v₁, v₂) return Inf end
     l₁ = 0.
     q₁ = 0.
     for r ∈ v₁.R 
-        if isclose(r) continue end
+        if !isopt(r) continue end
         l₁ += r.l
         q₁ += r.q
     end
     l₂ = 0.
     q₂ = 0.
     for r ∈ v₂.R
-        if isclose(r) continue end
+        if !isopt(r) continue end
         l₂ += r.l
         q₂ += r.q
     end
