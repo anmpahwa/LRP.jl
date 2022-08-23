@@ -24,30 +24,30 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    R = [r for v ∈ V for r ∈ v.R]
+    R = s.R
     # Step 1: Initialize
-    I = eachindex(R)
-    J = eachindex(C)
-    x = fill(Inf, I)                # x[i]: insertion cost in route R[i]
-    p = fill((0, 0), I)             # p[i]: best insertion postion in route R[i]
-    w = ones(Int64, J)              # w[j]: selection weight for node C[j]
+    I = eachindex(C)
+    J = eachindex(R)
+    w = ones(Int64, I)              # w[i]: selection weight for node C[i]
+    x = fill(Inf, J)                # x[j]: insertion cost in route R[j]
+    p = fill((0, 0), J)             # p[j]: best insertion postion in route R[j]
     # Step 2: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 2.1: Randomly select a node
-        j = sample(rng, J, OffsetWeights(w))
-        c = C[j]
+        i = sample(rng, I, OffsetWeights(w))
+        c = C[i]
         # Step 2.2: Remove this node from its position between tail node nₜ and head node nₕ
         r = c.r
         nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
         nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
         removenode!(c, nₜ, nₕ, r, s)
         # Step 2.3: Iterate through all routes
-        for (i,r) ∈ pairs(R)
+        for (j,r) ∈ pairs(R)
             # Step 2.3.1: Iterate through all possible insertion positions
             v = V[r.o]
             d = D[v.o]
-            nₛ = isclose(r) ? D[r.s] : C[r.s]
-            nₑ = isclose(r) ? D[r.e] : C[r.e]
+            nₛ = isopt(r) ? C[r.s] : D[r.s]
+            nₑ = isopt(r) ? C[r.e] : D[r.e]
             nₜ = d
             nₕ = nₛ
             while true
@@ -57,7 +57,7 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
                 z′ = f(s)
                 Δ  = z′ - z
                 # Step 2.3.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
-                if Δ < x[i] x[i], p[i] = Δ, (nₜ.i, nₕ.i) end
+                if Δ < x[j] x[j], p[j] = Δ, (nₜ.i, nₕ.i) end
                 # Step 2.3.4: Remove node from its position between tail node nₜ and head node nₕ
                 removenode!(c, nₜ, nₕ, r, s)
                 if isequal(nₜ, nₑ) break end
@@ -66,18 +66,18 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
             end
         end
         # Step 2.4: Move the node to its best position (this could be its original position as well)
-        i = argmin(x)
-        Δ = x[i]
-        r = R[i]
-        t = p[i][1]
-        h = p[i][2]
+        j = argmin(x)
+        Δ = x[j]
+        r = R[j]
+        t = p[j][1]
+        h = p[j][2]
         nₜ = t ≤ length(D) ? D[t] : C[t]
         nₕ = h ≤ length(D) ? D[h] : C[h]
         insertnode!(c, nₜ, nₕ, r, s)
         # Step 2.5: Revise vectors appropriately
+        w[i] = 0
         x .= Inf
         p .= ((0, 0), )
-        w[j] = 0
         # Step 2.6: If the move results in reduction in objective function value, then go to step 3, else return to step 2.1
         Δ ≥ 0 ? continue : break
     end
@@ -92,9 +92,8 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     z = f(s)
     D = s.D
     C = s.C
-    V = s.V
-    R = [r for v ∈ V for r ∈ v.R]
-    w = isopen.(R)
+    R = s.R
+    w = isopt.(R)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 1.1: Iteratively take 2 arcs from the same route
@@ -162,8 +161,8 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    R = [r for v ∈ V for r ∈ v.R]
-    w = isopen.(R)
+    R = s.R
+    w = isopt.(R)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 1.1: Iteratively take 2 arcs from different routes
@@ -271,7 +270,7 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     D = s.D
     C = s.C
     K = eachindex(D)
-    w = isopen.(D)
+    w = isopt.(D)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 1.1: Select a random depot node d
@@ -283,7 +282,7 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
             R = v.R
             for r ∈ R
                 # Step 1.2.1: Remove depot node d from its position in route r
-                if isclose(r) continue end
+                if !isopt(r) continue end
                 cₛ = C[r.s]
                 cₑ = C[r.e]
                 x = 0.

@@ -2,11 +2,17 @@ module LRP
 
 using CSV
 using DataFrames
+using ElasticArrays
 using OffsetArrays
 using Plots
 using ProgressMeter
 using Random
 using StatsBase
+
+ElasticArrays.ElasticMatrix(A::OffsetMatrix) = OffsetMatrix(ElasticArray(A), A.offsets)
+Base.append!(A::OffsetMatrix, items) = (append!(A.parent, items); A)
+
+const M = typemax(Int64)
 
 include("sample.jl")
 include("parameters.jl")
