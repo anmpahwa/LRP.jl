@@ -22,8 +22,8 @@ function best!(rng::AbstractRNG, s::Solution)
     C = s.C
     V = s.V
     R = s.R
-    # Step 1: Initialize
     L = [c for c ∈ C if isopen(c)]
+    # Step 1: Initialize
     for (k,v) ∈ pairs(V)
         r = Route(rand(rng, 1:M), V[k], D[v.o])
         push!(v.R, r)
@@ -109,8 +109,8 @@ function greedy!(rng::AbstractRNG, s::Solution)
     C = s.C
     V = s.V
     R = s.R
-    # Step 1: Initialize
     L = [c for c ∈ C if isopen(c)]
+    # Step 1: Initialize
     for (k,v) ∈ pairs(V)
         r = Route(rand(rng, 1:M), V[k], D[v.o])
         push!(v.R, r)
@@ -193,8 +193,8 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     C = s.C
     V = s.V
     R = s.R
-    # Step 1: Initialize
     L = [c for c ∈ C if isopen(c)]
+    # Step 1: Initialize
     for (k,v) ∈ pairs(V)
         r = Route(rand(rng, 1:M), V[k], D[v.o])
         push!(v.R, r)
