@@ -46,6 +46,8 @@ function randomnode!(rng::AbstractRNG, q::Int64, s::Solution)
         w[k] = 0
     end
     # Step 2: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -75,6 +77,8 @@ function relatednode!(rng::AbstractRNG, q::Int64, s::Solution)
         x[k] = -Inf
     end
     # Step 4: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -85,16 +89,18 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
     C = s.C
     V = s.V
     R = s.R
-    x = fill(-Inf, eachindex(C))    # x[k]: removal cost of customer node C[k]
-    ϕ = ones(Int64, eachindex(R))   # ϕ[j]: selection weight for route R[j]
+    x = fill(-Inf, eachindex(C))    # x[i]: removal cost of customer node C[i]
+    ϕ = ones(Int64, eachindex(V))   # ϕ[j]: selection weight for route V[j]
     # Step 1: Iterate until q customer nodes have been removed
     n = 0
     while n < q
         # Step 1.1: For every closed customer node evaluate removal cost
         zᵒ = f(s)
-        for (k,c) ∈ pairs(C)
+        for (i,c) ∈ pairs(C)
+            if isopen(c) continue end
             r = c.r
-            if isopen(c) || iszero(ϕ[r.o]) continue end
+            j = r.o
+            if iszero(ϕ[j]) continue end
             # Step 1.1.1: Remove closed customer node c between tail node nₜ and head node nₕ in route r
             nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
             nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
@@ -102,13 +108,13 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
             # Step 1.1.2: Evaluate the removal cost
             z⁻ = f(s)
             Δ  = z⁻ - zᵒ
-            x[k] = -Δ
+            x[i] = -Δ
             # Step 1.1.3: Re-insert customer node c between tail node nₜ and head node nₕ in route r
             insertnode!(c, nₜ, nₕ, r, s)
         end
         # Step 1.2: Remove the customer node with highest removal cost (savings)
-        k = argmax(x)
-        c = C[k]
+        i = argmax(x)
+        c = C[i]
         r = c.r
         v = V[r.o]
         nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
@@ -116,10 +122,13 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
         removenode!(c, nₜ, nₕ, r, s)
         n += 1
         # Step 1.3: Update cost and selection weight vectors
-        for (j,r) ∈ pairs(R) ϕ[j] = isequal(r.o, v.i) ? 1 : 0 end
-        x[k] = -Inf
+        x[i] = -Inf
+        for (j,v) ∈ pairs(V) ϕ[j] = isequal(r.o, v.i) ? 1 : 0 end
+        if isopt(r) continue end
     end
     # Step 2: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -151,6 +160,8 @@ function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
         w[k] = 0
     end
     # Step 2: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -187,6 +198,8 @@ function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
         w[k] = 0
     end
     # Step 4: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -226,6 +239,8 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
         w[k] = 0
     end
     # Step 3: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
     
@@ -259,6 +274,8 @@ function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         w[k] = 0
     end
     # Step 2: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -295,6 +312,8 @@ function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         w[k] = 0
     end
     # Step 4: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -343,6 +362,8 @@ function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         w[k] = 0
     end
     # Step 3: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -378,6 +399,8 @@ function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         w[k] = 0
     end
     # Step 2: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -409,6 +432,8 @@ function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
         x[k] = -Inf
     end
     # Step 4: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -458,5 +483,7 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         w[k] = 0
     end
     # Step 3: Return solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end

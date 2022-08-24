@@ -129,15 +129,9 @@ function cw(rng::AbstractRNG, instance)
         end
         for (k,r) ∈ pairs(R) ϕ[k] = isequal(r.o, r₂.o) ? 1 : 0 end
     end
-    # Step 4: Return initial solution
-    filter!(isopt, R)
-    for (k,v) ∈ pairs(V)
-        filter!(isopt, v.R) 
-        d = D[v.o]
-        r = Route(rand(rng, 1:M), v, d)
-        push!(v.R, r) 
-        push!(R, r)
-    end
+    # Step 5: Return initial solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -198,8 +192,7 @@ function nn(rng::AbstractRNG, instance)
         end 
         for (k,v) ∈ pairs(V)
             if any(!isopt, v.R) continue end
-            d = D[v.o]
-            r = Route(rand(rng, 1:M), v, d)
+            r = Route(rand(rng, 1:M), V[k], D[v.o])
             push!(v.R, r) 
             push!(R, r)
             append!(x, fill(Inf, (I,1)))
@@ -207,6 +200,8 @@ function nn(rng::AbstractRNG, instance)
         end
     end
     # Step 3: Return initial solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -239,12 +234,8 @@ function random(rng::AbstractRNG, instance)
         w[i] = 0
     end
     # Step 3: Return initial solution
-    for (k,v) ∈ pairs(V)
-        d = D[v.o]
-        r = Route(rand(rng, 1:M), v, d)
-        push!(v.R, r) 
-        push!(R, r)
-    end
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -348,8 +339,7 @@ function regretₙinit(rng::AbstractRNG, N::Int64, instance)
         end
         for (k,v) ∈ pairs(V)
             if any(!isopt, v.R) continue end
-            d = D[v.o]
-            r = Route(rand(rng, 1:M), v, d)
+            r = Route(rand(rng, 1:M), V[k], D[v.o])
             push!(v.R, r) 
             push!(R, r)
             append!(x, fill(Inf, (I,1)))
@@ -358,6 +348,8 @@ function regretₙinit(rng::AbstractRNG, N::Int64, instance)
         end
     end
     # Step 3: Return initial solution
+    deleteat!(R, findall(!isopt, R))
+    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 regret₂init(rng::AbstractRNG, instance) = regretₙinit(rng, Int64(2), instance)

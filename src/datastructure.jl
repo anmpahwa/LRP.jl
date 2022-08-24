@@ -107,7 +107,6 @@ isopt(v::Vehicle) = any(isopt, v.R)                                             
 isopt(d::DepotNode) = any(isopt, d.V)                                               # A depot is defined operational if any of its vehicles is operational
 isopen(c::CustomerNode) = isequal(c.r, NullRoute)                                   # A customer is defined open if it is not being served by any vehicle-route
 
-
 # is close
 isclose(d::DepotNode) = !isopt(d)
 isclose(c::CustomerNode) = !isopen(c)

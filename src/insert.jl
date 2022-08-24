@@ -24,6 +24,11 @@ function best!(rng::AbstractRNG, s::Solution)
     R = s.R
     # Step 1: Initialize
     L = [c for c ∈ C if isopen(c)]
+    for (k,v) ∈ pairs(V)
+        r = Route(rand(rng, 1:M), V[k], D[v.o])
+        push!(v.R, r)
+        push!(s.R, r)  
+    end
     I = eachindex(L)
     J = eachindex(R)
     x = ElasticMatrix(fill(Inf, (I,J)))     # x[i,j]: insertion cost of customer node L[i] at best position in route R[j]
@@ -84,8 +89,7 @@ function best!(rng::AbstractRNG, s::Solution)
         end
         for (k,v) ∈ pairs(V)
             if any(!isopt, v.R) continue end
-            d = D[v.o]
-            r = Route(rand(rng, 1:M), v, d)
+            r = Route(rand(rng, 1:M), V[k], D[v.o])
             push!(v.R, r) 
             push!(R, r)
             append!(x, fill(Inf, (I,1)))
@@ -93,6 +97,7 @@ function best!(rng::AbstractRNG, s::Solution)
             push!(ϕ, 1)
         end
     end
+    # Step 3: Return initial solution
     return s
 end
 
@@ -106,6 +111,11 @@ function greedy!(rng::AbstractRNG, s::Solution)
     R = s.R
     # Step 1: Initialize
     L = [c for c ∈ C if isopen(c)]
+    for (k,v) ∈ pairs(V)
+        r = Route(rand(rng, 1:M), V[k], D[v.o])
+        push!(v.R, r)
+        push!(s.R, r)  
+    end
     I = eachindex(L)
     J = eachindex(R)
     x = ElasticMatrix(fill(Inf, (I,J)))     # x[i,j]: insertion cost of customer node L[i] at best position in route R[j]
@@ -163,8 +173,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
         end
         for (k,v) ∈ pairs(V)
             if any(!isopt, v.R) continue end
-            d = D[v.o]
-            r = Route(rand(rng, 1:M), v, d)
+            r = Route(rand(rng, 1:M), V[k], D[v.o])
             push!(v.R, r) 
             push!(R, r)
             append!(x, fill(Inf, (I,1)))
@@ -172,6 +181,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
             push!(ϕ, 1)
         end
     end
+    # Step 3: Return initial solution
     return s
 end
 
@@ -185,6 +195,11 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     R = s.R
     # Step 1: Initialize
     L = [c for c ∈ C if isopen(c)]
+    for (k,v) ∈ pairs(V)
+        r = Route(rand(rng, 1:M), V[k], D[v.o])
+        push!(v.R, r)
+        push!(s.R, r)  
+    end
     I = eachindex(L)
     J = eachindex(R)
     x = ElasticMatrix(fill(Inf, (I,J)))     # x[i,j]: insertion cost of customer node L[i] at best position in route R[j]
@@ -273,8 +288,7 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
         end
         for (k,v) ∈ pairs(V)
             if any(!isopt, v.R) continue end
-            d = D[v.o]
-            r = Route(rand(rng, 1:M), v, d)
+            r = Route(rand(rng, 1:M), V[k], D[v.o])
             push!(v.R, r) 
             push!(R, r)
             append!(x, fill(Inf, (I,1)))
