@@ -37,7 +37,7 @@ let
         Ψᵢ  =   [
                     :best!          ,
                     :greedy!        ,
-                    :regret2! ,
+                    :regret2!       ,
                     :regret3!
                 ]                       ,
         Ψₗ  =   [
