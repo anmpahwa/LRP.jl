@@ -52,14 +52,12 @@ function relatedness(v₁::Vehicle, v₂::Vehicle)
     l₁ = 0.
     q₁ = 0.
     for r ∈ v₁.R 
-        if !isopt(r) continue end
         l₁ += r.l
         q₁ += r.q
     end
     l₂ = 0.
     q₂ = 0.
     for r ∈ v₂.R
-        if !isopt(r) continue end
         l₂ += r.l
         q₂ += r.q
     end

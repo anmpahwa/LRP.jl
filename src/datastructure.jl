@@ -1,5 +1,5 @@
 @doc """
-    Arc(i::Int64, j::Int64, l::Float64, t::Float64, f::Float64)
+    Arc(i::Int64, j::Int64, l::Float64)
 
 An `Arc` is a connection between node `i` and `j` with length `l`.
 """
@@ -10,9 +10,9 @@ struct Arc
 end
 
 @doc """
-    Route(i::Int64, o::Int64, s::Int64, e::Int64, n::Int64, q::Int64, l::Float64, t::Float64, f::Float64, c::Float64)
+    Route(i::Int64, o::Int64, s::Int64, e::Int64, n::Int64, q::Int64, l::Float64)
 
-A `Route` is a ... with index value `i`, origin vehicle index `o`, start node 
+A `Route` is a connection with index value `i`, origin vehicle index `o`, start node 
 index `s`, end node index `e`, number of customers `n`, load `q`, and length `l`.
 """
 mutable struct Route
@@ -26,7 +26,7 @@ mutable struct Route
 end
     
 @doc """
-    Vehicle(i::Int64, o::Int64, q::Int64, πᵐ::Float64, πʷ::Float64, πᶠ::Float64, πᵛ::Float64, R::Vector{Route})
+    Vehicle(i::Int64, o::Int64, q::Int64, πᵒ::Float64, πᶠ::Float64, R::Vector{Route})
 
 A `Vehicle` is a mode of delivery with index value `i`, origin depot node index 
 `o`, capacity `q`, operational cost `πᵒ`, fixed cost `πᶠ`, and set of routes `R`.
@@ -48,7 +48,7 @@ A `Node` is a point on the graph.
 abstract type Node end
 
 @doc """
-    DepotNode(i::Int64, x::Float64, y::Float64, q::Float64, πᵈ::Float64, V::Vector{Vehicle})
+    DepotNode(i::Int64, x::Float64, y::Float64, q::Float64, πᵒ::Float64, πᶠ::Float64, V::Vector{Vehicle})
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index value `i`, 
 capacity `q`, operational cost `πᵒ`, fixed cost `πᶠ`, and fleet of vehicles `V`.
@@ -80,7 +80,7 @@ mutable struct CustomerNode <: Node
 end
 
 @doc """
-    Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int64,Int64}, Arc})
+    Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int64,Int64}, Arc}, V::Vector{Vehicle})
 
 A Solution is a graph with depot nodes `D`, customer nodes `C`, arcs `A`, and vehicles `V`.
 """
@@ -89,7 +89,6 @@ struct Solution
     C::OffsetVector{CustomerNode, Vector{CustomerNode}}                             # Vector of customer nodes
     A::Dict{Tuple{Int64,Int64}, Arc}                                                # Set of arcs
     V::Vector{Vehicle}                                                              # Set of vehicles
-    R::Vector{Route}                                                                # Set of routes
 end
 
 # Route definitions
@@ -114,86 +113,6 @@ isclose(c::CustomerNode) = !isopen(c)
 # Node type
 isdepot(n::Node) = typeof(n) == DepotNode
 iscustomer(n::Node) = typeof(n) == CustomerNode
-
-# Objective function evaluation
-"""
-    f(s::Solution)
-
-Objective function evaluation for solution `s`.
-"""
-function f(s::Solution)
-    z = 0.
-    for d ∈ s.D
-        if !isopt(d) continue end 
-        qᵈ = 0
-        z += d.πᶠ
-        for v ∈ d.V 
-            if !isopt(v) continue end
-            z += v.πᶠ
-            for r ∈ v.R 
-                if !isopt(r) continue end
-                qʳ  = r.q
-                qᵈ += qʳ
-                z  += r.l * v.πᵒ
-                z  += z * (qʳ > v.q) * (qʳ - v.q)
-            end
-        end
-        z += qᵈ * d.πᵒ
-        z += z * (qᵈ > d.q) * (qᵈ - d.q)
-    end
-    return z 
-end
-
-# Solution feasibility
-"""
-    infeasible(s::Solution)
-
-Returns true if node service constraint, node flow constraint, and
-sub-tour elimination constraint are not violated.
-"""
-function isfeasible(s::Solution)
-    D = s.D
-    C = s.C
-    # Customer node service and flow constraints
-    x = zeros(Int64, eachindex(C))
-    for d ∈ D
-        if !isopt(d) continue end 
-        V = d.V
-        for v ∈ V
-            if !isopt(v) continue end 
-            R = v.R
-            for r ∈ R
-                if !isopt(r) continue end
-                cₛ = C[r.s]
-                cₑ = C[r.e]
-                c  = cₛ
-                while true
-                    k = c.i
-                    x[k] += 1
-                    if isequal(c, cₑ) break end
-                    c = C[c.h]
-                end
-            end
-        end
-    end
-    if any(!isone, x) return false end
-    # Capacity constraints
-    for d ∈ D
-        if !isopt(d) continue end 
-        qᵈ = 0
-        for v ∈ d.V
-            if !isopt(v) continue end 
-            for r ∈ v.R 
-                if !isopt(r) continue end
-                qʳ  = r.q
-                qᵈ += qʳ
-                if qʳ > v.q return false end
-            end
-        end
-        if qᵈ > d.q return false end
-    end
-    return true
-end
 
 # Hash solution
 Base.hash(s::Solution) = hash(vectorize(s))

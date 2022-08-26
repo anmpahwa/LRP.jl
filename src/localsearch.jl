@@ -20,12 +20,13 @@ localsearch!(k̅::Int64, s::Solution, method::Symbol) = localsearch!(Random.GLOB
 # Iteratively move a randomly seceted customer node in its best position if the move 
 # results in reduction in objective function value for k̅ iterations until improvement
 function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
-    z = f(s)
+    zᵒ = f(s)
     D = s.D
     C = s.C
     V = s.V
-    R = s.R
+    R = Route[]
     # Step 1: Initialize
+    for v ∈ V append!(R, v.R) end
     I = eachindex(C)
     J = eachindex(R)
     w = ones(Int64, I)              # w[i]: selection weight for node C[i]
@@ -55,7 +56,7 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
                 insertnode!(c, nₜ, nₕ, r, s)
                 # Step 2.3.1.2: Compute insertion cost
                 z′ = f(s)
-                Δ  = z′ - z
+                Δ  = z′ - zᵒ
                 # Step 2.3.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                 if Δ < x[j] x[j], p[j] = Δ, (nₜ.i, nₕ.i) end
                 # Step 2.3.4: Remove node from its position between tail node nₜ and head node nₕ
@@ -92,7 +93,8 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     z = f(s)
     D = s.D
     C = s.C
-    R = s.R
+    V = s.V
+    R = [r for v ∈ V for r ∈ v.R]
     w = isopt.(R)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
@@ -161,7 +163,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    R = s.R
+    R = [r for v ∈ V for r ∈ v.R]
     w = isopt.(R)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅

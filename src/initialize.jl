@@ -24,15 +24,15 @@ function cw(rng::AbstractRNG, instance)
     D = s.D
     C = s.C
     V = s.V
-    R = s.R
     # Step 1: Initialize by assigning customer node to the vehicle-depot pair that results in least assignment cost
+    R = Route[]
     I = eachindex(V)
     J = eachindex(C)
     x = fill(Inf, (I,J))                # x[i,j]: Cost of assigning customer node C[j] to vehicle V[i]
     # Step 2: Iterate through each customer node
     for (j,c) ∈ pairs(C)
         # Step 2.1: For customer node c, iterate through every vehicle-depot pair evaluating assignment cost
-        zᵒ = f(s)
+        zᵒ = f(s; fixed=false)
         for (i,v) ∈ pairs(V)
             # Step 2.1.1: Assign customer node c to vehicle v of depot node d
             d = D[v.o] 
@@ -40,8 +40,8 @@ function cw(rng::AbstractRNG, instance)
             push!(v.R, r)
             insertnode!(c, d, d, r, s)
             # Step 2.1.2: Compute assignment cost
-            z⁺ = f(s)
-            Δ  = (z⁺ + (d.πᶠ/d.q + v.πᶠ/v.q)) - (zᵒ - (d.πᶠ + v.πᶠ))
+            z⁺ = f(s; fixed=false) + c.q * (d.πᶠ/d.q + v.πᶠ/v.q)
+            Δ  = z⁺ - zᵒ
             x[i,j] = Δ
             # Step 2.1.3: Unassign customer node c from vehicle v of depot node d
             removenode!(c, d, d, r, s)
@@ -53,18 +53,18 @@ function cw(rng::AbstractRNG, instance)
         d = D[v.o]
         r = Route(rand(rng, 1:M), v, d)
         push!(v.R, r)
+        push!(R, r)
         insertnode!(c, d, d, r, s)
         # Step 2.3: Revise vectors appropriately
         x[:,j] .= Inf
     end
-    for v ∈ V append!(R, v.R) end
     # Step 3: Merge routes iteratively until no merger can render further savings
     K = eachindex(R)
     y = fill(-Inf, (K,K))               # y[i,j]: Savings from merging route R[i] into R[j] 
     ϕ = ones(Int64, K)                  # ϕ[k]  : selection weight for route R[k]  
     while true
         # Step 3.1: Iterate through every route-pair combination
-        zᵒ = f(s)
+        zᵒ = f(s; fixed=false)
         for (i,r₁) ∈ pairs(R)
             if !isopt(r₁) continue end
             for (j,r₂) ∈ pairs(R)
@@ -87,7 +87,7 @@ function cw(rng::AbstractRNG, instance)
                     if isequal(c, cₑ) break end
                 end
                 # Step 3.1.2: Compute savings from merging route r₁ into route r₂
-                z⁻ = f(s)
+                z⁻ = f(s; fixed=false)
                 Δ  = z⁻ - zᵒ
                 y[i,j] = -Δ
                 # Step 3.1.3: Unmerge routes r₁ and r₂
@@ -123,15 +123,16 @@ function cw(rng::AbstractRNG, instance)
         # Step 3.3: Revise savings and selection vectors appropriately
         y[i,:] .= -Inf
         y[:,i] .= -Inf
-        for (j,r) ∈ pairs(R) 
-            if isequal(r.o, v₂.i) y[j,:] .= -Inf end 
-            if isequal(r.o, v₂.i) y[:,j] .= -Inf end
+        ϕ .= 0
+        for (j,r) ∈ pairs(R)
+            if !isequal(r.o, v₂.i) continue end
+            y[j,:] .= -Inf 
+            y[:,j] .= -Inf
+            ϕ[j] = 1
         end
-        for (k,r) ∈ pairs(R) ϕ[k] = isequal(r.o, r₂.o) ? 1 : 0 end
     end
     # Step 5: Return initial solution
-    deleteat!(R, findall(!isopt, R))
-    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
+    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -143,10 +144,14 @@ function nn(rng::AbstractRNG, instance)
     D = s.D
     C = s.C
     V = s.V
-    R = s.R
     # Step 1: Initialize an empty route for every vehicle
-    for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
-    for v ∈ V append!(R, v.R) end
+    R = Route[]
+    for v ∈ V
+        d = D[v.o]
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        append!(R, v.R)
+    end
     I = eachindex(C)
     J = eachindex(R)
     x = ElasticMatrix(fill(Inf, (I,J)))     # x[i,j]: insertion cost of customer node C[i] in route R[j]
@@ -154,7 +159,7 @@ function nn(rng::AbstractRNG, instance)
     # Step 2: Iterate until all customer nodes have been added to the routes
     for _ ∈ I
         # Step 2.1: Iteratively compute cost of appending each open customer node in each route
-        zᵒ = f(s)
+        zᵒ = f(s; fixed=false)
         for (i,c) ∈ pairs(C)
             if !isopen(c) continue end
             for (j,r) ∈ pairs(R)   
@@ -162,12 +167,13 @@ function nn(rng::AbstractRNG, instance)
                 if iszero(ϕ[j]) continue end
                 v  = V[r.o]
                 d  = D[v.o]
+                m  = length(v.R)
                 nₜ = isopt(r) ? C[r.e] : D[r.e]
                 nₕ = d
                 insertnode!(c, nₜ, nₕ, r, s)
                 # Step 2.2.2: Compute increase in cost
-                z⁺ = f(s)
-                Δ  = (z⁺ + (d.πᶠ/d.q + v.πᶠ/v.q)) - (zᵒ - (d.πᶠ + v.πᶠ))
+                z⁺ = f(s; fixed=false) + c.q * (d.πᶠ/d.q + v.πᶠ/(m * v.q))
+                Δ  = z⁺ - zᵒ
                 x[i,j] = Δ
                 # Step 2.2.3: Pop customer node c from the route r
                 removenode!(c, nₜ, nₕ, r, s)
@@ -189,19 +195,17 @@ function nn(rng::AbstractRNG, instance)
             if !isequal(r.o, v.i) continue end
             x[:,j] .= Inf
             ϕ[j] = 1
-        end 
-        for (k,v) ∈ pairs(V)
-            if any(!isopt, v.R) continue end
-            r = Route(rand(rng, 1:M), V[k], D[v.o])
-            push!(v.R, r) 
-            push!(R, r)
-            append!(x, fill(Inf, (I,1)))
-            push!(ϕ, 1)
         end
+        insertroute = !ispartfeasible(s) & all(isopt, v.R)
+        if !insertroute continue end
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        push!(R, r)
+        append!(x, fill(Inf, (I,1)))
+        push!(ϕ, 1)
     end
     # Step 3: Return initial solution
-    deleteat!(R, findall(!isopt, R))
-    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
+    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -213,10 +217,14 @@ function random(rng::AbstractRNG, instance)
     D = s.D
     C = s.C
     V = s.V
-    R = s.R
     # Step 1: Initialize an empty route for every vehicle
-    for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
-    for v ∈ V append!(R, v.R) end
+    R = Route[]
+    for v ∈ V
+        d = D[v.o]
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        append!(R, v.R)
+    end
     I = eachindex(C)
     J = eachindex(R)
     w = ones(Int64, I)                      # w[i]: selection weight for customer node C[i]
@@ -234,8 +242,7 @@ function random(rng::AbstractRNG, instance)
         w[i] = 0
     end
     # Step 3: Return initial solution
-    deleteat!(R, findall(!isopt, R))
-    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
+    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -247,10 +254,14 @@ function regretₙinit(rng::AbstractRNG, N::Int64, instance)
     D = s.D
     C = s.C
     V = s.V
-    R = s.R
     # Step 1: Initialize an empty route for every vehicle
-    for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
-    for v ∈ V append!(R, v.R) end
+    R = Route[]
+    for v ∈ V
+        d = D[v.o]
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        append!(R, v.R)
+    end
     I = eachindex(C)
     J = eachindex(R)
     x = ElasticMatrix(fill(Inf, (I,J)))     # x[i,j]: insertion cost of customer node C[i] at best position in route R[j]
@@ -262,7 +273,7 @@ function regretₙinit(rng::AbstractRNG, N::Int64, instance)
     # Step 2: Iterate until all customer nodes have been inserted into the route
     for _ ∈ I
         # Step 2.1: Iterate through all open customer nodes and every route
-        zᵒ = f(s)
+        zᵒ = f(s; fixed=false)
         for (i,c) ∈ pairs(C)
             if !isopen(c) continue end
             for (j,r) ∈ pairs(R)
@@ -270,6 +281,7 @@ function regretₙinit(rng::AbstractRNG, N::Int64, instance)
                 if iszero(ϕ[j]) continue end
                 v  = V[r.o]
                 d  = D[v.o]
+                m  = length(v.R)
                 nₛ = isopt(r) ? C[r.s] : D[r.s]
                 nₑ = isopt(r) ? C[r.e] : D[r.e]
                 nₜ = d
@@ -278,8 +290,8 @@ function regretₙinit(rng::AbstractRNG, N::Int64, instance)
                     # Step 2.1.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r, and compute the insertion cost
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.1.2: Compute the insertion cost
-                    z⁺ = f(s)
-                    Δ  = (z⁺ + (d.πᶠ/d.q + v.πᶠ/v.q)) - (zᵒ - (d.πᶠ + v.πᶠ))
+                    z⁺ = f(s; fixed=false) + c.q * (d.πᶠ/d.q + v.πᶠ/(m * v.q))
+                    Δ  = z⁺ - zᵒ
                     # Step 2.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < x[i,j] x[i,j], p[i,j] = Δ, (nₜ.i, nₕ.i) end
                     # Step 2.1.1.4: Revise N least insertion costs
@@ -310,6 +322,7 @@ function regretₙinit(rng::AbstractRNG, N::Int64, instance)
         c = C[i]
         r = R[j]
         v = V[r.o]
+        d = D[v.o]
         t, h = p[i,j]
         nₜ = t ≤ length(D) ? D[t] : C[t]
         nₕ = h ≤ length(D) ? D[h] : C[h]
@@ -337,19 +350,17 @@ function regretₙinit(rng::AbstractRNG, N::Int64, instance)
             x[:,j] .= Inf
             ϕ[j] = 1
         end
-        for (k,v) ∈ pairs(V)
-            if any(!isopt, v.R) continue end
-            r = Route(rand(rng, 1:M), V[k], D[v.o])
-            push!(v.R, r) 
-            push!(R, r)
-            append!(x, fill(Inf, (I,1)))
-            append!(p, fill((0, 0), (I,1)))
-            push!(ϕ, 1)
-        end
+        insertroute = !ispartfeasible(s) & all(isopt, v.R)
+        if !insertroute continue end
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        push!(R, r)
+        append!(x, fill(Inf, (I,1)))
+        append!(p, fill((0, 0), (I,1)))
+        push!(ϕ, 1)
     end
     # Step 3: Return initial solution
-    deleteat!(R, findall(!isopt, R))
-    for (k,v) ∈ pairs(V) deleteat!(v.R, findall(!isopt, v.R)) end
+    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 regret₂init(rng::AbstractRNG, instance) = regretₙinit(rng, Int64(2), instance)

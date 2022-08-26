@@ -21,14 +21,20 @@ function best!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    R = s.R
-    L = [c for c ∈ C if isopen(c)]
-    # Step 1: Initialize
-    for (k,v) ∈ pairs(V)
-        r = Route(rand(rng, 1:M), V[k], D[v.o])
-        push!(v.R, r)
-        push!(s.R, r)  
+    # Step 0: Pre-initialize additional routes if needed
+    R = Route[]
+    L = CustomerNode[]
+    for v ∈ V
+        append!(R, v.R)
+        insertroute = isempty(v.R) || (!ispartfeasible(s) & all(isopt, v.R))
+        if !insertroute continue end
+        d = D[v.o]
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        push!(R, r)
     end
+    for c ∈ C if isopen(c) push!(L, c) end end
+    # Step 1: Initialize
     I = eachindex(L)
     J = eachindex(R)
     x = ElasticMatrix(fill(Inf, (I,J)))     # x[i,j]: insertion cost of customer node L[i] at best position in route R[j]
@@ -38,13 +44,14 @@ function best!(rng::AbstractRNG, s::Solution)
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
-        zᵒ = f(s)
+        zᵒ = f(s; fixed=false)
         for (i,c) ∈ pairs(L)
             if !isopen(c) continue end
             for (j,r) ∈ pairs(R)
                 if iszero(ϕ[j]) continue end
                 v  = V[r.o]
                 d  = D[v.o]
+                m  = length(v.R)
                 nₛ = isopt(r) ? C[r.s] : D[r.s]
                 nₑ = isopt(r) ? C[r.e] : D[r.e]
                 nₜ = d
@@ -53,8 +60,8 @@ function best!(rng::AbstractRNG, s::Solution)
                     # Step 2.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.2: Compute the insertion cost
-                    z⁺ = f(s)
-                    Δ  = (z⁺ + (d.πᶠ/d.q + v.πᶠ/v.q)) - (zᵒ - (d.πᶠ + v.πᶠ))
+                    z⁺ = f(s; fixed=false) + c.q * (d.πᶠ/d.q + v.πᶠ/(m * v.q))
+                    Δ  = z⁺ - zᵒ
                     # Step 2.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < x[i,j] x[i,j], p[i,j] = Δ, (nₜ.i, nₕ.i) end
                     # Step 2.1.4: Remove customer node c from its position between tail node nₜ and head node nₕ
@@ -71,6 +78,7 @@ function best!(rng::AbstractRNG, s::Solution)
         c = L[i]
         r = R[j]
         v = V[r.o]
+        d = D[v.o]
         t, h = p[i,j]
         nₜ = t ≤ length(D) ? D[t] : C[t]
         nₕ = h ≤ length(D) ? D[h] : C[h]
@@ -81,23 +89,22 @@ function best!(rng::AbstractRNG, s::Solution)
         w[i] = 0
         ϕ .= 0
         for (j,r) ∈ pairs(R) 
-            if isequal(r.o, v.i) 
-                x[:,j] .= Inf
-                p[:,j] .= ((0, 0), )
-                ϕ[j] = 1 
-            end 
+            if !isequal(r.o, v.i) continue end
+            x[:,j] .= Inf
+            p[:,j] .= ((0, 0), )
+            ϕ[j] = 1  
         end
-        for (k,v) ∈ pairs(V)
-            if any(!isopt, v.R) continue end
-            r = Route(rand(rng, 1:M), V[k], D[v.o])
-            push!(v.R, r) 
-            push!(R, r)
-            append!(x, fill(Inf, (I,1)))
-            append!(p, fill((0, 0), (I,1)))
-            push!(ϕ, 1)
-        end
+        insertroute = !ispartfeasible(s) & all(isopt, v.R)
+        if !insertroute continue end
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        push!(R, r)
+        append!(x, fill(Inf, (I,1)))
+        append!(p, fill((0, 0), (I,1)))
+        push!(ϕ, 1)
     end
     # Step 3: Return initial solution
+    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -108,14 +115,20 @@ function greedy!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    R = s.R
-    L = [c for c ∈ C if isopen(c)]
-    # Step 1: Initialize
-    for (k,v) ∈ pairs(V)
-        r = Route(rand(rng, 1:M), V[k], D[v.o])
-        push!(v.R, r)
-        push!(s.R, r)  
+    # Step 0: Pre-initialize additional routes if needed
+    R = Route[]
+    L = CustomerNode[]
+    for v ∈ V
+        append!(R, v.R)
+        insertroute = isempty(v.R) || (!ispartfeasible(s) & all(isopt, v.R))
+        if !insertroute continue end
+        d = D[v.o]
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        push!(R, r) 
     end
+    for c ∈ C if isopen(c) push!(L, c) end end
+    # Step 1: Initialize
     I = eachindex(L)
     J = eachindex(R)
     x = ElasticMatrix(fill(Inf, (I,J)))     # x[i,j]: insertion cost of customer node L[i] at best position in route R[j]
@@ -124,13 +137,14 @@ function greedy!(rng::AbstractRNG, s::Solution)
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
-        zᵒ = f(s)
+        zᵒ = f(s; fixed=false)
         for (i,c) ∈ pairs(L)
             if !isopen(c) continue end
             for (j,r) ∈ pairs(R)
                 if iszero(ϕ[j]) continue end
                 v  = V[r.o]
                 d  = D[v.o]
+                m  = length(v.R)
                 nₛ = isopt(r) ? C[r.s] : D[r.s]
                 nₑ = isopt(r) ? C[r.e] : D[r.e]
                 nₜ = d
@@ -139,8 +153,8 @@ function greedy!(rng::AbstractRNG, s::Solution)
                     # Step 2.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.2: Compute the insertion cost
-                    z⁺ = f(s)
-                    Δ  = (z⁺ + (d.πᶠ/d.q + v.πᶠ/v.q)) - (zᵒ - (d.πᶠ + v.πᶠ))
+                    z⁺ = f(s; fixed=false) + c.q * (d.πᶠ/d.q + v.πᶠ/(m * v.q))
+                    Δ  = z⁺ - zᵒ
                     # Step 2.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < x[i,j] x[i,j], p[i,j] = Δ, (nₜ.i, nₕ.i) end
                     # Step 2.1.4: Remove customer node c from its position between tail node nₜ and head node nₕ
@@ -156,6 +170,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
         c = L[i]
         r = R[j]
         v = V[r.o]
+        d = D[v.o]
         t, h = p[i,j]
         nₜ = t ≤ length(D) ? D[t] : C[t]
         nₕ = h ≤ length(D) ? D[h] : C[h]
@@ -165,23 +180,22 @@ function greedy!(rng::AbstractRNG, s::Solution)
         p[i,:] .= ((0, 0), )
         ϕ .= 0
         for (j,r) ∈ pairs(R) 
-            if isequal(r.o, v.i) 
-                x[:,j] .= Inf
-                p[:,j] .= ((0, 0), )
-                ϕ[j] = 1 
-            end 
+            if !isequal(r.o, v.i) continue end
+            x[:,j] .= Inf
+            p[:,j] .= ((0, 0), )
+            ϕ[j] = 1  
         end
-        for (k,v) ∈ pairs(V)
-            if any(!isopt, v.R) continue end
-            r = Route(rand(rng, 1:M), V[k], D[v.o])
-            push!(v.R, r) 
-            push!(R, r)
-            append!(x, fill(Inf, (I,1)))
-            append!(p, fill((0, 0), (I,1)))
-            push!(ϕ, 1)
-        end
+        insertroute = !ispartfeasible(s) & all(isopt, v.R)
+        if !insertroute continue end
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        push!(R, r)
+        append!(x, fill(Inf, (I,1)))
+        append!(p, fill((0, 0), (I,1)))
+        push!(ϕ, 1)
     end
     # Step 3: Return initial solution
+    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 
@@ -192,14 +206,20 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    R = s.R
-    L = [c for c ∈ C if isopen(c)]
-    # Step 1: Initialize
-    for (k,v) ∈ pairs(V)
-        r = Route(rand(rng, 1:M), V[k], D[v.o])
-        push!(v.R, r)
-        push!(s.R, r)  
+    # Step 0: Pre-initialize additional routes if needed
+    R = Route[]
+    L = CustomerNode[]
+    for v ∈ V
+        append!(R, v.R)
+        insertroute = isempty(v.R) || (!ispartfeasible(s) & all(isopt, v.R))
+        if !insertroute continue end
+        d = D[v.o]
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        push!(R, r)
     end
+    for c ∈ C if isopen(c) push!(L, c) end end
+    # Step 1: Initialize
     I = eachindex(L)
     J = eachindex(R)
     x = ElasticMatrix(fill(Inf, (I,J)))     # x[i,j]: insertion cost of customer node L[i] at best position in route R[j]
@@ -211,7 +231,7 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
         # Step 2.1: Iterate through all open customer nodes and every route
-        zᵒ = f(s)
+        zᵒ = f(s; fixed=false)
         for (i,c) ∈ pairs(L)
             if !isopen(c) continue end
             for (j,r) ∈ pairs(R)
@@ -219,6 +239,7 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
                 if iszero(ϕ[j]) continue end
                 v  = V[r.o]
                 d  = D[v.o]
+                m  = length(v.R)
                 nₛ = isopt(r) ? C[r.s] : D[r.s]
                 nₑ = isopt(r) ? C[r.e] : D[r.e]
                 nₜ = d
@@ -227,8 +248,8 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
                     # Step 2.1.1.1: Insert customer node c between tail node nₜ and head node nₕ in route r, and compute the insertion cost
                     insertnode!(c, nₜ, nₕ, r, s)
                     # Step 2.1.1.2: Compute the insertion cost
-                    z⁺ = f(s)
-                    Δ  = (z⁺ + (d.πᶠ/d.q + v.πᶠ/v.q)) - (zᵒ - (d.πᶠ + v.πᶠ))
+                    z⁺ = f(s; fixed=false) + c.q * (d.πᶠ/d.q + v.πᶠ/(m * v.q))
+                    Δ  = z⁺ - zᵒ
                     # Step 2.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < x[i,j] x[i,j], p[i,j] = Δ, (nₜ.i, nₕ.i) end
                     # Step 2.1.1.4: Revise N least insertion costs
@@ -259,6 +280,7 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
         c = L[i]
         r = R[j]
         v = V[r.o]
+        d = D[v.o]
         t, h = p[i,j]
         nₜ = t ≤ length(D) ? D[t] : C[t]
         nₕ = h ≤ length(D) ? D[h] : C[h]
@@ -281,22 +303,23 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
             w[i,:] .= w[i,ix]
         end
         ϕ .= 0
-        for (j,r) ∈ pairs(R)
+        for (j,r) ∈ pairs(R) 
             if !isequal(r.o, v.i) continue end
             x[:,j] .= Inf
-            ϕ[j] = 1
+            p[:,j] .= ((0, 0), )
+            ϕ[j] = 1  
         end
-        for (k,v) ∈ pairs(V)
-            if any(!isopt, v.R) continue end
-            r = Route(rand(rng, 1:M), V[k], D[v.o])
-            push!(v.R, r) 
-            push!(R, r)
-            append!(x, fill(Inf, (I,1)))
-            append!(p, fill((0, 0), (I,1)))
-            push!(ϕ, 1)
-        end
+        insertroute = !ispartfeasible(s) & all(isopt, v.R)
+        if !insertroute continue end
+        r = Route(rand(rng, 1:M), v, d)
+        push!(v.R, r) 
+        push!(R, r)
+        append!(x, fill(Inf, (I,1)))
+        append!(p, fill((0, 0), (I,1)))
+        push!(ϕ, 1)
     end
     # Step 3: Return initial solution
+    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
 regret₂insert!(rng::AbstractRNG, s::Solution) = regretₙinsert!(rng, Int64(2), s)
