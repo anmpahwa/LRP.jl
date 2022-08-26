@@ -5,17 +5,16 @@ using Random
 let
 # Developing an optimal solution 
     # Define instance
-    instance = "x-n303-k21"
+    instance = "x-n303-k21";
     # Visualize instance
     display(visualize(instance))
     # Define a random number generator
-    rng = MersenneTwister(1234)
+    rng = MersenneTwister(1234);
     # Define inital solution method and build the initial solution
-    method = :cw
-    sₒ = initialsolution(rng, instance, method)
+    sₒ = initialsolution(rng, instance, :random);
     # Define ALNS parameters
-    x = length(sₒ.D) + length(sₒ.C)
-    n = ceil(x, digits=-(length(digits(x))-1))
+    x = length(sₒ.D) + length(sₒ.C);
+    n = ceil(x, digits=-(length(digits(x))-1));
     χ = ALNSParameters(
         k̲   =   n ÷ 25                  ,
         l̲   =   2n                      ,
@@ -38,8 +37,8 @@ let
         Ψᵢ  =   [
                     :best!          ,
                     :greedy!        ,
-                    :regret₂insert! ,
-                    :regret₃insert!
+                    :regret2! ,
+                    :regret3!
                 ]                       ,
         Ψₗ  =   [
                     :move!          ,
@@ -59,10 +58,10 @@ let
         μ̲   =   0.1                     ,
         μ̅   =   0.4                     ,
         ρ   =   0.1
-    )
+    );
     # Run ALNS and fetch best solution
-    S = ALNS(rng, χ, sₒ)
-    s⃰ = S[end]          
+    S = ALNS(rng, χ, sₒ);
+    s⃰ = S[end];          
 # Fetch objective function values
     println("Initial: $(f(sₒ))")
     println("Optimal: $(f(s⃰))")

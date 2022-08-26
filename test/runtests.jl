@@ -26,8 +26,8 @@ let
         Ψᵢ  =   [
                     :best!          ,
                     :greedy!        ,
-                    :regret₂insert! ,
-                    :regret₃insert!
+                    :regret2!       ,
+                    :regret3!
                 ]                       ,
         Ψₗ  =   [
                     :move!          ,
@@ -50,14 +50,10 @@ let
     )
     # Traveling Salesman Problem instances
     @testset "TSP" begin
-        K = 5
         instances = ["att48", "eil101", "ch150", "d198", "a280"]
-        methods   = [:cw, :nn, :random, :regret₂init, :regret₃init]
-        for k ∈ 1:K
-            instance = instances[k]
-            method = methods[k]
+        for instance ∈ instances
             println("\nSolving $instance")
-            sₒ = initialsolution(instance, method)     
+            sₒ = initialsolution(instance, :random)     
             S  = ALNS(χ, sₒ)
             s⃰  = S[end]
             @test isfeasible(sₒ)
@@ -67,14 +63,10 @@ let
     end
     # Vehicle Routing Problem
     @testset "VRP" begin
-        K = 5
         instances = ["m-n101-k10", "tai150a", "cmt10", "x-n251-k28", "x-n303-k21"]
-        methods   = [:cw, :nn, :random, :regret₂init, :regret₃init]
-        for k ∈ 1:K
-            instance = instances[k]
-            method = methods[k]
+        for instance ∈ instances
             println("\nSolving $instance")
-            sₒ = initialsolution(instance, method)     
+            sₒ = initialsolution(instance, :random)     
             S  = ALNS(χ, sₒ)
             s⃰  = S[end]
             @test isfeasible(s⃰)
