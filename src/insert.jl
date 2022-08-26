@@ -6,7 +6,7 @@ Return solution inserting open customer nodes to the solution `s` using the give
 Available methods include,
 - Best Insertion    : `:best!`
 - Greedy Insertion  : `:greedy!`
-- Regret Insertion  : `:regret₂insert!`, `:regret₃insert!`
+- Regret Insertion  : `:regret2!`, `:regret3!`
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
@@ -201,7 +201,7 @@ end
 
 # Regret-N insertion
 # Iteratively add customer nodes with highest regret cost at its best position until all open customer nodes have been added to the solution
-function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
+function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
     if all(isclose, s.C) return s end
     D = s.D
     C = s.C
@@ -322,5 +322,5 @@ function regretₙinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
     return s
 end
-regret₂insert!(rng::AbstractRNG, s::Solution) = regretₙinsert!(rng, Int64(2), s)
-regret₃insert!(rng::AbstractRNG, s::Solution) = regretₙinsert!(rng, Int64(3), s)
+regret2!(rng::AbstractRNG, s::Solution) = regretN!(rng, Int64(2), s)
+regret3!(rng::AbstractRNG, s::Solution) = regretN!(rng, Int64(3), s)
