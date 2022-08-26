@@ -6,6 +6,7 @@ Returns true if node service constraint, node flow constraint,
 sub-tour elimination, and capacity constraints are not violated.
 """
 function isfeasible(s::Solution)
+    C = s.C
     # Customer node service and flow constraints
     x = zeros(Int64, eachindex(C))
     for d ∈ s.D
