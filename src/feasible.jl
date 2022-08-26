@@ -27,7 +27,7 @@ function isfeasible(s::Solution)
     end
     if any(!isone, x) return false end
     # Capacity constraints
-    for d ∈ D
+    for d ∈ s.D
         qᵈ = 0
         for v ∈ d.V
             for r ∈ v.R 
