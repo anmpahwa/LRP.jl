@@ -44,8 +44,7 @@ function randomnode!(rng::AbstractRNG, q::Int64, s::Solution)
         removenode!(c, nₜ, nₕ, r, s)
         n += 1
         w[k] = 0
-        removeroute = !isopt(r)
-        if removeroute deleteat!(v.R, findfirst(isequal(r), v.R)) end 
+        if deleteroute(r) deleteat!(v.R, findfirst(isequal(r), v.R)) end 
     end
     # Step 2: Return solution
     return s
@@ -66,17 +65,16 @@ function relatednode!(rng::AbstractRNG, q::Int64, s::Solution)
     # Step 3: Remove q most related customer nodes
     n = 0
     while n < q
-        k = argmax(x)
-        c = C[k]
+        j = argmax(x)
+        c = C[j]
         r = c.r
         v = V[r.o]
         nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
         nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
         removenode!(c, nₜ, nₕ, r, s)
         n += 1
-        x[k] = -Inf
-        removeroute = !isopt(r)
-        if removeroute deleteat!(v.R, findfirst(isequal(r), v.R)) end 
+        x[j] = -Inf
+        if deleteroute(r) deleteat!(v.R, findfirst(isequal(r), v.R)) end 
     end
     # Step 4: Return solution
     return s
@@ -88,8 +86,10 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    x = fill(-Inf, eachindex(C))    # x[i]: removal cost of customer node C[i]
-    ϕ = ones(Int64, eachindex(V))   # ϕ[j]: selection weight for route V[j]
+    I = eachindex(C)
+    J = eachindex(V)
+    x = fill(-Inf, I)               # x[i]: removal cost of customer node C[i]
+    ϕ = ones(Int64, J)              # ϕ[j]: selection weight for route V[j]
     # Step 1: Iterate until q customer nodes have been removed
     n = 0
     while n < q
@@ -123,8 +123,7 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
         # Step 1.3: Update cost and selection weight vectors
         x[i] = -Inf
         for (j,v) ∈ pairs(V) ϕ[j] = isequal(r.o, v.i) ? 1 : 0 end
-        removeroute = !isopt(r)
-        if removeroute deleteat!(v.R, findfirst(isequal(r), v.R)) end 
+        if deleteroute(r) deleteat!(v.R, findfirst(isequal(r), v.R)) end 
     end
     # Step 2: Return solution
     return s
@@ -156,7 +155,7 @@ function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
             if isequal(nₕ, d) break end
         end
         w[k] = 0
-        deleteat!(v.R, findfirst(isequal(r), v.R))
+        if deleteroute(r) deleteat!(v.R, findfirst(isequal(r), v.R)) end
     end
     # Step 2: Return solution
     return s
@@ -193,7 +192,7 @@ function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
         end 
         x[k] = -Inf
         w[k] = 0
-        deleteat!(v.R, findfirst(isequal(r), v.R))
+        if deleteroute(r) deleteat!(v.R, findfirst(isequal(r), v.R)) end
     end
     # Step 4: Return solution
     return s
@@ -233,7 +232,7 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
         end
         x[k] = Inf
         w[k] = 0
-        deleteat!(v.R, findfirst(isequal(r), v.R))
+        if deleteroute(r) deleteat!(v.R, findfirst(isequal(r), v.R)) end
     end
     # Step 3: Return solution
     return s
@@ -265,7 +264,7 @@ function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
             end
         end
         w[k] = 0
-        empty!(v.R)
+        deleteat!(v.R, deleteroute.(v.R))
     end
     # Step 2: Return solution
     return s
@@ -300,7 +299,7 @@ function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         end
         x[k] = -Inf
         w[k] = 0
-        empty!(v.R)
+        deleteat!(v.R, deleteroute.(v.R))
     end
     # Step 4: Return solution
     return s
@@ -347,7 +346,7 @@ function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         end
         x[k] = Inf
         w[k] = 0
-        empty!(v.R)
+        deleteat!(v.R, deleteroute.(v.R))
     end
     # Step 3: Return solution
     return s
@@ -380,7 +379,7 @@ function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
                     if isequal(nₕ, d) break end
                 end
             end
-            empty!(v.R)
+            deleteat!(v.R, deleteroute.(v.R))
         end
         w[k] = 0
     end
@@ -412,8 +411,7 @@ function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
         removenode!(c, nₜ, nₕ, r, s)
         n += 1
         x[k] = -Inf
-        removeroute = !isopt(r)
-        if removeroute deleteat!(v.R, findfirst(isequal(r), v.R)) end 
+        if deleteroute(r) deleteat!(v.R, findfirst(isequal(r), v.R)) end 
     end
     # Step 4: Return solution
     return s
@@ -451,7 +449,7 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
                     if isequal(nₕ, d) break end
                 end
             end
-            empty!(v.R)
+            deleteat!(v.R, deleteroute.(v.R))
         end
         x[k] = Inf
         w[k] = 0

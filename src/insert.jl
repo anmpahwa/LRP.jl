@@ -21,19 +21,9 @@ function best!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    # Step 0: Pre-initialize additional routes if needed
-    R = Route[]
-    L = CustomerNode[]
-    for v ∈ V
-        append!(R, v.R)
-        insertroute = isempty(v.R) || (!ispartfeasible(s) & all(isopt, v.R))
-        if !insertroute continue end
-        d = D[v.o]
-        r = Route(rand(rng, 1:M), v, d)
-        push!(v.R, r) 
-        push!(R, r)
-    end
-    for c ∈ C if isopen(c) push!(L, c) end end
+    for d ∈ D for v ∈ d.V if addroute(v,s) push!(v.R, Route(rand(rng, 1:M), v, d)) end end end
+    R = [r for v ∈ V for r ∈ v.R]
+    L = [c for c ∈ C if isopen(c)]
     # Step 1: Initialize
     I = eachindex(L)
     J = eachindex(R)
@@ -94,17 +84,17 @@ function best!(rng::AbstractRNG, s::Solution)
             p[:,j] .= ((0, 0), )
             ϕ[j] = 1  
         end
-        insertroute = !ispartfeasible(s) & all(isopt, v.R)
-        if !insertroute continue end
-        r = Route(rand(rng, 1:M), v, d)
-        push!(v.R, r) 
-        push!(R, r)
-        append!(x, fill(Inf, (I,1)))
-        append!(p, fill((0, 0), (I,1)))
-        push!(ϕ, 1)
+        if addroute(v,s)
+            r = Route(rand(rng, 1:M), v, d)
+            push!(v.R, r) 
+            push!(R, r)
+            append!(x, fill(Inf, (I,1)))
+            append!(p, fill((0, 0), (I,1)))
+            push!(ϕ, 1)
+        end
     end
     # Step 3: Return initial solution
-    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
+    for v ∈ V deleteat!(v.R, deleteroute.(v.R)) end
     return s
 end
 
@@ -115,19 +105,9 @@ function greedy!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    # Step 0: Pre-initialize additional routes if needed
-    R = Route[]
-    L = CustomerNode[]
-    for v ∈ V
-        append!(R, v.R)
-        insertroute = isempty(v.R) || (!ispartfeasible(s) & all(isopt, v.R))
-        if !insertroute continue end
-        d = D[v.o]
-        r = Route(rand(rng, 1:M), v, d)
-        push!(v.R, r) 
-        push!(R, r) 
-    end
-    for c ∈ C if isopen(c) push!(L, c) end end
+    for d ∈ D for v ∈ d.V if addroute(v,s) push!(v.R, Route(rand(rng, 1:M), v, d)) end end end
+    R = [r for v ∈ V for r ∈ v.R]
+    L = [c for c ∈ C if isopen(c)]
     # Step 1: Initialize
     I = eachindex(L)
     J = eachindex(R)
@@ -185,17 +165,17 @@ function greedy!(rng::AbstractRNG, s::Solution)
             p[:,j] .= ((0, 0), )
             ϕ[j] = 1  
         end
-        insertroute = !ispartfeasible(s) & all(isopt, v.R)
-        if !insertroute continue end
-        r = Route(rand(rng, 1:M), v, d)
-        push!(v.R, r) 
-        push!(R, r)
-        append!(x, fill(Inf, (I,1)))
-        append!(p, fill((0, 0), (I,1)))
-        push!(ϕ, 1)
+        if addroute(v,s)
+            r = Route(rand(rng, 1:M), v, d)
+            push!(v.R, r) 
+            push!(R, r)
+            append!(x, fill(Inf, (I,1)))
+            append!(p, fill((0, 0), (I,1)))
+            push!(ϕ, 1)
+        end
     end
     # Step 3: Return initial solution
-    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
+    for v ∈ V deleteat!(v.R, deleteroute.(v.R)) end
     return s
 end
 
@@ -206,19 +186,10 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
     D = s.D
     C = s.C
     V = s.V
-    # Step 0: Pre-initialize additional routes if needed
-    R = Route[]
-    L = CustomerNode[]
-    for v ∈ V
-        append!(R, v.R)
-        insertroute = isempty(v.R) || (!ispartfeasible(s) & all(isopt, v.R))
-        if !insertroute continue end
-        d = D[v.o]
-        r = Route(rand(rng, 1:M), v, d)
-        push!(v.R, r) 
-        push!(R, r)
-    end
-    for c ∈ C if isopen(c) push!(L, c) end end
+    V = s.V
+    for d ∈ D for v ∈ d.V if addroute(v,s) push!(v.R, Route(rand(rng, 1:M), v, d)) end end end
+    R = [r for v ∈ V for r ∈ v.R]
+    L = [c for c ∈ C if isopen(c)]
     # Step 1: Initialize
     I = eachindex(L)
     J = eachindex(R)
@@ -309,17 +280,17 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
             p[:,j] .= ((0, 0), )
             ϕ[j] = 1  
         end
-        insertroute = !ispartfeasible(s) & all(isopt, v.R)
-        if !insertroute continue end
-        r = Route(rand(rng, 1:M), v, d)
-        push!(v.R, r) 
-        push!(R, r)
-        append!(x, fill(Inf, (I,1)))
-        append!(p, fill((0, 0), (I,1)))
-        push!(ϕ, 1)
+        if addroute(v,s)
+            r = Route(rand(rng, 1:M), v, d)
+            push!(v.R, r) 
+            push!(R, r)
+            append!(x, fill(Inf, (I,1)))
+            append!(p, fill((0, 0), (I,1)))
+            push!(ϕ, 1)
+        end
     end
     # Step 3: Return initial solution
-    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
+    for v ∈ V deleteat!(v.R, deleteroute.(v.R)) end
     return s
 end
 regret2!(rng::AbstractRNG, s::Solution) = regretN!(rng, Int64(2), s)

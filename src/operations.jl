@@ -27,3 +27,30 @@ function removenode!(nₒ::Node, nₜ::Node, nₕ::Node, r::Route, s::Solution)
     if iscustomer(nₒ) nₒ.r = NullRoute end
     return s
 end
+
+# Return true if vehicle v needs another route
+function addroute(v::Vehicle, s::Solution)
+    D = s.D
+    d = D[v.o]
+    # condtions when route mustn't be added
+    if any(!isopt, v.R) return false end
+    qᵈ = 0
+    for v ∈ d.V for r ∈ v.R qᵈ += r.q end end
+    if qᵈ > d.q return false end
+    # condition when route could be added
+    if isempty(v.R) return true end
+    for v ∈ d.V for r ∈ v.R if r.q > v.q return true end end end
+    for d ∈ D 
+        qᵈ = 0
+        if isequal(v.o, d.i) continue end
+        for v ∈ d.V for r ∈ v.R qᵈ += r.q end end
+        if qᵈ > d.q return true end
+    end
+    return false
+end
+
+# Return true if route r can be deleted
+function deleteroute(r::Route)
+    if isopt(r) return false end
+    return true
+end

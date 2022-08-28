@@ -41,25 +41,3 @@ function isfeasible(s::Solution)
     end
     return true
 end
-"""
-    ispartfeasible(s::Solution)
-
-Is the solution partially feasible?
-Returns true if capacity constraints are not violated.
-"""
-function ispartfeasible(s::Solution)
-    # Capacity constraints
-    for d ∈ s.D
-        qᵈ = 0
-        for v ∈ d.V
-            for r ∈ v.R 
-                if !isopt(r) continue end
-                qʳ  = r.q
-                qᵈ += qʳ
-                if qʳ > v.q return false end
-            end
-        end
-        if qᵈ > d.q return false end
-    end
-    return true
-end

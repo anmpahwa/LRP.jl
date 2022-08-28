@@ -21,14 +21,9 @@ function random(rng::AbstractRNG, instance)
     D = s.D
     C = s.C
     V = s.V
-    # Step 1: Initialize an empty route for every vehicle
-    R = Route[]
-    for v ∈ V
-        d = D[v.o]
-        r = Route(rand(rng, 1:M), v, d)
-        push!(v.R, r) 
-        append!(R, v.R)
-    end
+    for d ∈ D for v ∈ d.V push!(v.R, Route(rand(rng, 1:M), v, d)) end end
+    R = [r for v ∈ V for r ∈ v.R]
+    # Step 1: Initialize
     I = eachindex(C)
     J = eachindex(R)
     w = ones(Int64, I)                      # w[i]: selection weight for customer node C[i]
@@ -46,6 +41,7 @@ function random(rng::AbstractRNG, instance)
         w[i] = 0
     end
     # Step 3: Return initial solution
-    for v ∈ V deleteat!(v.R, findall(!isopt, v.R)) end
+    for v ∈ V deleteat!(v.R, deleteroute.(v.R)) end
     return s
 end
+# TODO: Develop mulit-route randomized initialization
