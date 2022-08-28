@@ -44,4 +44,3 @@ function random(rng::AbstractRNG, instance)
     for v ∈ V deleteat!(v.R, deleteroute.(v.R)) end
     return s
 end
-# TODO: Develop mulit-route randomized initialization

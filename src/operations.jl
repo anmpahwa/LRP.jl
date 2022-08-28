@@ -28,7 +28,7 @@ function removenode!(nₒ::Node, nₜ::Node, nₕ::Node, r::Route, s::Solution)
     return s
 end
 
-# Return true if vehicle v needs another route
+# Return true if vehicle v needs another route (adds conservatively)
 function addroute(v::Vehicle, s::Solution)
     D = s.D
     d = D[v.o]
@@ -36,7 +36,7 @@ function addroute(v::Vehicle, s::Solution)
     if any(!isopt, v.R) return false end
     qᵈ = 0
     for v ∈ d.V for r ∈ v.R qᵈ += r.q end end
-    if qᵈ > d.q return false end
+    if qᵈ ≥ d.q return false end
     # condition when route could be added
     if isempty(v.R) return true end
     for v ∈ d.V for r ∈ v.R if r.q > v.q return true end end end
@@ -49,7 +49,7 @@ function addroute(v::Vehicle, s::Solution)
     return false
 end
 
-# Return true if route r can be deleted
+# Return true if route r can be deleted (deletes liberally)
 function deleteroute(r::Route)
     if isopt(r) return false end
     return true
