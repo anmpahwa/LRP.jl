@@ -32,9 +32,9 @@ function isfeasible(s::Solution)
         for v ∈ d.V
             for r ∈ v.R 
                 if !isopt(r) continue end
-                qʳ  = r.q
-                qᵈ += qʳ
-                if qʳ > v.q return false end
+                qᵛ = r.q
+                qᵈ += qᵛ
+                if qᵛ > v.q return false end
             end
         end
         if qᵈ > d.q return false end
