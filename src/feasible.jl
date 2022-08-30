@@ -2,14 +2,16 @@
     isfeasible(s::Solution)
 
 Is the solution feasible?
-Returns true if node service constraint, node flow constraint,
-sub-tour elimination, and capacity constraints are not violated.
+Returns true if node service constraint, node 
+flow constraint, sub-tour elimination, and 
+capacity constraints are not violated.
 """
 function isfeasible(s::Solution)
+    D = s.D
     C = s.C
-    # Customer node service and flow constraints
+    # Customer node service and flow constraints, and sub-tour elimination constraint
     x = zeros(Int64, eachindex(C))
-    for d ∈ s.D
+    for d ∈ D
         for v ∈ d.V
             for r ∈ v.R
                 if !isopt(r) continue end
@@ -26,7 +28,7 @@ function isfeasible(s::Solution)
     end
     if any(!isone, x) return false end
     # Capacity constraints
-    for d ∈ s.D
+    for d ∈ D
         qᵈ = 0
         for v ∈ d.V
             for r ∈ v.R 

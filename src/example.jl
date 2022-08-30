@@ -13,7 +13,7 @@ let
     # Define inital solution method and build the initial solution
     sₒ = initialsolution(rng, instance, :random);
     # Define ALNS parameters
-    x = length(sₒ.D) + length(sₒ.C);
+    x = length(sₒ.D)+length(sₒ.C);
     n = ceil(x, digits=-(length(digits(x))-1));
     χ = ALNSParameters(
         k̲   =   n ÷ 25                  ,

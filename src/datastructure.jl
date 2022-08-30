@@ -94,15 +94,6 @@ struct Solution
     V::Vector{Vehicle}                                                              # Set of vehicles
 end
 
-# Route definitions
-const NullRoute = Route(0, 0, 0, 0, 0, 0, Inf)                                      # Null route      
-Route(i, v::Vehicle, d::DepotNode) = Route(i, v.i, d.i, d.i, 0, 0, 0)               # Empty (closed) route traversed by vehicle v from depot d
-
-# is equal
-Base.isequal(p::Route, q::Route) = isequal(p.i, q.i)
-Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.i, q.i)
-Base.isequal(p::Node, q::Node) = isequal(p.i, q.i)
-
 # is operational
 isopt(r::Route) = (r.n ≥ 1)                                                         # A route is defined operational if it serves at least one customer
 isopt(v::Vehicle) = any(isopt, v.R)                                                 # A vehicle is defined operational if any of its routes is operational
@@ -110,12 +101,23 @@ isopt(d::DepotNode) = any(isopt, d.V)                                           
 isopen(c::CustomerNode) = isequal(c.r, NullRoute)                                   # A customer is defined open if it is not being served by any vehicle-route
 
 # is close
-isclose(d::DepotNode) = !isopt(d)
-isclose(c::CustomerNode) = !isopen(c)
+isclose(d::DepotNode) = !isopt(d)                                                   # A depot node is defined closed if it is non-operational
+isclose(c::CustomerNode) = !isopen(c)                                               # A customer node is defined closed it is being served by any vehicle-route
+
+# is equal
+Base.isequal(p::Route, q::Route) = isequal(p.i, q.i)
+Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.i, q.i)
+Base.isequal(p::Node, q::Node) = isequal(p.i, q.i)
 
 # Node type
 isdepot(n::Node) = typeof(n) == DepotNode
 iscustomer(n::Node) = typeof(n) == CustomerNode
+
+# Null route 
+const NullRoute = Route(0, 0, 0, 0, 0, 0, Inf)
+
+# Empty (closed) route traversed by vehicle v from depot d                   
+Route(i, v::Vehicle, d::DepotNode) = Route(i, v.i, d.i, d.i, 0, 0, 0)
 
 # Hash solution
 Base.hash(s::Solution) = hash(vectorize(s))

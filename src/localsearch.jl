@@ -277,11 +277,9 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.1: Select a random depot node d
         i = sample(rng, I, Weights(w))
         d = D[i]
-        V = d.V
         # Step 1.2: Iterate through every route originating from this depot node
-        for v ∈ V
-            R = v.R
-            for r ∈ R
+        for v ∈ d.V
+            for r ∈ v.R
                 # Step 1.2.1: Remove depot node d from its position in route r
                 if !isopt(r) continue end
                 cₛ = C[r.iₛ]
