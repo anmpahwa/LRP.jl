@@ -115,13 +115,13 @@ function vectorize(s::Solution)
             if !isopt(v) continue end
             for r ∈ v.R
                 if !isopt(r) continue end
-                cₛ, cₑ = C[r.s], C[r.e]
+                cₛ, cₑ = C[r.iₛ], C[r.iₑ]
                 push!(Z[i], d.i)
                 c = cₛ
                 while true
                     push!(Z[i], c.i)
                     if isequal(c, cₑ) break end
-                    c = C[c.h]
+                    c = C[c.iₕ]
                 end
             end
         end

@@ -26,26 +26,25 @@ function build(instance)
         x = df[k,2]::Float64
         y = df[k,3]::Float64
         q = df[k,4]::Int64
-        t = 0
-        h = 0
-        c = CustomerNode(i, x, y, q, t, h, NullRoute)
+        iₜ = 0
+        iₕ = 0
+        c = CustomerNode(i, x, y, q, iₜ, iₕ, NullRoute)
         C[i] = c
     end
     # Arcs
     A = Dict{Tuple{Int64,Int64},Arc}()
     N = length(D)+length(C)
-    for i ∈ 1:N
-        nₜ = i ≤ length(D) ? D[i] : C[i]
-        xᵢ = nₜ.x
-        yᵢ = nₜ.y
-        for j ∈ 1:N
-            nₕ = j ≤ length(D) ? D[j] : C[j]
-            j  = nₕ.i
-            xⱼ = nₕ.x
-            yⱼ = nₕ.y
-            l  = sqrt((xⱼ - xᵢ)^2 + (yⱼ - yᵢ)^2)
-            a  = Arc(i, j, l)
-            A[(i,j)] = a
+    for iₜ ∈ 1:N
+        nₜ = iₜ ≤ length(D) ? D[iₜ] : C[iₜ]
+        xₜ = nₜ.x
+        yₜ = nₜ.y
+        for iₕ ∈ 1:N
+            nₕ = iₕ ≤ length(D) ? D[iₕ] : C[iₕ]
+            xₕ = nₕ.x
+            yₕ = nₕ.y
+            l  = sqrt((xₕ - xₜ)^2 + (yₕ - yₜ)^2)
+            a  = Arc(iₜ, iₕ, l)
+            A[(iₜ,iₕ)] = a
         end
     end
     # Vehicles

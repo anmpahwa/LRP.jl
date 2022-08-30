@@ -1,25 +1,28 @@
 @doc """
-    Arc(i::Int64, j::Int64, l::Float64)
+    Arc(iₜ::Int64, iₕ::Int64, l::Float64)
 
-An `Arc` is a connection between node `i` and `j` with length `l`.
+An `Arc` is a connection between tail   
+node with index `iₜ` and head node with 
+index `iₕ` with length `l`.
 """
 struct Arc
-    i::Int64                                                                        # Tail node index
-    j::Int64                                                                        # Head node index
+    iₜ::Int64                                                                       # Tail node index
+    iₕ::Int64                                                                       # Head node index
     l::Float64                                                                      # Arc length
 end
 
 @doc """
-    Route(i::Int64, o::Int64, s::Int64, e::Int64, n::Int64, q::Int64, l::Float64)
+    Route(i::Int64, o::Int64, iₛ::Int64, iₑ::Int64, n::Int64, q::Int64, l::Float64)
 
-A `Route` is a connection with index value `i`, origin vehicle index `o`, start node 
-index `s`, end node index `e`, number of customers `n`, load `q`, and length `l`.
+A `Route` is a connection between nodes, with index `i`, origin vehicle index `o`, 
+start node index `iₛ`, end node index `iₑ`, number of customers `n`, load `q`, and 
+length `l`.
 """
 mutable struct Route
     i::Int64                                                                        # Route index
-    o::Int64                                                                        # Route origin (vehicle) index
-    s::Int64                                                                        # Route start node index
-    e::Int64                                                                        # Route end node index
+    o::Int64                                                                        # Route (origin) vehicle index
+    iₛ::Int64                                                                       # Route start node index
+    iₑ::Int64                                                                       # Route end node index
     n::Int64                                                                        # Route size (number of customers)
     q::Int64                                                                        # Route load
     l::Float64                                                                      # Route length
@@ -28,8 +31,8 @@ end
 @doc """
     Vehicle(i::Int64, o::Int64, q::Int64, πᵒ::Float64, πᶠ::Float64, R::Vector{Route})
 
-A `Vehicle` is a mode of delivery with index value `i`, origin depot node index 
-`o`, capacity `q`, operational cost `πᵒ`, fixed cost `πᶠ`, and set of routes `R`.
+A `Vehicle` is a mode of delivery with index `i`, origin depot node index `o`, 
+capacity `q`, operational cost `πᵒ`, fixed cost `πᶠ`, and set of routes `R`.
 """
 struct Vehicle
     i::Int64                                                                        # Vehicle index
@@ -50,8 +53,8 @@ abstract type Node end
 @doc """
     DepotNode(i::Int64, x::Float64, y::Float64, q::Float64, πᵒ::Float64, πᶠ::Float64, V::Vector{Vehicle})
 
-A `DepotNode` is a source point on the graph at `(x,y)` with index value `i`, 
-capacity `q`, operational cost `πᵒ`, fixed cost `πᶠ`, and fleet of vehicles `V`.
+A `DepotNode` is a source point on the graph at `(x,y)` with index `i`, capacity `q`, operational cost 
+`πᵒ`, fixed cost `πᶠ`, and fleet of vehicles `V`.
 """
 struct DepotNode <: Node
     i::Int64                                                                        # Depot node index
@@ -64,18 +67,18 @@ struct DepotNode <: Node
 end
 
 @doc """
-    CustomerNode(i::Int64, x::Float64, y::Float64, q::Float64, t::Int64, h::Int64, r::Route)
+    CustomerNode(i::Int64, x::Float64, y::Float64, q::Float64, iₜ::Int64, iₕ::Int64, r::Route)
 
-A `CustomerNode` is a sink point on the graph at `(x,y)` with index value `i`, 
-demand `q`, tail node index `t`, head node index `h`, and on route `r`.
+A `CustomerNode` is a sink point on the graph at `(x,y)` with index `i`, demand `q`, tail node 
+index `iₜ`, head node index `iₕ`, on route `r`.
 """
 mutable struct CustomerNode <: Node
     i::Int64                                                                        # Customer node index
     x::Float64                                                                      # Customer node location on the x-axis
     y::Float64                                                                      # Customer node location in the y-axis
     q::Int64                                                                        # Customer demand
-    t::Int64                                                                        # Tail (predecessor) node index
-    h::Int64                                                                        # Head (successor) node index
+    iₜ::Int64                                                                       # Tail (predecessor) node index
+    iₕ::Int64                                                                       # Head (successor) node index
     r::Route                                                                        # Route visiting the customer
 end
 
@@ -97,8 +100,8 @@ Route(i, v::Vehicle, d::DepotNode) = Route(i, v.i, d.i, d.i, 0, 0, 0)           
 
 # is equal
 Base.isequal(p::Route, q::Route) = isequal(p.i, q.i)
-Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.i,q.i)
-Base.isequal(p::Node, q::Node) = isequal(p.i,q.i)
+Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.i, q.i)
+Base.isequal(p::Node, q::Node) = isequal(p.i, q.i)
 
 # is operational
 isopt(r::Route) = (r.n ≥ 1)                                                         # A route is defined operational if it serves at least one customer

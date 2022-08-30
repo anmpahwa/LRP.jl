@@ -17,10 +17,10 @@ function f(s::Solution; fixed=true, operational=true, constraint=true)
             zᶠ += v.πᶠ
             for r ∈ v.R 
                 if !isopt(r) continue end
-                qʳ  = r.q
-                qᵈ += qʳ
+                qᵛ  = r.q
+                qᵈ += qᵛ
                 zᵒ += r.l * v.πᵒ
-                zᶜ += (qʳ > v.q) * (qʳ - v.q)
+                zᶜ += (qᵛ > v.q) * (qᵛ - v.q)
             end
         end
         zᵒ += qᵈ * d.πᵒ

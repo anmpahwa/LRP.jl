@@ -42,8 +42,8 @@ function best!(rng::AbstractRNG, s::Solution)
                 v  = V[r.o]
                 d  = D[v.o]
                 m  = length(v.R)
-                nₛ = isopt(r) ? C[r.s] : D[r.s]
-                nₑ = isopt(r) ? C[r.e] : D[r.e]
+                nₛ = isopt(r) ? C[r.iₛ] : D[r.iₛ]
+                nₑ = isopt(r) ? C[r.iₑ] : D[r.iₑ]
                 nₜ = d
                 nₕ = nₛ
                 while true
@@ -58,7 +58,7 @@ function best!(rng::AbstractRNG, s::Solution)
                     removenode!(c, nₜ, nₕ, r, s)
                     if isequal(nₜ, nₑ) break end
                     nₜ = nₕ
-                    nₕ = isequal(r.e, nₜ.i) ? D[nₜ.h] : C[nₜ.h]
+                    nₕ = isequal(r.iₑ, nₜ.i) ? D[nₜ.iₕ] : C[nₜ.iₕ]
                 end
             end
         end
@@ -69,9 +69,9 @@ function best!(rng::AbstractRNG, s::Solution)
         r = R[j]
         v = V[r.o]
         d = D[v.o]
-        t, h = p[i,j]
-        nₜ = t ≤ length(D) ? D[t] : C[t]
-        nₕ = h ≤ length(D) ? D[h] : C[h]
+        iₜ, iₕ = p[i,j]
+        nₜ = iₜ ≤ length(D) ? D[iₜ] : C[iₜ]
+        nₕ = iₕ ≤ length(D) ? D[iₕ] : C[iₕ]
         insertnode!(c, nₜ, nₕ, r, s)
         # Step 2.3: Revise vectors appropriately
         x[i,:] .= Inf
@@ -125,8 +125,8 @@ function greedy!(rng::AbstractRNG, s::Solution)
                 v  = V[r.o]
                 d  = D[v.o]
                 m  = length(v.R)
-                nₛ = isopt(r) ? C[r.s] : D[r.s]
-                nₑ = isopt(r) ? C[r.e] : D[r.e]
+                nₛ = isopt(r) ? C[r.iₛ] : D[r.iₛ]
+                nₑ = isopt(r) ? C[r.iₑ] : D[r.iₑ]
                 nₜ = d
                 nₕ = nₛ
                 while true
@@ -141,7 +141,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
                     removenode!(c, nₜ, nₕ, r, s)
                     if isequal(nₜ, nₑ) break end
                     nₜ = nₕ
-                    nₕ = isequal(r.e, nₜ.i) ? D[nₜ.h] : C[nₜ.h]
+                    nₕ = isequal(r.iₑ, nₜ.i) ? D[nₜ.iₕ] : C[nₜ.iₕ]
                 end
             end
         end
@@ -151,9 +151,9 @@ function greedy!(rng::AbstractRNG, s::Solution)
         r = R[j]
         v = V[r.o]
         d = D[v.o]
-        t, h = p[i,j]
-        nₜ = t ≤ length(D) ? D[t] : C[t]
-        nₕ = h ≤ length(D) ? D[h] : C[h]
+        iₜ, iₕ = p[i,j]
+        nₜ = iₜ ≤ length(D) ? D[iₜ] : C[iₜ]
+        nₕ = iₕ ≤ length(D) ? D[iₕ] : C[iₕ]
         insertnode!(c, nₜ, nₕ, r, s)
         # Step 2.3: Revise vectors appropriately
         x[i,:] .= Inf
@@ -211,8 +211,8 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
                 v  = V[r.o]
                 d  = D[v.o]
                 m  = length(v.R)
-                nₛ = isopt(r) ? C[r.s] : D[r.s]
-                nₑ = isopt(r) ? C[r.e] : D[r.e]
+                nₛ = isopt(r) ? C[r.iₛ] : D[r.iₛ]
+                nₑ = isopt(r) ? C[r.iₑ] : D[r.iₑ]
                 nₜ = d
                 nₕ = nₛ
                 while true
@@ -237,7 +237,7 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
                     removenode!(c, nₜ, nₕ, r, s)
                     if isequal(nₜ, nₑ) break end
                     nₜ = nₕ
-                    nₕ = isequal(r.e, nₜ.i) ? D[nₜ.h] : C[nₜ.h]
+                    nₕ = isequal(r.iₑ, nₜ.i) ? D[nₜ.iₕ] : C[nₜ.iₕ]
                 end
             end
             # Step 2.1.2: Compute regret cost for customer node c
@@ -252,9 +252,9 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
         r = R[j]
         v = V[r.o]
         d = D[v.o]
-        t, h = p[i,j]
-        nₜ = t ≤ length(D) ? D[t] : C[t]
-        nₕ = h ≤ length(D) ? D[h] : C[h]
+        iₜ, iₕ = p[i,j]
+        nₜ = iₜ ≤ length(D) ? D[iₜ] : C[iₜ]
+        nₕ = iₕ ≤ length(D) ? D[iₕ] : C[iₕ]
         insertnode!(c, nₜ, nₕ, r, s)
         # Step 2.3: Revise vectors appropriately
         x[i,:] .= Inf

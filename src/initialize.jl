@@ -36,7 +36,7 @@ function random(rng::AbstractRNG, instance)
         v = V[r.o]
         d = D[v.o]
         nₜ = d
-        nₕ = isopt(r) ? C[r.s] : D[r.s]
+        nₕ = isopt(r) ? C[r.iₛ] : D[r.iₛ]
         insertnode!(c, nₜ, nₕ, r, s)
         w[i] = 0
     end

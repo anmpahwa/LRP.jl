@@ -39,16 +39,16 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
         c = C[i]
         # Step 2.2: Remove this node from its position between tail node nₜ and head node nₕ
         r = c.r
-        nₜ = isequal(r.s, c.i) ? D[c.t] : C[c.t]
-        nₕ = isequal(r.e, c.i) ? D[c.h] : C[c.h]
+        nₜ = isequal(r.iₛ, c.i) ? D[c.iₜ] : C[c.iₜ]
+        nₕ = isequal(r.iₑ, c.i) ? D[c.iₕ] : C[c.iₕ]
         removenode!(c, nₜ, nₕ, r, s)
         # Step 2.3: Iterate through all routes
         for (j,r) ∈ pairs(R)
             # Step 2.3.1: Iterate through all possible insertion positions
             v = V[r.o]
             d = D[v.o]
-            nₛ = isopt(r) ? C[r.s] : D[r.s]
-            nₑ = isopt(r) ? C[r.e] : D[r.e]
+            nₛ = isopt(r) ? C[r.iₛ] : D[r.iₛ]
+            nₑ = isopt(r) ? C[r.iₑ] : D[r.iₑ]
             nₜ = d
             nₕ = nₛ
             while true
@@ -63,17 +63,16 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
                 removenode!(c, nₜ, nₕ, r, s)
                 if isequal(nₜ, nₑ) break end
                 nₜ = nₕ
-                nₕ = isequal(r.e, nₜ.i) ? D[nₜ.h] : C[nₜ.h]
+                nₕ = isequal(r.iₑ, nₜ.i) ? D[nₜ.iₕ] : C[nₜ.iₕ]
             end
         end
         # Step 2.4: Move the node to its best position (this could be its original position as well)
         j = argmin(x)
         Δ = x[j]
         r = R[j]
-        t = p[j][1]
-        h = p[j][2]
-        nₜ = t ≤ length(D) ? D[t] : C[t]
-        nₕ = h ≤ length(D) ? D[h] : C[h]
+        iₜ, iₕ = p[j]
+        nₜ = iₜ ≤ length(D) ? D[iₜ] : C[iₜ]
+        nₕ = iₕ ≤ length(D) ? D[iₕ] : C[iₕ]
         insertnode!(c, nₜ, nₕ, r, s)
         # Step 2.5: Revise vectors appropriately
         w[i] = 0
@@ -104,7 +103,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         (i,j) = sample(rng, 1:r.n, 2)
         (i,j) = j < i ? (j,i) : (i,j)  
         k = 1
-        c = C[r.s]
+        c = C[r.iₛ]
         n₂ = c
         n₅ = c
         while true
@@ -112,12 +111,12 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(k, j) n₅ = c end
             if isequal(k, j) break end
             k += 1
-            c = C[c.h]
+            c = C[c.iₕ]
         end
-        n₁ = isequal(r.s, n₂.i) ? D[n₂.t] : C[n₂.t]
-        n₃ = isequal(r.e, n₂.i) ? D[n₂.h] : C[n₂.h]
-        n₄ = isequal(r.s, n₅.i) ? D[n₅.t] : C[n₅.t]
-        n₆ = isequal(r.e, n₅.i) ? D[n₅.h] : C[n₅.h]
+        n₁ = isequal(r.iₛ, n₂.i) ? D[n₂.iₜ] : C[n₂.iₜ]
+        n₃ = isequal(r.iₑ, n₂.i) ? D[n₂.iₕ] : C[n₂.iₕ]
+        n₄ = isequal(r.iₛ, n₅.i) ? D[n₅.iₜ] : C[n₅.iₜ]
+        n₆ = isequal(r.iₑ, n₅.i) ? D[n₅.iₕ] : C[n₅.iₕ]
         if isequal(n₂, n₅) || isequal(n₁, n₅) continue end 
         # Step 1.2: Reconfigure
         # d → ... → n₁ → n₅ → n₄ → ... → n₃ → n₂ → n₆ → ... → d
@@ -131,7 +130,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             insertnode!(n, tₙ, hₙ, r, s)
             hₙ = n
             n  = hₒ
-            hₒ = isdepot(hₒ) ? C[r.s] : (isequal(r.e, hₒ.i) ? D[hₒ.h] : C[hₒ.h])
+            hₒ = isdepot(hₒ) ? C[r.iₛ] : (isequal(r.iₑ, hₒ.i) ? D[hₒ.iₕ] : C[hₒ.iₕ])
             if isequal(n, n₅) break end
         end
         # Step 1.3: Compute change in objective function value
@@ -151,7 +150,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             insertnode!(n, tₙ, hₙ, r, s)
             hₙ = n
             n  = hₒ
-            hₒ = isdepot(hₒ) ? C[r.s] : (isequal(r.e, hₒ.i) ? D[hₒ.h] : C[hₒ.h])
+            hₒ = isdepot(hₒ) ? C[r.iₛ] : (isequal(r.iₑ, hₒ.i) ? D[hₒ.iₕ] : C[hₒ.iₕ])
             if isequal(n, n₂) break end
         end
     end
@@ -175,28 +174,28 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         if isequal(r₂, r₅) continue end
         i = rand(rng, 1:r₂.n)
         k = 1
-        c₂ = C[r₂.s]
+        c₂ = C[r₂.iₛ]
         n₂ = c₂
         while true
             if isequal(k, i) n₂ = c₂ end
             if isequal(k, i) break end
             k += 1
-            c₂ = C[c₂.h]
+            c₂ = C[c₂.iₕ]
         end
-        n₁ = isequal(r₂.s, n₂.i) ? D[n₂.t] : C[n₂.t]
-        n₃ = isequal(r₂.e, n₂.i) ? D[n₂.h] : C[n₂.h]
+        n₁ = isequal(r₂.iₛ, n₂.i) ? D[n₂.iₜ] : C[n₂.iₜ]
+        n₃ = isequal(r₂.iₑ, n₂.i) ? D[n₂.iₕ] : C[n₂.iₕ]
         j = rand(rng, 1:r₅.n)
         k = 1
-        c₅ = C[r₅.s]
+        c₅ = C[r₅.iₛ]
         n₅ = c₅
         while true
             if isequal(k, j) n₅ = c₅ end
             if isequal(k, j) break end
             k += 1
-            c₅ = C[c₅.h]
+            c₅ = C[c₅.iₕ]
         end
-        n₄ = isequal(r₅.s, n₅.i) ? D[n₅.t] : C[n₅.t]
-        n₆ = isequal(r₅.e, n₅.i) ? D[n₅.h] : C[n₅.h]
+        n₄ = isequal(r₅.iₛ, n₅.i) ? D[n₅.iₜ] : C[n₅.iₜ]
+        n₆ = isequal(r₅.iₑ, n₅.i) ? D[n₅.iₕ] : C[n₅.iₕ]
         # Step 1.2: Reconfigure
         # d₂ → ... → n₁ → n₅ → n₆ → ...  → d₂ and d₅ → ... → n₄ → n₂ → n₃ → ... → d₅
         c₂ = n₂
@@ -210,7 +209,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(hₒ, d₂) break end
             tₙ = c₂ 
             c₂ = C[hₒ.i]
-            hₒ = isequal(r₂.e, c₂.i) ? D[c₂.h] : C[c₂.h]
+            hₒ = isequal(r₂.iₑ, c₂.i) ? D[c₂.iₕ] : C[c₂.iₕ]
         end
         c₅ = n₅
         tₒ = c₂
@@ -223,7 +222,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(hₒ, d₅) break end
             tₙ = c₅
             c₅ = C[hₒ.i]
-            hₒ = isequal(r₅.e, c₅.i) ? D[c₅.h] : C[c₅.h]
+            hₒ = isequal(r₅.iₑ, c₅.i) ? D[c₅.iₕ] : C[c₅.iₕ]
         end
         # Step 1.3: Compute change in objective function value
         z′ = f(s)
@@ -234,7 +233,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # d₂ → ... → n₁ → n₂ → n₃ → ... → d₂ and d₅ → ... → n₄ → n₅ → n₆ → ... → d₅
         c₂ = n₅
         tₒ = n₁
-        hₒ = isequal(r₂.e, c₂.i) ? D[c₂.h] : C[c₂.h]
+        hₒ = isequal(r₂.iₑ, c₂.i) ? D[c₂.iₕ] : C[c₂.iₕ]
         tₙ = n₄
         hₙ = n₂
         while true
@@ -243,11 +242,11 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(hₒ, d₂) break end
             tₙ = c₂ 
             c₂ = C[hₒ.i]
-            hₒ = isequal(r₂.e, c₂.i) ? D[c₂.h] : C[c₂.h]
+            hₒ = isequal(r₂.iₑ, c₂.i) ? D[c₂.iₕ] : C[c₂.iₕ]
         end
         c₅ = n₂
         tₒ = c₂
-        hₒ = isequal(r₅.e, c₅.i) ? D[c₅.h] : C[c₅.h]
+        hₒ = isequal(r₅.iₑ, c₅.i) ? D[c₅.iₕ] : C[c₅.iₕ]
         tₙ = n₁
         hₙ = d₂
         while true
@@ -256,7 +255,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(hₒ, d₅) break end
             tₙ = c₅
             c₅ = C[hₒ.i]
-            hₒ = isequal(r₅.e, c₅.i) ? D[c₅.h] : C[c₅.h]
+            hₒ = isequal(r₅.iₑ, c₅.i) ? D[c₅.iₕ] : C[c₅.iₕ]
         end
     end
     # Step 2: Return solution
@@ -271,13 +270,13 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     z̅ = z
     D = s.D
     C = s.C
-    K = eachindex(D)
+    I = eachindex(D)
     w = isopt.(D)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 1.1: Select a random depot node d
-        k = sample(rng, K, Weights(w))
-        d = D[k]
+        i = sample(rng, I, Weights(w))
+        d = D[i]
         V = d.V
         # Step 1.2: Iterate through every route originating from this depot node
         for v ∈ V
@@ -285,14 +284,14 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
             for r ∈ R
                 # Step 1.2.1: Remove depot node d from its position in route r
                 if !isopt(r) continue end
-                cₛ = C[r.s]
-                cₑ = C[r.e]
+                cₛ = C[r.iₛ]
+                cₑ = C[r.iₑ]
                 x = 0.
                 p = (cₑ.i, cₛ.i)
                 removenode!(d, cₑ, cₛ, r, s)
                 # Step 1.2.2: Iterate through all possible positions in route r
                 cₜ = cₛ
-                cₕ = C[cₜ.h]
+                cₕ = C[cₜ.iₕ]
                 while true
                     # Step 1.2.2.1: Insert depot node d between tail node nₜ and head node nₕ
                     insertnode!(d, cₜ, cₕ, r, s)
@@ -305,20 +304,18 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
                     removenode!(d, cₜ, cₕ, r, s)
                     if isequal(cₕ, cₑ) break end
                     cₜ = cₕ
-                    cₕ = C[cₜ.h]
+                    cₕ = C[cₜ.iₕ]
                 end
                 # Step 1.2.3: Move the depot node to its best position in route r (this could be its original position as well)
-                t = p[1]
-                h = p[2]
-                cₜ = C[t]
-                cₕ = C[h]
+                iₜ, iₕ = p
+                cₜ = C[iₜ]
+                cₕ = C[iₕ]
                 insertnode!(d, cₜ, cₕ, r, s)
                 z = f(s) 
             end
         end
         # Step 1.3: Revise vectors appropriately
-        k = d.i
-        w[k] = 0
+        w[i] = 0
         Δ = z - z̅
         # Step 1.4: If the overall change results in reduction in objective function value, then go to step 2, else return to step 1.1
         Δ ≥ 0 ? continue : break
@@ -341,10 +338,10 @@ function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
         n₂, n₅ = sample(rng, C), sample(rng, C)
         if isequal(n₂, n₅) continue end
         r₂, r₅ = n₂.r, n₅.r
-        n₁ = isequal(r₂.s, n₂.i) ? D[n₂.t] : C[n₂.t]
-        n₃ = isequal(r₂.e, n₂.i) ? D[n₂.h] : C[n₂.h]
-        n₄ = isequal(r₅.s, n₅.i) ? D[n₅.t] : C[n₅.t]
-        n₆ = isequal(r₅.e, n₅.i) ? D[n₅.h] : C[n₅.h]
+        n₁ = isequal(r₂.iₛ, n₂.i) ? D[n₂.iₜ] : C[n₂.iₜ]
+        n₃ = isequal(r₂.iₑ, n₂.i) ? D[n₂.iₕ] : C[n₂.iₕ]
+        n₄ = isequal(r₅.iₛ, n₅.i) ? D[n₅.iₜ] : C[n₅.iₜ]
+        n₆ = isequal(r₅.iₑ, n₅.i) ? D[n₅.iₕ] : C[n₅.iₕ]
         # n₁ → n₂ (n₄) → n₃ (n₅) → n₆   ⇒   n₁ → n₃ (n₅) → n₂ (n₄) → n₆
         if isequal(n₃, n₅)
             removenode!(n₂, n₁, n₃, r₂, s)

@@ -13,14 +13,13 @@ function isfeasible(s::Solution)
         for v ∈ d.V
             for r ∈ v.R
                 if !isopt(r) continue end
-                cₛ = C[r.s]
-                cₑ = C[r.e]
+                cₛ = C[r.iₛ]
+                cₑ = C[r.iₑ]
                 c  = cₛ
                 while true
-                    k = c.i
-                    x[k] += 1
+                    x[c.i] += 1
                     if isequal(c, cₑ) break end
-                    c = C[c.h]
+                    c = C[c.iₕ]
                 end
             end
         end
