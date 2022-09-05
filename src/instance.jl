@@ -26,42 +26,41 @@ function build(instance)
         x = df[k,2]::Float64
         y = df[k,3]::Float64
         q = df[k,4]::Int64
-        iₜ = 0
-        iₕ = 0
-        c = CustomerNode(i, x, y, q, iₜ, iₕ, NullRoute)
+        iᵗ = 0
+        iʰ = 0
+        c = CustomerNode(i, x, y, q, iᵗ, iʰ, NullRoute)
         C[i] = c
     end
     # Arcs
     A = Dict{Tuple{Int64,Int64},Arc}()
     N = length(D)+length(C)
-    for iₜ ∈ 1:N
-        nₜ = iₜ ≤ length(D) ? D[iₜ] : C[iₜ]
-        xₜ = nₜ.x
-        yₜ = nₜ.y
-        for iₕ ∈ 1:N
-            nₕ = iₕ ≤ length(D) ? D[iₕ] : C[iₕ]
-            xₕ = nₕ.x
-            yₕ = nₕ.y
-            l  = sqrt((xₕ - xₜ)^2 + (yₕ - yₜ)^2)
-            a  = Arc(iₜ, iₕ, l)
-            A[(iₜ,iₕ)] = a
+    for iᵗ ∈ 1:N
+        nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
+        xᵗ = nᵗ.x
+        yᵗ = nᵗ.y
+        for iʰ ∈ 1:N
+            nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
+            xʰ = nʰ.x
+            yʰ = nʰ.y
+            l  = sqrt((xʰ - xᵗ)^2 + (yʰ - yᵗ)^2)
+            a  = Arc(iᵗ, iʰ, l)
+            A[(iᵗ,iʰ)] = a
         end
     end
     # Vehicles
     file = joinpath(dirname(@__DIR__), "instances/$instance/vehicles.csv")
     csv = CSV.File(file, types=[Int64, Int64, Int64, Float64, Float64])
     df = DataFrame(csv)
-    V = Vector{Vehicle}(undef, nrow(df))
     for k ∈ 1:nrow(df)
-        i  = df[k,1]::Int64
-        o  = df[k,2]::Int64
+        iᵛ = df[k,1]::Int64
+        iᵈ = df[k,2]::Int64
         q  = df[k,3]::Int64
         πᵒ = df[k,4]::Float64
         πᶠ = df[k,5]::Float64
-        v  = Vehicle(i, o, q, πᵒ, πᶠ, Route[])
-        V[k] = v
-        push!(D[o].V, v)
+        v  = Vehicle(iᵛ, iᵈ, q, πᵒ, πᶠ, Route[])
+        d  = D[iᵈ] 
+        push!(d.V, v)
     end
-    G = (D, C, A, V)
+    G = (D, C, A)
     return G
 end

@@ -19,7 +19,7 @@ function relatedness(c::CustomerNode, d::DepotNode, a::Arc)
     ϕ = false
     r = c.r
     for v ∈ d.V 
-        ϕ = isequal(r.o, v.i) 
+        ϕ = isequal(r.iᵛ, v.iᵛ) 
         ϕ ? break : continue
     end
     z = 1/(l - q - ϕ)
@@ -31,7 +31,7 @@ function relatedness(d::DepotNode, c::CustomerNode, a::Arc)
     ϕ = false
     r = c.r
     for v ∈ d.V 
-        ϕ = isequal(r.o, v.i) 
+        ϕ = isequal(r.iᵛ, v.iᵛ) 
         ϕ ? break : continue
     end
     z = 1/(l - q - ϕ)
@@ -42,7 +42,7 @@ function relatedness(r₁::Route, r₂::Route)
     if isequal(r₁, r₂) return Inf end
     l = abs(r₁.l - r₂.l)
     q = abs(r₁.q - r₂.q)
-    ϕ = isequal(r₁.o, r₂.o)
+    ϕ = isequal(r₁.iᵛ, r₂.iᵛ)
     z = 1/(l - q - ϕ)
     return z
 end
@@ -63,7 +63,7 @@ function relatedness(v₁::Vehicle, v₂::Vehicle)
     end
     l = abs(l₁ - l₂)
     q = abs(q₁ - q₂)
-    ϕ = isequal(v₁.o, v₂.o)
+    ϕ = isequal(v₁.iᵈ, v₂.iᵈ)
     z = 1/(l - q - ϕ)
     return z
 end

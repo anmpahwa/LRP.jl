@@ -1,31 +1,31 @@
-# Insert node nₒ between tail node nₜ and head node nₕ in route rₒ in solution s.
-function insertnode!(nₒ::Node, nₜ::Node, nₕ::Node, rₒ::Route, s::Solution)
-    isdepot(nₜ) ? rₒ.iₛ = nₒ.i : nₜ.iₕ = nₒ.i
-    isdepot(nₕ) ? rₒ.iₑ = nₒ.i : nₕ.iₜ = nₒ.i
-    isdepot(nₒ) ? (rₒ.iₛ, rₒ.iₑ) = (nₕ.i, nₜ.i) : (nₒ.iₕ, nₒ.iₜ) = (nₕ.i, nₜ.i)
-    rₒ.n += iscustomer(nₒ) 
-    rₒ.q += iscustomer(nₒ) ? nₒ.q : 0
-    rₒ.l += s.A[(nₜ.i, nₒ.i)].l + s.A[(nₒ.i, nₕ.i)].l - s.A[(nₜ.i, nₕ.i)].l
-    if iscustomer(nₒ) nₒ.r = rₒ end
+# Insert node nᵒ between tail node nᵗ and head node nʰ in route rᵒ in solution s.
+function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
+    isdepot(nᵗ) ? rᵒ.iˢ = nᵒ.iⁿ : nᵗ.iʰ = nᵒ.iⁿ
+    isdepot(nʰ) ? rᵒ.iᵉ = nᵒ.iⁿ : nʰ.iᵗ = nᵒ.iⁿ
+    isdepot(nᵒ) ? (rᵒ.iˢ, rᵒ.iᵉ) = (nʰ.iⁿ, nᵗ.iⁿ) : (nᵒ.iʰ, nᵒ.iᵗ) = (nʰ.iⁿ, nᵗ.iⁿ)
+    rᵒ.n += iscustomer(nᵒ) 
+    rᵒ.q += iscustomer(nᵒ) ? nᵒ.q : 0
+    rᵒ.l += s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
+    if iscustomer(nᵒ) nᵒ.r = rᵒ end
     return s
 end
 
-# Remove node nₒ from its position between tail node nₜ and head node nₕ in route rₒ in solution s.
-function removenode!(nₒ::Node, nₜ::Node, nₕ::Node, rₒ::Route, s::Solution)
-    isdepot(nₜ) ? rₒ.iₛ = nₕ.i : nₜ.iₕ = nₕ.i
-    isdepot(nₕ) ? rₒ.iₑ = nₜ.i : nₕ.iₜ = nₜ.i
-    isdepot(nₒ) ? (rₒ.iₛ, rₒ.iₑ) = (0, 0) : (nₒ.iₕ, nₒ.iₜ) = (0, 0)
-    rₒ.n -= iscustomer(nₒ) 
-    rₒ.q -= iscustomer(nₒ) ? nₒ.q : 0
-    rₒ.l -= s.A[(nₜ.i, nₒ.i)].l + s.A[(nₒ.i, nₕ.i)].l - s.A[(nₜ.i, nₕ.i)].l
-    if iscustomer(nₒ) nₒ.r = NullRoute end
+# Remove node nᵒ from its position between tail node nᵗ and head node nʰ in route rᵒ in solution s.
+function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
+    isdepot(nᵗ) ? rᵒ.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
+    isdepot(nʰ) ? rᵒ.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
+    isdepot(nᵒ) ? (rᵒ.iˢ, rᵒ.iᵉ) = (0, 0) : (nᵒ.iʰ, nᵒ.iᵗ) = (0, 0)
+    rᵒ.n -= iscustomer(nᵒ) 
+    rᵒ.q -= iscustomer(nᵒ) ? nᵒ.q : 0
+    rᵒ.l -= s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
+    if iscustomer(nᵒ) nᵒ.r = NullRoute end
     return s
 end
 
 # Return true if vehicle v needs another route (adds conservatively)
 function addroute(v::Vehicle, s::Solution)
     D = s.D
-    d = D[v.o]
+    d = D[v.iᵈ]
     # condtions when route mustn't be added
     if any(!isopt, v.R) return false end
     qᵈ = 0
@@ -36,7 +36,7 @@ function addroute(v::Vehicle, s::Solution)
     for v ∈ d.V for r ∈ v.R if r.q > v.q return true end end end
     for d ∈ D 
         qᵈ = 0
-        if isequal(v.o, d.i) continue end
+        if isequal(v.iᵈ, d.iⁿ) continue end
         for v ∈ d.V for r ∈ v.R qᵈ += r.q end end
         if qᵈ > d.q return true end
     end

@@ -109,23 +109,23 @@ function vectorize(s::Solution)
     C = s.C
     Z = [Int64[] for _ ∈ D]
     for d ∈ D
-        i = d.i
+        iⁿ = d.iⁿ
         if !isopt(d) continue end
         for v ∈ d.V
             if !isopt(v) continue end
             for r ∈ v.R
                 if !isopt(r) continue end
-                cₛ, cₑ = C[r.iₛ], C[r.iₑ]
-                push!(Z[i], d.i)
-                c = cₛ
+                cˢ, cᵉ = C[r.iˢ], C[r.iᵉ] 
+                push!(Z[iⁿ], d.iⁿ)
+                c = cˢ
                 while true
-                    push!(Z[i], c.i)
-                    if isequal(c, cₑ) break end
-                    c = C[c.iₕ]
+                    push!(Z[iⁿ], c.iⁿ)
+                    if isequal(c, cᵉ) break end
+                    c = C[c.iʰ]
                 end
             end
         end
-        push!(Z[i], d.i)
+        push!(Z[iⁿ], d.iⁿ)
     end
     return Z
 end
