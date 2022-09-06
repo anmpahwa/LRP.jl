@@ -34,12 +34,24 @@ function random(rng::AbstractRNG, instance)
         insertnode!(c, nᵗ, nʰ, r, s)
         iⁿ = c.iⁿ
         w[iⁿ] = 0
+        if addroute(v,s)
+            r = Route(v, d)
+            push!(v.R, r) 
+        end
+        if addvehicle(d,s)
+            v = Vehicle(v, d)
+            r = Route(v, d)
+            push!(d.V, v)
+            push!(v.R, r) 
+        end
     end
     # Step 3: Return initial solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s

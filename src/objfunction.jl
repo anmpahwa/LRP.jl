@@ -1,31 +1,33 @@
 # Objective function evaluation
 """
-    f(s::Solution; fixed=true, operational=true, constraint=true)
+    f(s::Solution; fixed=true, operational=true, penalty=true)
 
 Objective function evaluation for solution `s`.
-Include `fixed`, `operational`, and `constraint` violation cost if `true`.
+Include `fixed`, `operational`, and `penalty` cost for constriant 
+violation if `true`.
 """
 function f(s::Solution; fixed=true, operational=true, constraint=true)
-    zᶠ, zᵒ, zᶜ = 0., 0., 0.
-    ϕᶠ, ϕᵒ, ϕᶜ = fixed, operational, constraint
+    πᶠ, πᵒ, πᵖ = 0., 0., 0.
+    ϕᶠ, ϕᵒ, ϕᵖ = fixed, operational, constraint
     for d ∈ s.D
         if !isopt(d) continue end 
         qᵈ = 0
-        zᶠ += d.πᶠ
+        πᶠ += d.πᶠ
         for v ∈ d.V 
             if !isopt(v) continue end
-            zᶠ += v.πᶠ
+            πᶠ += v.πᶠ
             for r ∈ v.R 
                 if !isopt(r) continue end
                 qᵛ  = r.q
                 qᵈ += qᵛ
-                zᵒ += r.l * v.πᵒ
-                zᶜ += (qᵛ > v.q) * (qᵛ - v.q)
+                πᵒ += r.l * v.πᵒ
+                πᵖ += (qᵛ > v.q) * (qᵛ - v.q)
             end
         end
-        zᵒ += qᵈ * d.πᵒ
-        zᶜ += (qᵈ > d.q) * (qᵈ - d.q)
+        πᵒ += qᵈ * d.πᵒ
+        πᵖ += (qᵈ > d.q) * (qᵈ - d.q)
     end
-    z = ϕᶠ * zᶠ + ϕᵒ * zᵒ + ϕᶜ * zᶜ * (zᶠ + zᵒ)
+    for c ∈ s.C πᵖ += isopen(c) ? 0. : (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ) end
+    z = ϕᶠ * πᶠ + ϕᵒ * πᵒ + ϕᵖ * πᵖ * (πᶠ + πᵒ)
     return z
 end

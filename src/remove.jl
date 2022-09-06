@@ -45,9 +45,11 @@ function randomnode!(rng::AbstractRNG, q::Int64, s::Solution)
     end
     # Step 2: Return solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s
@@ -78,15 +80,16 @@ function relatednode!(rng::AbstractRNG, q::Int64, s::Solution)
     end
     # Step 4: Return solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s
 end
 
-# TODO
 # Worst Node Removal
 # Remove q customer nodes with highest removal cost (savings)
 function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
@@ -133,9 +136,11 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
         for (j,v) ∈ pairs(V) ϕ[j] = isequal(r.iᵛ, v.iᵛ) ? 1 : 0 end 
     end
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 2: Return solution
@@ -169,9 +174,11 @@ function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
     end
     # Step 2: Return solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s
@@ -209,9 +216,11 @@ function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
     end
     # Step 4: Return solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s
@@ -251,9 +260,11 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
     end
     # Step 3: Return solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s
@@ -286,10 +297,18 @@ function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
             end
         end
         w[iᵛ] = 0
-        deleteat!(v.R, deleteroute.(v.R))
-        for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
     end
     # Step 2: Return solution
+    for d ∈ D 
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+        deleteat!(v.R, deleteroute.(v.R))
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
+        end
+    end
     return s
 end
 
@@ -323,10 +342,18 @@ function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         end
         x[iᵛ] = -Inf
         w[iᵛ] = 0
-        deleteat!(v.R, deleteroute.(v.R))
-        for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
     end
     # Step 4: Return solution
+    for d ∈ D 
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+        deleteat!(v.R, deleteroute.(v.R))
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
+        end
+    end
     return s
 end
 
@@ -368,10 +395,18 @@ function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         end
         x[iᵛ] = Inf
         w[iᵛ] = 0
-        deleteat!(v.R, deleteroute.(v.R))
-        for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
     end
     # Step 3: Return solution
+    for d ∈ D 
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+        deleteat!(v.R, deleteroute.(v.R))
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
+        end
+    end
     return s
 end
 
@@ -400,12 +435,18 @@ function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
                     if isequal(nʰ, d) break end
                 end
             end
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
         end
         w[iᵈ] = 0
     end
     # Step 2: Return solution
+    for d ∈ D 
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
+        end
+    end
     return s
 end
 
@@ -434,9 +475,11 @@ function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
     end
     # Step 4: Return solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s
@@ -469,12 +512,18 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
                     if isequal(nʰ, d) break end
                 end
             end
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
         end
         x[iᵈ] = Inf
         w[iᵈ] = 0
     end
     # Step 3: Return solution
+    for d ∈ D 
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
+        end
+    end
     return s
 end

@@ -92,12 +92,24 @@ function best!(rng::AbstractRNG, s::Solution)
             append!(p, fill((0, 0), (I,1)))
             push!(ϕ, 1)
         end
+        if addvehicle(d,s)
+            v = Vehicle(v, d)
+            r = Route(v, d)
+            push!(d.V, v)
+            push!(v.R, r) 
+            push!(R, r)
+            append!(x, fill(Inf, (I,1)))
+            append!(p, fill((0, 0), (I,1)))
+            push!(ϕ, 1)
+        end
     end
     # Step 3: Return initial solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s
@@ -178,12 +190,24 @@ function greedy!(rng::AbstractRNG, s::Solution)
             append!(p, fill((0, 0), (I,1)))
             push!(ϕ, 1)
         end
+        if addvehicle(d,s)
+            v = Vehicle(v, d)
+            r = Route(v, d)
+            push!(d.V, v)
+            push!(v.R, r) 
+            push!(R, r)
+            append!(x, fill(Inf, (I,1)))
+            append!(p, fill((0, 0), (I,1)))
+            push!(ϕ, 1)
+        end
     end
     # Step 3: Return initial solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s
@@ -297,12 +321,24 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
             append!(p, fill((0, 0), (I,1)))
             push!(ϕ, 1)
         end
+        if addvehicle(d,s)
+            v = Vehicle(v, d)
+            r = Route(v, d)
+            push!(d.V, v)
+            push!(v.R, r) 
+            push!(R, r)
+            append!(x, fill(Inf, (I,1)))
+            append!(p, fill((0, 0), (I,1)))
+            push!(ϕ, 1)
+        end
     end
     # Step 3: Return initial solution
     for d ∈ D 
-        for v ∈ d.V
-            deleteat!(v.R, deleteroute.(v.R))
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ = iʳ end
+        deleteat!(d.V, deletevehicle.(d.V))
+        for (iᵛ,v) ∈ pairs(d.V)
+            v.iᵛ = iᵛ 
+            deleteat!(v.R, deleteroute.(v.R)) 
+            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     return s

@@ -40,5 +40,6 @@ function isfeasible(s::Solution)
         end
         if qᵈ > d.q return false end
     end
+    for c ∈ C if c.tᵃ > c.tˡ return false end end
     return true
 end
