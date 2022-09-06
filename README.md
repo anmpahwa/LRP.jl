@@ -5,11 +5,12 @@
 
 location routing problem with heterogeneous fleet of multi-route delivery vehicles
 
-Given, a graph `G = (D, C, A, V)` with 
-set of depots `D` with capacity `d.q`, fleet `d.V`, operational cost `d.πᵒ`, and fixed cost `d.πᶠ` for every depot `d ∈ D`; 
-set of customer nodes `C` with demand `c.q` for every customer `c ∈ C`;
+Given, a graph `G = (D, C, A)` with 
+set of depots `D` with capacity `d.q`, operational cost `d.πᵒ`, and fixed cost `d.πᶠ`, and 
+fleet of vehicles `d.V`  with capacity `v.q`, speed `v.s`, service times `v.τᵈ` and `v.τᶜ` at depot node and customer node respectively, operational cost `v.πᵒ`, and fixed cost `v.πᶠ`, for every vehicle `v ∈ V`, 
+for every depot `d ∈ D`; 
+set of customer nodes `C` with demand `c.q`, delivery time-window `[c.tᵉ,c.tˡ]` for every customer `c ∈ C`;
 set of arcs `A = {(i,j); i,j ∈ N={D∪C}}` with length `l` for every arc `(i,j) ∈ A`; and 
-set of vehicles `V` with capacity `v.q`, operational cost `v.πᵒ`, and fixed cost `v.πᶠ` for every vehicle `v ∈ V`, 
 the objective is to develop least cost routes from select depot nodes using select vehicles such that every customer node is visited exactly once while also accounting for depot and vehicle capacities.  
 
 This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an optimal solution for the Locatio Routing Problem given ALNS optimization 
