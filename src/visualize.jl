@@ -72,8 +72,8 @@ function visualize(s::Solution; backend=gr)
     end
     # Non-operational nodes: closed depot nodes and open customer nodes
     Z = Int64[] 
-    for d ∈ D if !isopt(d) push!(Z, d.i) end end
-    for c ∈ C if isopen(c) push!(Z, c.i) end end
+    for d ∈ D if !isopt(d) push!(Z, d.iⁿ) end end
+    for c ∈ C if isopen(c) push!(Z, c.iⁿ) end end
     K = length(Z)
     X = zeros(Float64, K)
     Y = zeros(Float64, K)
