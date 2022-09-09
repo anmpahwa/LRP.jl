@@ -312,6 +312,8 @@ function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
     return s
 end
 
+# Related Vehicle Removal
+# For a randomly selected vehicle, remove customer nodes from most related vehicles until q customer nodes are removed
 function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
     D = s.D
     C = s.C
