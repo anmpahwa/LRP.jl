@@ -7,10 +7,10 @@ let
     # Vehicle Routing Problem
     @testset "VRP" begin
         χ   = ALNSParameters(
-            k̲   =   30                      ,
-            l̲   =   30                      ,
-            l̅   =   150                     ,
-            k̅   =   300                     ,
+            k̲   =   4                       ,
+            l̲   =   200                     ,
+            l̅   =   500                     ,
+            k̅   =   1000                    ,
             Ψᵣ  =   [
                         :randomnode!    , 
                         :relatednode!   , 
@@ -50,7 +50,7 @@ let
             μ̅   =   0.4                     ,
             ρ   =   0.1
         )
-        instances = ["cmt10"]
+        instances = ["r101", "r201", "c101", "c201", "rc101", "rc201"]
         for instance ∈ instances
             println("\nSolving $instance")
             sₒ = initialsolution(instance, :random)     
