@@ -144,7 +144,7 @@ end
 function Vehicle(v::Vehicle, d::DepotNode)
     iᵛ = length(d.V) + 1
     iᵈ = d.iⁿ
-    v  = Vehicle(iᵛ, iᵈ, v.q, v.s, v.τᵈ, v.τᶜ, v.πᵒ, v.πᶠ, Route[])
+    v  = Vehicle(iᵛ, iᵈ, v.q, v.l, v.s, v.τᶠ, v.τᵈ, v.τᶜ, v.πᵒ, v.πᶠ, v.w, Route[])
     return v
 end
 
