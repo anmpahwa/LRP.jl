@@ -5,7 +5,7 @@ using Random
 let
 # Developing an optimal solution 
     # Define instance
-    instance = "x-n303-k21";
+    instance = "r101";
     # Visualize instance
     display(visualize(instance))
     # Define a random number generator
@@ -63,8 +63,13 @@ let
     S = ALNS(rng, χ, sₒ);
     s⃰ = S[end];          
 # Fetch objective function values
-    println("Initial: $(f(sₒ))")
-    println("Optimal: $(f(s⃰))")
+    println("Objective function value:")
+    println("   Initial: $(f(sₒ; fixed=false, penalty=false))")
+    println("   Optimal: $(f(s⃰; fixed=false, penalty=false))")
+# Check if the solutions are feasible
+    println("Solution feasibility:")
+    println("   Initial: $(isfeasible(sₒ))")
+    println("   Optimal: $(isfeasible(s⃰))")
 # Visualizations
     # Visualize initial solution
     display(visualize(sₒ)) 
