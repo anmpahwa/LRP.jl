@@ -33,6 +33,9 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.s
         tᵉ = r.tᵉ 
     end
+    if isempty(vᵒ.R) vᵒ.tˢ, vᵒ.tᵉ = 0., 0.
+    else vᵒ.tˢ, vᵒ.tᵉ = vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ
+    end
     return s
 end
 
@@ -72,54 +75,70 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         tᵉ = r.tᵉ
     end
     if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = Inf, Inf end
+    if isempty(vᵒ.R) vᵒ.tˢ, vᵒ.tᵉ = 0., 0.
+    else vᵒ.tˢ, vᵒ.tᵉ = vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ
+    end
     return s
 end
 
-# Return true if vehicle v needs another route (adds conservatively)
-function addroute(v::Vehicle, s::Solution)
-    d = s.D[v.iᵈ]
+# Return true if vehicle vᵒ needs another route (adds conservatively)
+function addroute(vᵒ::Vehicle, s::Solution)
+    D  = s.D
+    dᵒ = D[vᵒ.iᵈ]
     # condtions when route mustn't be added
-    if any(!isopt, v.R) return false end
-    for v ∈ d.V if v.R[length(v.R)].tᵉ > v.w return false end end
+    if any(!isopt, vᵒ.R) return false end
+    for v ∈ dᵒ.V if v.tᵉ > v.w return false end end
     qᵈ = 0
-    for v ∈ d.V for r ∈ v.R qᵈ += r.q end end
-    if qᵈ ≥ d.q return false end
+    for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
+    if qᵈ ≥ dᵒ.q return false end
     # condition when route could be added
-    if isempty(v.R) return true end
-    for v ∈ d.V for r ∈ v.R if r.q > v.q return true end end end
-    for d ∈ s.D 
+    if isempty(vᵒ.R) return true end
+    for v ∈ dᵒ.V for r ∈ v.R if r.q > v.q return true end end end
+    for d ∈ D
         qᵈ = 0
-        if isequal(v.iᵈ, d.iⁿ) continue end
+        if isequal(dᵒ, d) continue end
         for v ∈ d.V for r ∈ v.R qᵈ += r.q end end
         if qᵈ > d.q return true end
     end
     return false
 end
 
-# Return true if route r can be deleted (deletes liberally)
-function deleteroute(r::Route)
-    if isopt(r) return false end
+# Return true if route rᵒ can be deleted (deletes liberally)
+function deleteroute(rᵒ::Route, s::Solution)
+    # condtions when route mustn't be deleted
+    if isopt(rᵒ) return false end
+    # condition when route could be deleted
     return true
 end
 
-# Return true if depot d needs another vehicle
-function addvehicle(d::DepotNode, s::Solution)
+# Return true if depot dᵒ needs another vehicle
+function addvehicle(dᵒ::DepotNode, s::Solution)
+    D = s.D
+    C = s.C
     # condtions when vehicle mustn't be added
-    if any(!isopt, d.V) return false end
+    if any(!isopt, dᵒ.V) return false end
     # condition when vehicle could be added
-    for c ∈ s.C 
-        if isopen(c) continue end
+    for c ∈ C
         r = c.r
-        v = d.V[r.iᵛ]
-        if !isequal(v.iᵈ, d.iⁿ) continue end
+        if isopen(c) continue end
+        d = D[r.iᵈ]
+        if !isequal(dᵒ, d) continue end
         if c.tᵃ > c.tˡ return true end 
     end
-    for v ∈ d.V if v.R[length(v.R)].tᵉ > v.w return true end end
+    for v ∈ dᵒ.V if v.tᵉ > v.w return true end end
     return false
 end
 
-# Return false if vehicle v can be deleted
-function deletevehicle(v::Vehicle)
-    if isopt(v) return false end
-    return true
+# Return false if vehicle vᵒ can be deleted
+function deletevehicle(vᵒ::Vehicle, s::Solution)
+    D  = s.D
+    dᵒ = D[vᵒ.iᵈ]
+    # condtions when vehicle mustn't be deleted
+    if isopt(vᵒ) return false end
+    # condition when vehicle could be deleted
+    for v ∈ dᵒ.V
+        if isequal(vᵒ, v) continue end
+        if isidentical(vᵒ, v) return true end 
+    end
+    return false
 end

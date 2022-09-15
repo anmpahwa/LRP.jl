@@ -43,15 +43,33 @@ function randomnode!(rng::AbstractRNG, q::Int64, s::Solution)
         n += 1
         w[iⁿ] = 0
     end
-    # Step 2: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 2: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 3: Return solution
     return s
 end
 
@@ -78,15 +96,33 @@ function relatednode!(rng::AbstractRNG, q::Int64, s::Solution)
         n += 1
         x[iⁿ] = -Inf
     end
-    # Step 4: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 4: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 5: Return solution
     return s
 end
 
@@ -135,15 +171,33 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
         x[iⁿ] = -Inf
         for (j,v) ∈ pairs(V) ϕ[j] = isequal(r.iᵛ, v.iᵛ) ? 1 : 0 end 
     end
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 2: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
-    # Step 2: Return solution
+    # Step 3: Return solution
     return s
 end
 
@@ -172,15 +226,33 @@ function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
         end
         w[iʳ] = 0
     end
-    # Step 2: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 2: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 3: Return solution
     return s
 end
 
@@ -214,15 +286,33 @@ function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
         x[iʳ] = -Inf
         w[iʳ] = 0
     end
-    # Step 4: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 4: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 5: Return solution
     return s
 end
 
@@ -235,9 +325,10 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
     # Step 1: Evaluate utilization of each route
     x = fill(Inf, eachindex(R))
     for (iʳ,r) ∈ pairs(R)
+        if !isopt(r) continue end
         d = s.D[r.iᵈ]
         v = d.V[r.iᵛ]
-        x[iʳ] = !isopt(r) ? Inf : r.q/v.q
+        x[iʳ] = r.q/v.q
     end
     # Step 2: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
     n = 0
@@ -258,15 +349,33 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
         x[iʳ] = Inf
         w[iʳ] = 0
     end
-    # Step 3: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 3: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 4: Return solution
     return s
 end
     
@@ -298,17 +407,33 @@ function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         end
         w[iᵛ] = 0
     end
-    # Step 2: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 2: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
-        deleteat!(v.R, deleteroute.(v.R))
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 3: Return solution
     return s
 end
 
@@ -345,17 +470,33 @@ function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         x[iᵛ] = -Inf
         w[iᵛ] = 0
     end
-    # Step 4: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 4: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
-        deleteat!(v.R, deleteroute.(v.R))
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 5: Return solution
     return s
 end
 
@@ -398,17 +539,33 @@ function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         x[iᵛ] = Inf
         w[iᵛ] = 0
     end
-    # Step 3: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 3: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
-        deleteat!(v.R, deleteroute.(v.R))
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 4: Return solution
     return s
 end
 
@@ -440,15 +597,33 @@ function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         end
         w[iᵈ] = 0
     end
-    # Step 2: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 2: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 3: Return solution
     return s
 end
 
@@ -475,15 +650,33 @@ function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
         n += 1
         x[iⁿ] = -Inf
     end
-    # Step 4: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 4: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 5: Return solution
     return s
 end
 
@@ -494,7 +687,11 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
     C = s.C
     # Step 1: Evaluate utilization for each depot
     x = fill(Inf, eachindex(D))
-    for (iᵈ,d) ∈ pairs(D) for v ∈ d.V for r ∈ v.R x[iᵈ] += r.q/d.q end end end
+    for (iᵈ,d) ∈ pairs(D)
+        u = 0.
+        for v ∈ d.V for r ∈ v.R u += r.q/d.q end end
+        x[iᵈ] = u
+    end
     # Step 2: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
     n = 0
     w = ones(Int64, eachindex(D))
@@ -518,14 +715,32 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         x[iᵈ] = Inf
         w[iᵈ] = 0
     end
-    # Step 3: Return solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 3: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 4: Return solution
     return s
 end

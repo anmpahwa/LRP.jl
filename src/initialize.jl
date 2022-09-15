@@ -45,14 +45,32 @@ function random(rng::AbstractRNG, instance)
             push!(v.R, r) 
         end
     end
-    # Step 3: Return initial solution
-    for d ∈ D 
-        deleteat!(d.V, deletevehicle.(d.V))
+    # Step 3: Remove redundant vehicles and routes
+    for d ∈ D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) deleteat!(d.V, k)
+            else k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) deleteat!(v.R, k)
+                else k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
         for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ 
-            deleteat!(v.R, deleteroute.(v.R)) 
+            v.iᵛ = iᵛ
             for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
+    # Step 4: Return initial solution
     return s
 end
