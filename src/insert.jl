@@ -108,8 +108,12 @@ function best!(rng::AbstractRNG, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -118,15 +122,14 @@ function best!(rng::AbstractRNG, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 4: Return solution
@@ -224,8 +227,12 @@ function greedy!(rng::AbstractRNG, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -234,15 +241,14 @@ function greedy!(rng::AbstractRNG, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 4: Return solution
@@ -373,8 +379,12 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -383,15 +393,14 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 4: Return solution

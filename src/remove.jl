@@ -48,8 +48,12 @@ function randomnode!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -58,15 +62,14 @@ function randomnode!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 3: Return solution
@@ -101,8 +104,12 @@ function relatednode!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -111,15 +118,14 @@ function relatednode!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 5: Return solution
@@ -176,8 +182,12 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -186,15 +196,14 @@ function worstnode!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 3: Return solution
@@ -231,8 +240,12 @@ function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -241,15 +254,14 @@ function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 3: Return solution
@@ -291,8 +303,12 @@ function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -301,15 +317,14 @@ function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 5: Return solution
@@ -354,8 +369,12 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -364,15 +383,14 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 4: Return solution
@@ -412,8 +430,12 @@ function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -422,15 +444,14 @@ function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 3: Return solution
@@ -475,8 +496,12 @@ function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -485,15 +510,14 @@ function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 5: Return solution
@@ -544,8 +568,12 @@ function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -554,15 +582,14 @@ function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 4: Return solution
@@ -602,8 +629,12 @@ function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -612,15 +643,14 @@ function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 3: Return solution
@@ -655,8 +685,12 @@ function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -665,15 +699,14 @@ function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 5: Return solution
@@ -720,8 +753,12 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         k = 1
         while true
             v = d.V[k]
-            if deletevehicle(v, s) deleteat!(d.V, k)
-            else k += 1
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
             end
             if k > length(d.V) break end
         end
@@ -730,15 +767,14 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
             k = 1
             while true
                 r = v.R[k]
-                if deleteroute(r, s) deleteat!(v.R, k)
-                else k += 1
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
                 end
                 if k > length(v.R) break end
             end
-        end
-        for (iᵛ,v) ∈ pairs(d.V)
-            v.iᵛ = iᵛ
-            for (iʳ,r) ∈ pairs(v.R) r.iʳ, r.iᵛ = iʳ, iᵛ end
         end
     end
     # Step 4: Return solution
