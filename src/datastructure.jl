@@ -128,8 +128,8 @@ Base.isequal(p::Route, q::Route) = isequal(p.iʳ, q.iʳ)
 Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.iᵛ, q.iᵛ)
 Base.isequal(p::Node, q::Node) = isequal(p.iⁿ, q.iⁿ)
 
-# is isdentical
-isidentical(v₁::Vehicle, v₂::Vehicle) = isequal(v₁.jᵛ, v₂.jᵛ)
+# is identical
+isidentical(v¹::Vehicle, v²::Vehicle) = isequal(v¹.jᵛ, v².jᵛ)
 
 # Node type
 isdepot(n::Node) = typeof(n) == DepotNode
