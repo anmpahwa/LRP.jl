@@ -5,7 +5,7 @@ using Random
 let
 # Developing an optimal solution 
     # Define instance
-    instance = "rc201";
+    instance = "rand100";
     # Visualize instance
     display(visualize(instance))
     # Define a random number generator
