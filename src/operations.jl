@@ -16,26 +16,26 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     rᵒ.l += s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
     # update arrival and departure time
     for r ∈ vᵒ.R
-        if !isopt(r) continue end
         if r.tˢ < rᵒ.tˢ continue end
         r.tˢ = tᵉ + vᵒ.τᶠ * (r.l/vᵒ.l) + vᵒ.τᵈ * r.q
-        cˢ = s.C[r.iˢ]
-        cᵉ = s.C[r.iᵉ]   
-        tᵈ = r.tˢ
-        cᵒ = cˢ
-        while true
-            cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.s
-            cᵒ.tᵈ = cᵒ.tᵃ + max(0., cᵒ.tᵉ - cᵒ.tᵃ) + vᵒ.τᶜ
-            if isequal(cᵒ, cᵉ) break end
-            tᵈ = cᵒ.tᵈ
-            cᵒ = s.C[cᵒ.iʰ]
+        if isopt(r)
+            cˢ = s.C[r.iˢ]
+            cᵉ = s.C[r.iᵉ]   
+            tᵈ = r.tˢ
+            cᵒ = cˢ
+            while true
+                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.s
+                cᵒ.tᵈ = cᵒ.tᵃ + max(0., cᵒ.tᵉ - cᵒ.tᵃ) + vᵒ.τᶜ
+                if isequal(cᵒ, cᵉ) break end
+                tᵈ = cᵒ.tᵈ
+                cᵒ = s.C[cᵒ.iʰ]
+            end
+            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.s 
+        else r.tᵉ = r.tˢ
         end
-        r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.s
-        tᵉ = r.tᵉ 
+        tᵉ = r.tᵉ
     end
-    if isempty(vᵒ.R) vᵒ.tˢ, vᵒ.tᵉ = 0., 0.
-    else vᵒ.tˢ, vᵒ.tᵉ = vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ
-    end
+    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (0., 0.) : (vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ)
     return s
 end
 
@@ -56,28 +56,28 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     end
     rᵒ.l -= s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
     # update arrival and departure time
+    if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = Inf, Inf end
     for r ∈ vᵒ.R
-        if !isopt(r) continue end
         if r.tˢ < rᵒ.tˢ continue end
         r.tˢ = tᵉ + vᵒ.τᶠ * (r.l/vᵒ.l) + vᵒ.τᵈ * r.q
-        cˢ = s.C[r.iˢ]
-        cᵉ = s.C[r.iᵉ]
-        tᵈ = r.tˢ
-        cᵒ = cˢ
-        while true
-            cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.s
-            cᵒ.tᵈ = cᵒ.tᵃ + max(0., cᵒ.tᵉ - cᵒ.tᵃ) + vᵒ.τᶜ
-            if isequal(cᵒ, cᵉ) break end
-            tᵈ = cᵒ.tᵈ
-            cᵒ = s.C[cᵒ.iʰ]
+        if isopt(r)
+            cˢ = s.C[r.iˢ]
+            cᵉ = s.C[r.iᵉ]   
+            tᵈ = r.tˢ
+            cᵒ = cˢ
+            while true
+                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.s
+                cᵒ.tᵈ = cᵒ.tᵃ + max(0., cᵒ.tᵉ - cᵒ.tᵃ) + vᵒ.τᶜ
+                if isequal(cᵒ, cᵉ) break end
+                tᵈ = cᵒ.tᵈ
+                cᵒ = s.C[cᵒ.iʰ]
+            end
+            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.s 
+        else r.tᵉ = r.tˢ
         end
-        r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.s
         tᵉ = r.tᵉ
     end
-    if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = Inf, Inf end
-    if isempty(vᵒ.R) vᵒ.tˢ, vᵒ.tᵉ = 0., 0.
-    else vᵒ.tˢ, vᵒ.tᵉ = vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ
-    end
+    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (0., 0.) : (vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ)
     return s
 end
 
