@@ -20,7 +20,7 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         r.tˢ = tᵉ + vᵒ.τᶠ * (r.l/vᵒ.l) + vᵒ.τᵈ * r.q
         if isopt(r)
             cˢ = s.C[r.iˢ]
-            cᵉ = s.C[r.iᵉ]   
+            cᵉ = s.C[r.iᵉ]
             tᵈ = r.tˢ
             cᵒ = cˢ
             while true
@@ -62,7 +62,7 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         r.tˢ = tᵉ + vᵒ.τᶠ * (r.l/vᵒ.l) + vᵒ.τᵈ * r.q
         if isopt(r)
             cˢ = s.C[r.iˢ]
-            cᵉ = s.C[r.iᵉ]   
+            cᵉ = s.C[r.iᵉ]
             tᵈ = r.tˢ
             cᵒ = cˢ
             while true
@@ -83,18 +83,17 @@ end
 
 # Return true if vehicle vᵒ needs another route (adds conservatively)
 function addroute(vᵒ::Vehicle, s::Solution)
-    D  = s.D
-    dᵒ = D[vᵒ.iᵈ]
+    dᵒ = s.D[vᵒ.iᵈ]
     # condtions when route mustn't be added
     if any(!isopt, vᵒ.R) return false end
-    for v ∈ dᵒ.V if v.tᵉ > v.w return false end end
+    if vᵒ.tᵉ > vᵒ.w return false end
     qᵈ = 0
     for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
     if qᵈ ≥ dᵒ.q return false end
     # condition when route could be added
     if isempty(vᵒ.R) return true end
     for v ∈ dᵒ.V for r ∈ v.R if r.q > v.q return true end end end
-    for d ∈ D
+    for d ∈ s.D
         qᵈ = 0
         if isequal(dᵒ, d) continue end
         for v ∈ d.V for r ∈ v.R qᵈ += r.q end end
@@ -113,19 +112,26 @@ end
 
 # Return true if depot dᵒ needs another vehicle
 function addvehicle(dᵒ::DepotNode, s::Solution)
-    D = s.D
-    C = s.C
     # condtions when vehicle mustn't be added
     if any(!isopt, dᵒ.V) return false end
+    qᵈ = 0
+    for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
+    if qᵈ ≥ dᵒ.q return false end
     # condition when vehicle could be added
-    for c ∈ C
-        r = c.r
-        if isopen(c) continue end
-        d = D[r.iᵈ]
-        if !isequal(dᵒ, d) continue end
-        if c.tᵃ > c.tˡ return true end 
+    for v ∈ dᵒ.V
+        if v.tᵉ > v.w return true end
+        for r ∈ v.R
+            if !isopt(r) continue end
+            cˢ = s.C[r.iˢ]
+            cᵉ = s.C[r.iᵉ]
+            cᵒ = cˢ
+            while true
+                if cᵒ.tᵃ > cᵒ.tˡ return true end
+                if isequal(cᵒ, cᵉ) break end
+                cᵒ = s.C[cᵒ.iʰ]
+            end
+        end
     end
-    for v ∈ dᵒ.V if v.tᵉ > v.w return true end end
     return false
 end
 
