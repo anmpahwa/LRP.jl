@@ -5,7 +5,7 @@ using Random
 let
 # Developing an optimal solution 
     # Define instance
-    instance = "r101";
+    instance = "rc201";
     # Visualize instance
     display(visualize(instance))
     # Define a random number generator
@@ -14,7 +14,7 @@ let
     sₒ = initialsolution(rng, instance, :random);
     # Define ALNS parameters
     x = length(sₒ.D)+length(sₒ.C);
-    n = max(200,ceil(x, digits=-(length(digits(x))-1)));
+    n = max(200, ceil(x, digits=-(length(digits(x))-1)));
     χ = ALNSParameters(
         k̲   =   n ÷ 25                  ,
         l̲   =   2n                      ,
@@ -64,8 +64,16 @@ let
     s⃰ = S[end];          
 # Fetch objective function values
     println("Objective function value:")
+    println("   Initial: $(f(sₒ; penalty=false))")
+    println("   Optimal: $(f(s⃰ ; penalty=false))")
+# Fetch fixed costs
+    println("Fixed costs:")
+    println("   Initial: $(f(sₒ; operational=false, penalty=false))")
+    println("   Optimal: $(f(s⃰ ; operational=false, penalty=false))")
+# Fetch operational costs
+    println("Operational costs:")
     println("   Initial: $(f(sₒ; fixed=false, penalty=false))")
-    println("   Optimal: $(f(s⃰; fixed=false, penalty=false))")
+    println("   Optimal: $(f(s⃰ ; fixed=false, penalty=false))")
 # Check if the solutions are feasible
     println("Solution feasibility:")
     println("   Initial: $(isfeasible(sₒ))")

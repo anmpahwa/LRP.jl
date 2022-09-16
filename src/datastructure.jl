@@ -53,7 +53,7 @@ mutable struct Vehicle
     πᵒ::Float64                                                                     # Operational cost
     πᶠ::Float64                                                                     # Fixed cost
     w::Int64                                                                        # Working hours
-    tˢ::Float64                                                                     # Vehicle start time (departure time from the depot node)
+    tˢ::Float64                                                                     # Vehicle start time (initial departure time from the depot node)
     tᵉ::Float64                                                                     # Vehicle end time (final arrival time at the depot node)
     R::Vector{Route}                                                                # Vector of vehicle routes
 end
