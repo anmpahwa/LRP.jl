@@ -21,7 +21,7 @@ function best!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    for d ∈ D for v ∈ d.V if addroute(v,s) push!(v.R, Route(v, d)) end end end
+    preinsertion(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
@@ -84,7 +84,7 @@ function best!(rng::AbstractRNG, s::Solution)
             p[:,j] .= ((0, 0), )
             ϕ[j] = 1  
         end
-        if addroute(v,s)
+        if addroute(r, s)
             r = Route(v, d)
             push!(v.R, r) 
             push!(R, r)
@@ -92,7 +92,7 @@ function best!(rng::AbstractRNG, s::Solution)
             append!(p, fill((0, 0), (I,1)))
             push!(ϕ, 1)
         end
-        if addvehicle(d,s)
+        if addvehicle(v, s)
             v = Vehicle(v, d)
             r = Route(v, d)
             push!(d.V, v)
@@ -103,36 +103,8 @@ function best!(rng::AbstractRNG, s::Solution)
             push!(ϕ, 1)
         end
     end
-    # Step 3: Remove redundant vehicles and routes
-    for d ∈ D
-        k = 1
-        while true
-            v = d.V[k]
-            if deletevehicle(v, s) 
-                deleteat!(d.V, k)
-            else
-                v.iᵛ = k
-                for r ∈ v.R r.iᵛ = k end
-                k += 1
-            end
-            if k > length(d.V) break end
-        end
-        for v ∈ d.V
-            if isempty(v.R) continue end
-            k = 1
-            while true
-                r = v.R[k]
-                if deleteroute(r, s) 
-                    deleteat!(v.R, k)
-                else
-                    r.iʳ = k
-                    k += 1
-                end
-                if k > length(v.R) break end
-            end
-        end
-    end
-    # Step 4: Return solution
+    postinsertion(s)
+    # Step 3: Return solution
     return s
 end
 
@@ -143,7 +115,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    for d ∈ D for v ∈ d.V if addroute(v,s) push!(v.R, Route(v, d)) end end end
+    preinsertion(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
@@ -203,7 +175,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
             p[:,j] .= ((0, 0), )
             ϕ[j] = 1  
         end
-        if addroute(v,s)
+        if addroute(r, s)
             r = Route(v, d)
             push!(v.R, r) 
             push!(R, r)
@@ -211,7 +183,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
             append!(p, fill((0, 0), (I,1)))
             push!(ϕ, 1)
         end
-        if addvehicle(d,s)
+        if addvehicle(v, s)
             v = Vehicle(v, d)
             r = Route(v, d)
             push!(d.V, v)
@@ -222,36 +194,8 @@ function greedy!(rng::AbstractRNG, s::Solution)
             push!(ϕ, 1)
         end
     end
-    # Step 3: Remove redundant vehicles and routes
-    for d ∈ D
-        k = 1
-        while true
-            v = d.V[k]
-            if deletevehicle(v, s) 
-                deleteat!(d.V, k)
-            else
-                v.iᵛ = k
-                for r ∈ v.R r.iᵛ = k end
-                k += 1
-            end
-            if k > length(d.V) break end
-        end
-        for v ∈ d.V
-            if isempty(v.R) continue end
-            k = 1
-            while true
-                r = v.R[k]
-                if deleteroute(r, s) 
-                    deleteat!(v.R, k)
-                else
-                    r.iʳ = k
-                    k += 1
-                end
-                if k > length(v.R) break end
-            end
-        end
-    end
-    # Step 4: Return solution
+    postinsertion(s)
+    # Step 3: Return solution
     return s
 end
 
@@ -262,7 +206,7 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    for d ∈ D for v ∈ d.V if addroute(v,s) push!(v.R, Route(v, d)) end end end
+    preinsertion(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
@@ -355,7 +299,7 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
             p[:,j] .= ((0, 0), )
             ϕ[j] = 1  
         end
-        if addroute(v,s)
+        if addroute(r, s)
             r = Route(v, d)
             push!(v.R, r) 
             push!(R, r)
@@ -363,7 +307,7 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
             append!(p, fill((0, 0), (I,1)))
             push!(ϕ, 1)
         end
-        if addvehicle(d,s)
+        if addvehicle(v, s)
             v = Vehicle(v, d)
             r = Route(v, d)
             push!(d.V, v)
@@ -374,37 +318,12 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
             push!(ϕ, 1)
         end
     end
-    # Step 3: Remove redundant vehicles and routes
-    for d ∈ D
-        k = 1
-        while true
-            v = d.V[k]
-            if deletevehicle(v, s) 
-                deleteat!(d.V, k)
-            else
-                v.iᵛ = k
-                for r ∈ v.R r.iᵛ = k end
-                k += 1
-            end
-            if k > length(d.V) break end
-        end
-        for v ∈ d.V
-            if isempty(v.R) continue end
-            k = 1
-            while true
-                r = v.R[k]
-                if deleteroute(r, s) 
-                    deleteat!(v.R, k)
-                else
-                    r.iʳ = k
-                    k += 1
-                end
-                if k > length(v.R) break end
-            end
-        end
-    end
-    # Step 4: Return solution
+    postinsertion(s)
+    # Step 3: Return solution
     return s
 end
 regret2!(rng::AbstractRNG, s::Solution) = regretN!(rng, Int64(2), s)
 regret3!(rng::AbstractRNG, s::Solution) = regretN!(rng, Int64(3), s)
+
+# TODO: To not re-open the depot that has just been closed
+# if !isopt(d) && any(isopt, s.D) continue end

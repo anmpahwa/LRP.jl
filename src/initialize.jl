@@ -20,8 +20,8 @@ function random(rng::AbstractRNG, instance)
     s = Solution(G...)
     D = s.D
     C = s.C
-    for d ∈ D for v ∈ d.V push!(v.R, Route(v, d)) end end
     # Step 1: Initialize
+    preinitialize(s)
     w = ones(Int64, eachindex(C))                      # w[i]: selection weight for customer node C[i]
     # Step 2: Iteratively append randomly selected customer node in randomly selected route
     while any(isopen, C)
@@ -34,46 +34,18 @@ function random(rng::AbstractRNG, instance)
         insertnode!(c, nᵗ, nʰ, r, s)
         iⁿ = c.iⁿ
         w[iⁿ] = 0
-        if addroute(v,s)
+        if addroute(r, s)
             r = Route(v, d)
             push!(v.R, r) 
         end
-        if addvehicle(d,s)
+        if addvehicle(v, s)
             v = Vehicle(v, d)
             r = Route(v, d)
             push!(d.V, v)
             push!(v.R, r) 
         end
     end
-    # Step 3: Remove redundant vehicles and routes
-    for d ∈ D
-        k = 1
-        while true
-            v = d.V[k]
-            if deletevehicle(v, s) 
-                deleteat!(d.V, k)
-            else
-                v.iᵛ = k
-                for r ∈ v.R r.iᵛ = k end
-                k += 1
-            end
-            if k > length(d.V) break end
-        end
-        for v ∈ d.V
-            if isempty(v.R) continue end
-            k = 1
-            while true
-                r = v.R[k]
-                if deleteroute(r, s) 
-                    deleteat!(v.R, k)
-                else
-                    r.iʳ = k
-                    k += 1
-                end
-                if k > length(v.R) break end
-            end
-        end
-    end
+    postinitialize(s)
     # Step 4: Return initial solution
     return s
 end

@@ -81,9 +81,10 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     return s
 end
 
-# Return true if vehicle vᵒ needs another route (adds conservatively)
-function addroute(vᵒ::Vehicle, s::Solution)
-    dᵒ = s.D[vᵒ.iᵈ]
+# Return true if route of type rᵒ must be added into the solution (adds conservatively)
+function addroute(rᵒ::Route, s::Solution)
+    dᵒ =  s.D[rᵒ.iᵈ]
+    vᵒ = dᵒ.V[rᵒ.iᵛ]
     # condtions when route mustn't be added
     if any(!isopt, vᵒ.R) return false end
     if vᵒ.tᵉ > vᵒ.w return false end
@@ -110,14 +111,16 @@ function deleteroute(rᵒ::Route, s::Solution)
     return true
 end
 
-# Return true if depot dᵒ needs another vehicle
-function addvehicle(dᵒ::DepotNode, s::Solution)
+# Return true if vehicle of type vᵒ must be added into the solution (adds conservatively)
+function addvehicle(vᵒ::Vehicle, s::Solution)
+    dᵒ = s.D[vᵒ.iᵈ]
     # condtions when vehicle mustn't be added
-    if any(!isopt, dᵒ.V) return false end
+    if any(!isopt, filter(v -> isidentical(vᵒ, v), dᵒ.V)) return false end
     qᵈ = 0
     for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
     if qᵈ ≥ dᵒ.q return false end
     # condition when vehicle could be added
+    if dᵒ.q - qᵈ > vᵒ.q return true end
     for v ∈ dᵒ.V
         if v.tᵉ > v.w return true end
         for r ∈ v.R
@@ -137,8 +140,7 @@ end
 
 # Return false if vehicle vᵒ can be deleted
 function deletevehicle(vᵒ::Vehicle, s::Solution)
-    D  = s.D
-    dᵒ = D[vᵒ.iᵈ]
+    dᵒ = s.D[vᵒ.iᵈ]
     # condtions when vehicle mustn't be deleted
     if isopt(vᵒ) return false end
     # condition when vehicle could be deleted
@@ -147,4 +149,130 @@ function deletevehicle(vᵒ::Vehicle, s::Solution)
         if isidentical(vᵒ, v) return true end 
     end
     return false
+end
+
+# Pre intialization procedures
+function preinitialize(s::Solution)
+    for d ∈ s.D
+        for v ∈ d.V
+            rᵒ = Route(v, d)
+            if addroute(rᵒ, s) push!(v.R, rᵒ) end
+            vᵒ = Vehicle(v, d)
+            if addvehicle(vᵒ, s) push!(d.V, vᵒ) end
+        end
+    end
+end
+
+# Post intialization procedures
+function postinitialize(s::Solution)
+    for d ∈ s.D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
+    end
+end
+
+# Pre insertion procedures
+function preinsertion(s::Solution)
+    for d ∈ s.D
+        
+        for v ∈ d.V
+            rᵒ = Route(v, d)
+            if addroute(rᵒ, s) push!(v.R, rᵒ) end
+            vᵒ = Vehicle(v, d)
+            if addvehicle(vᵒ, s) push!(d.V, vᵒ) end
+        end
+    end
+end
+
+# Post insertion procedures
+function postinsertion(s::Solution)
+    for d ∈ s.D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
+    end
+end
+
+# Pre removal procedures
+function preremoval(s::Solution)
+    return
+end
+
+# Post removal procedures
+function postremoval(s::Solution)
+    for d ∈ s.D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s) 
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
+    end
 end
