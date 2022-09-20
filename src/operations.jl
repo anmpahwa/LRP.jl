@@ -198,7 +198,6 @@ end
 # Pre insertion procedures
 function preinsertion(s::Solution)
     for d ∈ s.D
-        
         for v ∈ d.V
             rᵒ = Route(v, d)
             if addroute(rᵒ, s) push!(v.R, rᵒ) end
