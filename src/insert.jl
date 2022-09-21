@@ -324,6 +324,3 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
 end
 regret2!(rng::AbstractRNG, s::Solution) = regretN!(rng, Int64(2), s)
 regret3!(rng::AbstractRNG, s::Solution) = regretN!(rng, Int64(3), s)
-
-# TODO: To not re-open the depot that has just been closed
-# if !isopt(d) && any(isopt, s.D) continue end
