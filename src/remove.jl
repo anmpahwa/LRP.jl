@@ -147,7 +147,7 @@ function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
         r  = R[iʳ]
         d  = D[r.iᵈ]
         while true
-            if isequal(n, q) break end
+            if n ≥ q break end
             nᵗ = d
             c  = C[r.iˢ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -183,7 +183,7 @@ function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
         r  = R[iʳ]
         d  = D[r.iᵈ]
         while true
-            if isequal(n, q) break end
+            if n ≥ q break end
             nᵗ = d
             c  = C[r.iˢ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -223,7 +223,7 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
         r  = R[iʳ]
         d  = D[r.iᵈ]
         while true
-            if isequal(n, q) break end
+            if n ≥ q break end
             nᵗ = d
             c  = C[r.iˢ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -256,9 +256,9 @@ function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         v  = V[iᵛ]
         d  = D[v.iᵈ]
         for r ∈ v.R
+            if n ≥ q break end
             if !isopt(r) continue end
             while true
-                if isequal(n, q) break end
                 nᵗ = d
                 c  = C[r.iˢ]
                 nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
@@ -295,9 +295,9 @@ function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         v  = V[iᵛ]
         d  = D[v.iᵈ] 
         for r ∈ v.R
+            if n ≥ q break end
             if !isopt(r) continue end
             while true
-                if isequal(n, q) break end
                 nᵗ = d
                 c  = C[r.iˢ]
                 nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -341,9 +341,9 @@ function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
         v  = V[iᵛ]
         d  = D[v.iᵈ]
         for r ∈ v.R
+            if n ≥ q break end
             if !isopt(r) continue end
             while true
-                if isequal(n, q) break end
                 nᵗ = d
                 c  = C[r.iˢ]
                 nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -375,10 +375,10 @@ function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         iᵈ = sample(rng, eachindex(D), Weights(w))
         d  = D[iᵈ]
         for v ∈ d.V
+            if n ≥ q break end
             for r ∈ v.R
                 if !isopt(r) continue end
                 while true
-                    if isequal(n, q) break end
                     nᵗ = d
                     c  = C[r.iˢ]
                     nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -445,10 +445,10 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         iᵈ = argmin(x)
         d  = D[iᵈ]
         for v ∈ d.V
+            if n ≥ q break end
             for r ∈ v.R
                 if !isopt(r) continue end
                 while true
-                    if isequal(n, q) break end
                     nᵗ = d
                     c  = C[r.iˢ]
                     nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
