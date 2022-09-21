@@ -32,13 +32,14 @@ mutable struct Route
 end
     
 @doc """
-    Vehicle(iᵛ::Int64, jᵛ::Int64, iᵈ::Int64, q::Int64, l::Int64, s::Int64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, πᵒ::Float64, πᶠ::Float64, w::Int64, tˢ::Float64, tᵉ::Float64, R::Vector{Route})
+    Vehicle(iᵛ::Int64, jᵛ::Int64, iᵈ::Int64, q::Int64, l::Int64, s::Int64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, πᵒ::Float64, πᶠ::Float64, r̅::Int64, w::Int64, tˢ::Float64, tᵉ::Float64, R::Vector{Route})
 
 A `Vehicle` is a mode of delivery with index `iᵛ`, vehicle type index `jᵛ`, depot 
 node index `iᵈ`, capacity `q`, range `l`, speed `s`, refueling time `τᶠ`, service 
 time `τᵈ` at depot node (per unit demand), service time `τᶜ` at customer node, 
-operational cost `πₒ` per unit distance traveled, fixed cost`πᶠ`, working hours 
-`w`, start time `tˢ`, end time `tᵉ`, and set of routes `R`.
+operational cost `πₒ` per unit distance traveled, fixed cost `πᶠ`, maximum number
+of vehicle routes permitted `r̅`, working hours `w`, start time `tˢ`, end time `tᵉ`, 
+and set of routes `R`.
 """
 mutable struct Vehicle
     iᵛ::Int64                                                                       # Vehicle index
@@ -52,6 +53,7 @@ mutable struct Vehicle
     τᶜ::Float64                                                                     # Customer node service time
     πᵒ::Float64                                                                     # Operational cost
     πᶠ::Float64                                                                     # Fixed cost
+    r̅::Int64                                                                        # Maximum number of vehicle routes permitted
     w::Int64                                                                        # Working hours
     tˢ::Float64                                                                     # Vehicle start time (initial departure time from the depot node)
     tᵉ::Float64                                                                     # Vehicle end time (final arrival time at the depot node)
@@ -66,12 +68,12 @@ A `Node` is a point on the graph.
 abstract type Node end
 
 @doc """
-    DepotNode(i::Int64, x::Float64, y::Float64, q::Float64, V::Vector{Vehicle})
+    DepotNode(i::Int64, x::Float64, y::Float64, q::Float64, V::Vector{Vehicle}, ϕ::Int64)
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ`, capacity 
 `q`, operational cost `πᵒ` per package, fixed cost `πᶠ`, and fleet of vehicles `V`.
 """
-struct DepotNode <: Node
+mutable struct DepotNode <: Node
     iⁿ::Int64                                                                       # Depot node index
     x::Float64                                                                      # Depot node location on the x-axis
     y::Float64                                                                      # Depot node location in the y-axis
@@ -79,6 +81,7 @@ struct DepotNode <: Node
     πᵒ::Float64                                                                     # Operational cost
     πᶠ::Float64                                                                     # Fixed cost
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
+    ϕ::Int64                                                                        # Binary (internal use)
 end
 
 @doc """
@@ -150,7 +153,7 @@ end
 # Create a non-operational vehicle cloning vehicle v at depot node d
 function Vehicle(v::Vehicle, d::DepotNode)
     iᵛ = length(d.V) + 1
-    v  = Vehicle(iᵛ, v.jᵛ, v.iᵈ, v.q, v.l, v.s, v.τᶠ, v.τᵈ, v.τᶜ, v.πᵒ, v.πᶠ, v.w, 0., 0., Route[])
+    v  = Vehicle(iᵛ, v.jᵛ, v.iᵈ, v.q, v.l, v.s, v.τᶠ, v.τᵈ, v.τᶜ, v.πᵒ, v.πᶠ, v.r̅, v.w, 0., 0., Route[])
     return v
 end
 

@@ -86,6 +86,7 @@ function addroute(rᵒ::Route, s::Solution)
     dᵒ =  s.D[rᵒ.iᵈ]
     vᵒ = dᵒ.V[rᵒ.iᵛ]
     # condtions when route mustn't be added
+    if isequal(length(vᵒ.R), vᵒ.r̅) return false end
     if any(!isopt, vᵒ.R) return false end
     if vᵒ.tᵉ > vᵒ.w return false end
     qᵈ = 0
@@ -120,7 +121,7 @@ function addvehicle(vᵒ::Vehicle, s::Solution)
     for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
     if qᵈ ≥ dᵒ.q return false end
     # condition when vehicle could be added
-    if dᵒ.q - qᵈ > vᵒ.q return true end
+    if qᵈ < dᵒ.q return true end
     for v ∈ dᵒ.V
         if v.tᵉ > v.w return true end
         for r ∈ v.R
@@ -138,12 +139,16 @@ function addvehicle(vᵒ::Vehicle, s::Solution)
     return false
 end
 
-# Return false if vehicle vᵒ can be deleted
+# Return false if vehicle vᵒ can be deleted (deletes liberally)
 function deletevehicle(vᵒ::Vehicle, s::Solution)
     dᵒ = s.D[vᵒ.iᵈ]
     # condtions when vehicle mustn't be deleted
     if isopt(vᵒ) return false end
+    qᵈ = 0
+    for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
+    if qᵈ < dᵒ.q return false end 
     # condition when vehicle could be deleted
+    if qᵈ ≥ dᵒ.q return true end
     for v ∈ dᵒ.V
         if isequal(vᵒ, v) continue end
         if isidentical(vᵒ, v) return true end 
@@ -197,7 +202,10 @@ end
 
 # Pre insertion procedures
 function preinsertion(s::Solution)
+    ϕ = 0
+    for d ∈ s.D ϕ += d.ϕ end
     for d ∈ s.D
+        if iszero(d.ϕ) && !iszero(ϕ) continue end
         for v ∈ d.V
             rᵒ = Route(v, d)
             if addroute(rᵒ, s) push!(v.R, rᵒ) end
@@ -241,6 +249,7 @@ end
 
 # Pre removal procedures
 function preremoval(s::Solution)
+    for d ∈ s.D d.ϕ = isopt(d) end
     return
 end
 
@@ -273,5 +282,6 @@ function postremoval(s::Solution)
                 if k > length(v.R) break end
             end
         end
+        isone(d.ϕ) ? d.ϕ -= !isopt(d) : d.ϕ += !isopt(d)
     end
 end
