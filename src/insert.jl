@@ -21,7 +21,7 @@ function best!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    preinsertion(s)
+    preinsertion!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
@@ -103,7 +103,7 @@ function best!(rng::AbstractRNG, s::Solution)
             push!(ϕ, 1)
         end
     end
-    postinsertion(s)
+    postinsertion!(s)
     # Step 3: Return solution
     return s
 end
@@ -115,7 +115,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    preinsertion(s)
+    preinsertion!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
@@ -194,7 +194,7 @@ function greedy!(rng::AbstractRNG, s::Solution)
             push!(ϕ, 1)
         end
     end
-    postinsertion(s)
+    postinsertion!(s)
     # Step 3: Return solution
     return s
 end
@@ -206,7 +206,7 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    preinsertion(s)
+    preinsertion!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
@@ -318,7 +318,7 @@ function regretN!(rng::AbstractRNG, N::Int64, s::Solution)
             push!(ϕ, 1)
         end
     end
-    postinsertion(s)
+    postinsertion!(s)
     # Step 3: Return solution
     return s
 end

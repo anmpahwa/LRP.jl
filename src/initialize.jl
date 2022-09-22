@@ -21,7 +21,7 @@ function random(rng::AbstractRNG, instance)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    preinitialize(s)
+    preinitialize!(s)
     w = ones(Int64, eachindex(C))                      # w[i]: selection weight for customer node C[i]
     # Step 2: Iteratively append randomly selected customer node in randomly selected route
     while any(isopen, C)
@@ -45,7 +45,7 @@ function random(rng::AbstractRNG, instance)
             push!(v.R, r) 
         end
     end
-    postinitialize(s)
+    postinitialize!(s)
     # Step 4: Return initial solution
     return s
 end

@@ -157,7 +157,7 @@ function deletevehicle(vᵒ::Vehicle, s::Solution)
 end
 
 # Pre intialization procedures
-function preinitialize(s::Solution)
+function preinitialize!(s::Solution)
     for d ∈ s.D
         for v ∈ d.V
             rᵒ = Route(v, d)
@@ -166,10 +166,11 @@ function preinitialize(s::Solution)
             if addvehicle(vᵒ, s) push!(d.V, vᵒ) end
         end
     end
+    return s
 end
 
 # Post intialization procedures
-function postinitialize(s::Solution)
+function postinitialize!(s::Solution)
     for d ∈ s.D
         k = 1
         while true
@@ -198,10 +199,11 @@ function postinitialize(s::Solution)
             end
         end
     end
+    return s
 end
 
 # Pre insertion procedures
-function preinsertion(s::Solution)
+function preinsertion!(s::Solution)
     for d ∈ s.D
         for v ∈ d.V
             rᵒ = Route(v, d)
@@ -210,10 +212,11 @@ function preinsertion(s::Solution)
             if addvehicle(vᵒ, s) push!(d.V, vᵒ) end
         end
     end
+    return s
 end
 
 # Post insertion procedures
-function postinsertion(s::Solution)
+function postinsertion!(s::Solution)
     for d ∈ s.D
         k = 1
         while true
@@ -242,15 +245,16 @@ function postinsertion(s::Solution)
             end
         end
     end
+    return s
 end
 
 # Pre removal procedures
-function preremoval(s::Solution)
-    return
+function preremoval!(s::Solution)
+    return s
 end
 
 # Post removal procedures
-function postremoval(s::Solution)
+function postremoval!(s::Solution)
     for d ∈ s.D
         k = 1
         while true
@@ -279,4 +283,5 @@ function postremoval(s::Solution)
             end
         end
     end
+    return s
 end
