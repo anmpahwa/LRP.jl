@@ -14,7 +14,7 @@ let
     sₒ = initialsolution(rng, instance, :random);
     # Define ALNS parameters
     x = length(sₒ.D)+length(sₒ.C);
-    n = max(200, ceil(x, digits=-(length(digits(x))-1)));
+    n = max(500, ceil(x, digits=-(length(digits(x))-1)));
     χ = ALNSParameters(
         k̲   =   n ÷ 25                  ,
         l̲   =   2n                      ,
@@ -89,8 +89,8 @@ let
     # Visualize best solution
     display(visualize(s⃰))
     # Animate ALNS solution search process from inital to best solution
-    display(animate(S))
+    #display(animate(S))
     # Show convergence plot
-    display(plotconv(S))
+    #display(plotconv(S))
     return
 end
