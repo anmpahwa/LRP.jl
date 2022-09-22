@@ -105,7 +105,7 @@ mutable struct CustomerNode <: Node
 end
 
 @doc """
-    Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int64,Int64}, Arc}, V::Vector{Vehicle})
+    Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int64,Int64}, Arc}, V::Vector{Vehicle}, ϕ::Int64)
 
 A Solution is a graph with depot nodes `D`, customer nodes `C`, arcs `A`, and vehicles `V`.
 """
@@ -113,6 +113,7 @@ struct Solution
     D::Vector{DepotNode}                                                            # Vector of depot nodes
     C::OffsetVector{CustomerNode, Vector{CustomerNode}}                             # Vector of customer nodes
     A::Dict{Tuple{Int64,Int64}, Arc}                                                # Set of arcs
+    ϕ::Int64                                                                        # Binary (Internal use)
 end
 
 # is operational

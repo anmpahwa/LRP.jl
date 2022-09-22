@@ -30,8 +30,8 @@ function build(instance)
         tˡ = df[k,6]::Float64
         iᵗ = 0
         iʰ = 0
-        tᵃ = Inf
-        tᵈ = Inf
+        tᵃ = 0
+        tᵈ = 0
         c  = CustomerNode(iⁿ, x, y, q, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
         C[iⁿ] = c
     end
@@ -73,6 +73,10 @@ function build(instance)
         d  = D[iᵈ]
         push!(d.V, v)
     end
-    G = (D, C, A)
+    file = joinpath(dirname(@__DIR__), "instances/$instance/time_windows.csv")
+    csv = CSV.File(file, types=[Int64])
+    df = DataFrame(csv)
+    ϕ = df[1,1]::Int64
+    G = (D, C, A, ϕ)
     return G
 end
