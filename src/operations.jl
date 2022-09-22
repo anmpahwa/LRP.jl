@@ -202,10 +202,7 @@ end
 
 # Pre insertion procedures
 function preinsertion(s::Solution)
-    ϕ = 0
-    for d ∈ s.D ϕ += d.ϕ end
     for d ∈ s.D
-        if iszero(d.ϕ) && !iszero(ϕ) continue end
         for v ∈ d.V
             rᵒ = Route(v, d)
             if addroute(rᵒ, s) push!(v.R, rᵒ) end
@@ -249,7 +246,6 @@ end
 
 # Pre removal procedures
 function preremoval(s::Solution)
-    for d ∈ s.D d.ϕ = isopt(d) end
     return
 end
 
@@ -282,6 +278,5 @@ function postremoval(s::Solution)
                 if k > length(v.R) break end
             end
         end
-        isone(d.ϕ) ? d.ϕ -= !isopt(d) : d.ϕ += !isopt(d)
     end
 end
