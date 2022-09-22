@@ -4,7 +4,7 @@
 
 # Location Routing Problem (LRP)
 
-location routing problem with heterogeneous fleet of multi-route delivery vehicles
+capacitated location routing problem with time-windows with heterogeneous fleet of multi-route delivery vehicles
 
 Given, a graph `G = (D, C, A)` with 
 set of depots `D` with capacity `d.q`, operational cost `d.πᵒ`, fixed cost `d.πᶠ`, and
