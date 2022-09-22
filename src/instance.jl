@@ -12,7 +12,7 @@ function build(instance)
         q  = df[k,4]::Int64 
         πᵒ = df[k,5]::Float64
         πᶠ = df[k,6]::Float64
-        d  = DepotNode(iⁿ, x, y, q, πᵒ, πᶠ, Vehicle[], 0)
+        d  = DepotNode(iⁿ, x, y, q, πᵒ, πᶠ, Vehicle[])
         D[iⁿ] = d
     end
     # Customer nodes

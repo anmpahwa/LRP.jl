@@ -73,7 +73,7 @@ abstract type Node end
 A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ`, capacity 
 `q`, operational cost `πᵒ` per package, fixed cost `πᶠ`, and fleet of vehicles `V`.
 """
-mutable struct DepotNode <: Node
+struct DepotNode <: Node
     iⁿ::Int64                                                                       # Depot node index
     x::Float64                                                                      # Depot node location on the x-axis
     y::Float64                                                                      # Depot node location in the y-axis
@@ -81,7 +81,6 @@ mutable struct DepotNode <: Node
     πᵒ::Float64                                                                     # Operational cost
     πᶠ::Float64                                                                     # Fixed cost
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
-    ϕ::Int64                                                                        # Binary (internal use)
 end
 
 @doc """
