@@ -29,7 +29,7 @@ include("parameters.jl")
 include("ALNS.jl")
 include("visualize.jl")
 
-export  f, isfeasible, 
+export  f, isfeasible, isopt,
         ALNSParameters, initialsolution, ALNS, 
         visualize, vectorize, animate, plotconv
 

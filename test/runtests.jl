@@ -5,7 +5,7 @@ using Random
 
 let
     # Location Routing Problem
-    @testset "VRP" begin
+    @testset "LRP" begin
         χ   = ALNSParameters(
             k̲   =   4                       ,
             l̲   =   200                     ,
@@ -50,7 +50,7 @@ let
             μ̅   =   0.4                     ,
             ρ   =   0.1
         )
-        instances = ["coord20-5-1", "coord50-5-1b", "coord100-10-2b"]
+        instances = ["prins20-5-1", "prins50-5-1b", "prins100-10-2b"]
         for instance ∈ instances
             println("\nSolving $instance")
             sₒ = initialsolution(instance, :random)     
@@ -62,7 +62,7 @@ let
     end
 
     # Vehicle Routing Problem with Time-windows
-    @testset "VRP" begin
+    @testset "VRPTW" begin
         χ   = ALNSParameters(
             k̲   =   4                       ,
             l̲   =   200                     ,
