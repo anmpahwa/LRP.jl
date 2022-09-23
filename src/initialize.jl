@@ -22,28 +22,18 @@ function random(rng::AbstractRNG, instance)
     C = s.C
     # Step 1: Initialize
     preinitialize!(s)
+    d = sample(rng, D)
+    v = sample(rng, d.V)
+    r = sample(rng, v.R)
     w = ones(Int64, eachindex(C))                      # w[i]: selection weight for customer node C[i]
     # Step 2: Iteratively append randomly selected customer node in randomly selected route
     while any(isopen, C)
         c = sample(rng, C, OffsetWeights(w))
-        d = sample(rng, D)
-        v = sample(rng, d.V)
-        r = sample(rng, v.R)
         nᵗ = d
         nʰ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
         insertnode!(c, nᵗ, nʰ, r, s)
         iⁿ = c.iⁿ
         w[iⁿ] = 0
-        if addroute(r, s)
-            r = Route(v, d)
-            push!(v.R, r) 
-        end
-        if addvehicle(v, s)
-            v = Vehicle(v, d)
-            r = Route(v, d)
-            push!(d.V, v)
-            push!(v.R, r) 
-        end
     end
     postinitialize!(s)
     # Step 4: Return initial solution
