@@ -36,7 +36,8 @@ let
                         :intraopt!      ,
                         :interopt!      ,
                         :split!         ,
-                        :swap!
+                        :swapcustomers! ,
+                        :swapdepots!    
                     ]                       ,
             σ₁  =   33                      ,
             σ₂  =   9                       ,
@@ -93,7 +94,8 @@ let
                         :intraopt!      ,
                         :interopt!      ,
                         :split!         ,
-                        :swap!
+                        :swapcustomers! ,
+                        :swapdepots!    
                     ]                       ,
             σ₁  =   33                      ,
             σ₂  =   9                       ,
