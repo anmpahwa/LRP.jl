@@ -62,7 +62,8 @@ In every few iterations, the ALNS metaheuristic performs local search with,
 - Inter-Opt : `:interopt!`
 - Intra-Opt : `:intraopt!`
 - Split     : `:split!`
-- Swap      : `:swap!`
+- Swap-Customer : `:swapcustomers!`
+- Swap-Depot    : `:swapdepots!`
 
 See example.jl for usage
 
