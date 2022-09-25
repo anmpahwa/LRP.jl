@@ -5,11 +5,12 @@ Return solution `s` performing local seach on the solution using given `method` 
 until improvement.
 
 Available methods include,
-- Move      : `:move!`
-- Inter-Opt : `:interopt!`
-- Intra-Opt : `:intraopt!`
-- Split     : `:split!`
-- Swap      : `:swap!`
+- Move          : `:move!`
+- Inter-Opt     : `:interopt!`
+- Intra-Opt     : `:intraopt!`
+- Split         : `:split!`
+- Swap-Customer : `:swapcustomers!`
+- Swap-Depot    : `:swapdepots!`
 
 Optionally specify a random number generator `rng` as the first argument (defaults to `Random.GLOBAL_RNG`).
 """
@@ -317,9 +318,9 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
 end
 
 # Swap nodes
-# Iteratively swap two randomly selected customer nodes if the swap results
-# in reduction in objective function value for k̅ iterations until improvement
-function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
+# Iteratively swap two randomly selected nodes if the swap results in
+# reduction in objective function value for k̅ iterations until improvement
+function swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
     C = s.C
@@ -369,6 +370,106 @@ function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
             removenode!(n², n⁴, n⁶, r⁵, s)
             insertnode!(n², n¹, n³, r², s)
             insertnode!(n⁵, n⁴, n⁶, r⁵, s)
+        end
+    end
+    # Step 2: Return solution
+    return s
+end
+function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    zᵒ= f(s)
+    D = s.D
+    C = s.C
+    # Step 1: Iterate for k̅ iterations until improvement
+    for _ ∈ 1:k̅
+        # Step 1.1: Swap two randomly selected depot nodes
+        d¹, d² = sample(rng, D), sample(rng, D)
+        if isequal(d¹, d²) continue end
+        V¹, V² = copy(d¹.V), copy(d².V)
+        for v ∈ V¹
+            for r ∈ v.R 
+                if isopt(r)
+                    cˢ = C[r.iˢ]
+                    cᵉ = C[r.iᵉ]
+                    removenode!(d¹, cᵉ, cˢ, r, s)
+                    insertnode!(d², cᵉ, cˢ, r, s)
+                else
+                    r.iˢ = d².iⁿ
+                    r.iᵉ = d².iⁿ
+                end
+                r.iᵈ = d².iⁿ
+            end
+        end
+        for v ∈ V²
+            for r ∈ v.R 
+                if isopt(r)
+                    cˢ = C[r.iˢ]
+                    cᵉ = C[r.iᵉ]
+                    removenode!(d², cᵉ, cˢ, r, s)
+                    insertnode!(d¹, cᵉ, cˢ, r, s)
+                else
+                    r.iˢ = d¹.iⁿ
+                    r.iᵉ = d¹.iⁿ
+                end
+                r.iᵈ = d¹.iⁿ
+            end
+        end
+        empty!(d².V)
+        for v ∈ V¹
+            v.iᵈ = d².iⁿ
+            push!(d².V, v)
+        end
+        empty!(d¹.V)
+        for v ∈ V²
+            v.iᵈ = d¹.iⁿ
+            push!(d¹.V, v)
+        end
+        # Step 1.2: Compute change in objective function value
+        z′ = f(s)
+        Δ  = z′ - zᵒ
+        # Step 1.3: If the swap results in reduction in objective function value then go to step 2, else go to step 1.4
+        if Δ < 0 break end
+        # Step 1.4: Reswap the two depot nodes
+        V², V¹ = copy(d¹.V), copy(d².V)
+        for v ∈ V¹
+            for r ∈ v.R 
+                if isopt(r)
+                    cˢ = C[r.iˢ]
+                    cᵉ = C[r.iᵉ]
+                    removenode!(d², cᵉ, cˢ, r, s)
+                    insertnode!(d¹, cᵉ, cˢ, r, s)
+                else
+                    r.iˢ = d¹.iⁿ
+                    r.iᵉ = d¹.iⁿ
+                end
+                r.iᵈ = d¹.iⁿ
+            end
+            v.iᵈ = d¹.iⁿ
+            push!(d¹.V, v)
+        end
+        for v ∈ V²
+            for r ∈ v.R 
+                if isopt(r)
+                    cˢ = C[r.iˢ]
+                    cᵉ = C[r.iᵉ]
+                    removenode!(d¹, cᵉ, cˢ, r, s)
+                    insertnode!(d², cᵉ, cˢ, r, s)
+                else
+                    r.iˢ = d².iⁿ
+                    r.iᵉ = d².iⁿ
+                end
+                r.iᵈ = d².iⁿ
+            end
+
+        end
+        empty!(d¹.V)
+        for v ∈ V¹
+            v.iᵈ = d¹.iⁿ
+            push!(d¹.V, v)
+        end
+        empty!(d².V)
+        for v ∈ V²
+            v.iᵈ = d².iⁿ
+            push!(d².V, v)
         end
     end
     # Step 2: Return solution
