@@ -1,5 +1,6 @@
 module LRP
 
+using Clustering
 using CSV
 using DataFrames
 using ElasticArrays

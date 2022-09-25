@@ -39,3 +39,51 @@ function random(rng::AbstractRNG, instance)
     # Step 4: Return initial solution
     return s
 end
+
+# k-means clustering Initialization
+# Create initial solution using k-means clustering algorithm
+function cluster(rng::AbstractRNG, instance)
+    G = build(instance)
+    s = Solution(G...)
+    D = s.D
+    C = s.C
+    V = [v for d ∈ D for v ∈ d.V]
+    # Step 1: Initialize
+    preinitialize!(s)
+    X = zeros(4, eachindex(C))
+    for (iⁿ,c) ∈ pairs(C) X[:,iⁿ] = [c.x, c.y, c.tᵉ, c.tˡ] end
+    # Step 2: Clustering
+    k = ceil(Int64, sum(getproperty.(C, :q))/mean(getproperty.(V, :q)))
+    Y = kmeans(X.parent, k)
+    # Step 3: Assignment
+    A  = OffsetVector(Y.assignments, eachindex(C))
+    Cᵒ = Y.centers
+    Iᵒ = 1:(size(Cᵒ)[2])
+    w  = ones(Int64, length(D))
+    for iᵒ ∈ Iᵒ
+        Z = fill(Inf, length(D))
+        for d ∈ D
+            iⁿ = d.iⁿ
+            if iszero(w[iⁿ]) continue end
+            xᵒ = Cᵒ[1,iᵒ]
+            yᵒ = Cᵒ[2,iᵒ]
+            xᵈ = d.x
+            yᵈ = d.y
+            Z[iⁿ] = sqrt((xᵒ-xᵈ)^2 + (yᵒ-yᵈ)^2)
+        end
+        iⁿ = argmin(Z)
+        d  = D[iⁿ]
+        v  = sample(rng, d.V, Weights((!isopt).(d.V)))
+        r  = sample(rng, v.R)
+        nᵗ = d
+        Cᶜ = filter(c -> isequal(A[c.iⁿ], iᵒ), C)
+        for c ∈ Cᶜ
+            insertnode!(c, nᵗ, d, r, s)
+            nᵗ = c
+        end
+        if all(isopt, d.V) w[iⁿ] = 0 end
+    end
+    postinitialize!(s)
+    # Step 4: Return initial solution
+    return s
+end
