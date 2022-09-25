@@ -36,7 +36,8 @@ parameters,
 - `ρ`     :   Reaction factor
 
 and an initial solution developed using one of the following methods,
-- Random Initialization                 : `:random`
+- Random Initialization             : `:random`
+- K-means Clustering Intialization  : `:cluster`
 
 The ALNS metaheuristic iteratively removes a set of nodes using,
 - Random Node Removal       : `:randomnode!`
@@ -58,10 +59,10 @@ and consequently inserts removed nodes using,
 - Regret Insertion  : `regret2!`, `regret3!`
 
 In every few iterations, the ALNS metaheuristic performs local search with,
-- Move      : `:move!`
-- Inter-Opt : `:interopt!`
-- Intra-Opt : `:intraopt!`
-- Split     : `:split!`
+- Move          : `:move!`
+- Inter-Opt     : `:interopt!`
+- Intra-Opt     : `:intraopt!`
+- Split         : `:split!`
 - Swap-Customer : `:swapcustomers!`
 - Swap-Depot    : `:swapdepots!`
 

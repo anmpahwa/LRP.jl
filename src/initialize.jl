@@ -5,7 +5,8 @@
 Returns initial LRP solution for the given `instance` using the given `method`.
 
 Available methods include,
-- Random Initialization                 : `:random`
+- Random Initialization             : `:random`
+- K-means Clustering Initialization : `:cluster`
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
