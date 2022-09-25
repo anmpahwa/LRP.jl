@@ -45,7 +45,8 @@ let
                     :intraopt!      ,
                     :interopt!      ,
                     :split!         ,
-                    :swap!
+                    :swapcustomers! ,
+                    :swapdepots!
                 ]                       ,
         σ₁  =   15                      ,
         σ₂  =   10                      ,
