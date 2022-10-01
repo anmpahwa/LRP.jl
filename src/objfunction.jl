@@ -34,6 +34,6 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
         πᵖ += (qᵈ > d.q) * (qᵈ - d.q)
     end
     for c ∈ s.C πᵖ += isopen(c) ? 0. : (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ) end
-    z = ϕᶠ * πᶠ + ϕᵒ * πᵒ + ϕᵖ * πᵖ * (πᶠ + πᵒ)
+    z = ϕᶠ * πᶠ + ϕᵒ * πᵒ + ϕᵖ * πᵖ * 10^(ceil(log10(πᶠ + πᵒ)))
     return z
 end
