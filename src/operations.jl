@@ -146,12 +146,11 @@ function deletevehicle(vᵒ::Vehicle, s::Solution)
     dᵒ = s.D[vᵒ.iᵈ]
     # condtions when vehicle mustn't be deleted
     if isopt(vᵒ) return false end
+    nʲ = 0
+    for v ∈ dᵒ.V if isidentical(vᵒ, v) nʲ += 1 end end
+    if isone(nʲ) return false end
     # condition when vehicle could be deleted
-    for v ∈ dᵒ.V
-        if isequal(vᵒ, v) continue end
-        if isidentical(vᵒ, v) return true end 
-    end
-    return false
+    return true
 end
 
 # Pre intialization procedures
