@@ -68,7 +68,7 @@ A `Node` is a point on the graph.
 abstract type Node end
 
 @doc """
-    DepotNode(iⁿ::Int64, x::Float64, y::Float64, q::Float64, πᵒ::V::Vector{Vehicle})
+    DepotNode(iⁿ::Int64, x::Float64, y::Float64, q::Float64, πᵒ::Float64, πᶠ::Float64, V::Vector{Vehicle})
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ` capacity 
 `q`, operational cost `πᵒ` per package, fixed cost `πᶠ`, and fleet of vehicles `V`.
