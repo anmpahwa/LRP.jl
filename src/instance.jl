@@ -2,19 +2,24 @@
 function build(instance)
     # Depot nodes
     file = joinpath(dirname(@__DIR__), "instances/$instance/depot_nodes.csv")
-    csv = CSV.File(file, types=[Int64, Float64, Float64, Int64, Float64, Float64])
+    csv = CSV.File(file, types=[Int64, Int64, Float64, Float64, Int64, Float64, Float64, Float64, Float64])
     df = DataFrame(csv)
     D = Vector{DepotNode}(undef, nrow(df))
     for k ∈ 1:nrow(df)
         iⁿ = df[k,1]::Int64
-        x  = df[k,2]::Float64
-        y  = df[k,3]::Float64
-        q  = df[k,4]::Int64 
-        πᵒ = df[k,5]::Float64
-        πᶠ = df[k,6]::Float64
-        d  = DepotNode(iⁿ, x, y, q, πᵒ, πᶠ, Vehicle[])
+        jⁿ = df[k,2]::Int64
+        x  = df[k,3]::Float64
+        y  = df[k,4]::Float64
+        q  = df[k,5]::Int64 
+        πᵒ = df[k,6]::Float64
+        πᶠ = df[k,7]::Float64
+        pˡ = df[k,8]::Float64
+        pᵘ = df[k,9]::Float64
+        d  = DepotNode(iⁿ, jⁿ, x, y, q, πᵒ, πᶠ, pˡ, pᵘ, Vehicle[])
         D[iⁿ] = d
     end
+    ϕᴱ = !isone(length(unique(getproperty.(D, :jⁿ))))
+
     # Customer nodes
     file = joinpath(dirname(@__DIR__), "instances/$instance/customer_nodes.csv")
     csv = CSV.File(file, types=[Int64, Float64, Float64, Int64, Float64, Float64])
@@ -73,10 +78,8 @@ function build(instance)
         d  = D[iᵈ]
         push!(d.V, v)
     end
-    file = joinpath(dirname(@__DIR__), "instances/$instance/time_windows.csv")
-    csv = CSV.File(file, types=[Int64])
-    df = DataFrame(csv)
-    ϕ = df[1,1]::Int64
-    G = (D, C, A, ϕ)
+    V  = [v for d ∈ D for v ∈ d.V]
+    ϕᵀ = !(iszero(getproperty.(C, :tᵉ)) && iszero(getproperty.(C, :tˡ)) && iszero(getproperty.(V, :w)))
+    G  = (D, C, A, ϕᴱ, ϕᵀ)
     return G
 end

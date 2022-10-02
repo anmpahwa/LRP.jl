@@ -8,13 +8,13 @@ Objective function evaluation for solution `s`. Include `fixed`,
 function f(s::Solution; fixed=true, operational=true, penalty=true)
     πᶠ, πᵒ, πᵖ = 0., 0., 0.
     ϕᶠ, ϕᵒ, ϕᵖ = fixed, operational, penalty
+    n = length(s.C)
     for d ∈ s.D
-        if !isopt(d) continue end 
-        πᶠ += d.πᶠ
+        πᶠ += isopt(d) * d.πᶠ
         qᵈ = 0
+        pᵈ = 0.
         for v ∈ d.V
-            if !isopt(v) continue end 
-            πᶠ += v.πᶠ
+            πᶠ += isopt(v) * v.πᶠ
             tˢ = 0.
             tᵉ = 0.
             for r ∈ v.R 
@@ -23,6 +23,7 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
                 lᵛ = r.l
                 tᵉ = r.tᵉ
                 qᵈ += qᵛ
+                pᵈ += r.n/n
                 πᵒ += r.l * v.πᵒ
                 πᵖ += (qᵛ > v.q) * (qᵛ - v.q)
                 πᵖ += (lᵛ > v.l) * (lᵛ - v.l)
@@ -31,7 +32,10 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
             πᵖ += (tᵛ > v.w) * (tᵛ - v.w)
         end
         πᵒ += qᵈ * d.πᵒ
+        πᵖ += (isone(s.ϕᴱ) && isone(d.jⁿ) && !isopt(d)) * d.πᶠ
         πᵖ += (qᵈ > d.q) * (qᵈ - d.q)
+        πᵖ += (pᵈ < d.pˡ) * (d.pˡ - pᵈ)
+        πᵖ += (pᵈ > d.pᵘ) * (pᵈ - d.pᵘ)
     end
     for c ∈ s.C πᵖ += isopen(c) ? 0. : (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ) end
     z = ϕᶠ * πᶠ + ϕᵒ * πᵒ + ϕᵖ * πᵖ * 10^(ceil(log10(πᶠ + πᵒ)))

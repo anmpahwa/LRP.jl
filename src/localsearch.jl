@@ -384,6 +384,7 @@ function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.1: Swap two randomly selected depot nodes
         d¹, d² = sample(rng, D), sample(rng, D)
         if isequal(d¹, d²) continue end
+        if !isequal(d¹.jⁿ, d².jⁿ) continue end
         V¹, V² = copy(d¹.V), copy(d².V)
         for v ∈ V¹
             for r ∈ v.R 

@@ -68,18 +68,23 @@ A `Node` is a point on the graph.
 abstract type Node end
 
 @doc """
-    DepotNode(iⁿ::Int64, x::Float64, y::Float64, q::Float64, πᵒ::Float64, πᶠ::Float64, V::Vector{Vehicle})
+    DepotNode(iⁿ::Int64, jⁿ::Int64, x::Float64, y::Float64, q::Float64, πᵒ::Float64, πᶠ::Float64, pˡ::Float64, pᵘ::Float64, V::Vector{Vehicle})
 
-A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ` capacity 
-`q`, operational cost `πᵒ` per package, fixed cost `πᶠ`, and fleet of vehicles `V`.
+A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ` in echelon
+`jⁿ`, capacity `q`, operational cost `πᵒ` per package, fixed cost `πᶠ`, lower 
+threshold `pˡ` and upper threshold `pᵘ` on share of customers handled, and fleet of
+vehicles `V`.
 """
 struct DepotNode <: Node
     iⁿ::Int64                                                                       # Depot node index
+    jⁿ::Int64                                                                       # Depot echelon
     x::Float64                                                                      # Depot node location on the x-axis
     y::Float64                                                                      # Depot node location in the y-axis
     q::Int64                                                                        # Depot capacity
     πᵒ::Float64                                                                     # Operational cost
     πᶠ::Float64                                                                     # Fixed cost
+    pˡ::Float64                                                                     # Lower threshold on share of customers handled
+    pᵘ::Float64                                                                     # Upper threshold on share of customers handled
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
 end
 
@@ -105,7 +110,7 @@ mutable struct CustomerNode <: Node
 end
 
 @doc """
-    Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int64,Int64}, Arc}, V::Vector{Vehicle}, ϕ::Int64)
+    Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int64,Int64}, Arc}, V::Vector{Vehicle}, ϕᴱ::Int64, ϕᵀ::Int64)
 
 A Solution is a graph with depot nodes `D`, customer nodes `C`, arcs `A`, and vehicles `V`.
 """
@@ -113,7 +118,8 @@ struct Solution
     D::Vector{DepotNode}                                                            # Vector of depot nodes
     C::OffsetVector{CustomerNode, Vector{CustomerNode}}                             # Vector of customer nodes
     A::Dict{Tuple{Int64,Int64}, Arc}                                                # Set of arcs
-    ϕ::Int64                                                                        # Binary (Internal use)
+    ϕᴱ::Int64                                                                       # Binary (Internal use)
+    ϕᵀ::Int64                                                                       # Binary (Internal use)
 end
 
 # is operational

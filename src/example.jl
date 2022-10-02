@@ -21,19 +21,19 @@ let
         l̅   =   5n                      ,
         k̅   =   10n                     ,
         Ψᵣ  =   [
-                    :randomnode!    , 
+                    :randomnode!    ,
                     :randomroute!   ,
                     :randomvehicle! ,
                     :randomdepot!   ,
-                    :relatednode!   , 
-                    :relatedroute!  ,  
+                    :relatednode!   ,
+                    :relatedroute!  ,
                     :relatedvehicle!,
                     :relateddepot!  ,
                     :worstnode!     ,
                     :worstroute!    ,
                     :worstvehicle!  ,
                     :worstdepot!
-                ]                       , 
+                ]                       ,
         Ψᵢ  =   [
                     :best!          ,
                     :greedy!        ,
@@ -62,7 +62,7 @@ let
     );
     # Run ALNS and fetch best solution
     S = ALNS(rng, χ, sₒ);
-    s⃰ = S[end];          
+    s⃰ = S[end];
 # Fetch objective function values
     println("Objective function value:")
     println("   Initial: $(f(sₒ; penalty=false))")
@@ -86,7 +86,7 @@ let
     println("   Number of routes: $(sum([isopt(r) for d ∈ s⃰.D for v ∈ d.V for r ∈ v.R]))")
 # Visualizations
     # Visualize initial solution
-    display(visualize(sₒ)) 
+    display(visualize(sₒ))
     # Visualize best solution
     display(visualize(s⃰))
     # Animate ALNS solution search process from inital to best solution
