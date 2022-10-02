@@ -10,10 +10,9 @@ are not violated.
 """
 function isfeasible(s::Solution)
     x = zeros(Int64, eachindex(s.C))
-    n = length(s.C)
     for d ∈ s.D
         qᵈ = 0
-        pᵈ = 0.
+        nᵈ = 0.
         for v ∈ d.V
             tˢ = 0.
             tᵉ = 0.
@@ -24,7 +23,7 @@ function isfeasible(s::Solution)
                 if qᵛ > v.q return false end                                # Vehicle capacity constraint
                 if lᵛ > v.l return false end                                # Vehicle range constraint
                 qᵈ += r.q
-                pᵈ += r.n/n
+                nᵈ += r.n
                 tᵉ = r.tᵉ
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
@@ -39,6 +38,7 @@ function isfeasible(s::Solution)
             tᵛ = tᵉ - tˢ
             if tᵛ > v.w return false end                                    # Working-hours constraint 
         end
+        pᵈ = nᵈ/length(s.C)
         if (isone(s.ϕᴱ) && isone(d.jⁿ) && !isopt(d)) return false end       # Depot use constraint
         if qᵈ > d.q return false end                                        # Depot capacity constraint
         if !(d.pˡ ≤ pᵈ ≤ d.pᵘ) return false end                             # Depot customer share constraint

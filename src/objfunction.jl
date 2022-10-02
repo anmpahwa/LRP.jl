@@ -8,11 +8,10 @@ Objective function evaluation for solution `s`. Include `fixed`,
 function f(s::Solution; fixed=true, operational=true, penalty=true)
     πᶠ, πᵒ, πᵖ = 0., 0., 0.
     ϕᶠ, ϕᵒ, ϕᵖ = fixed, operational, penalty
-    n = length(s.C)
     for d ∈ s.D
         πᶠ += isopt(d) * d.πᶠ
         qᵈ = 0
-        pᵈ = 0.
+        nᵈ = 0
         for v ∈ d.V
             πᶠ += isopt(v) * v.πᶠ
             tˢ = 0.
@@ -23,7 +22,7 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
                 lᵛ = r.l
                 tᵉ = r.tᵉ
                 qᵈ += qᵛ
-                pᵈ += r.n/n
+                nᵈ += r.n
                 πᵒ += r.l * v.πᵒ
                 πᵖ += (qᵛ > v.q) * (qᵛ - v.q)
                 πᵖ += (lᵛ > v.l) * (lᵛ - v.l)
@@ -31,6 +30,7 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
             tᵛ = tᵉ - tˢ
             πᵖ += (tᵛ > v.w) * (tᵛ - v.w)
         end
+        pᵈ  = nᵈ/length(s.C)
         πᵒ += qᵈ * d.πᵒ
         πᵖ += (isone(s.ϕᴱ) && isone(d.jⁿ) && !isopt(d)) * d.πᶠ
         πᵖ += (qᵈ > d.q) * (qᵈ - d.q)
