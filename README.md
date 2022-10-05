@@ -54,9 +54,12 @@ The ALNS metaheuristic iteratively removes a set of nodes using,
 - Worst Depot Removal       : `:worstdepot!`
 
 and consequently inserts removed nodes using,
-- Best Insertion    : `best!`
-- Greedy Insertion  : `greedy!`
-- Regret Insertion  : `regret2!`, `regret3!`
+- Precise Best Insertion    : `:bestprecise!`
+- Perturb Best Insertion    : `:bestperturb!`
+- Precise Greedy Insertion  : `:greedyprecise!`
+- Perturb Greedy Insertion  : `:greedyperturb!`
+- Regret-two Insertion      : `:regret2!`
+- Regret-three Insertion    : `:regret3!`
 
 In every few iterations, the ALNS metaheuristic performs local search with,
 - Move          : `:move!`
