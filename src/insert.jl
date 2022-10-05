@@ -42,7 +42,7 @@ function bestinsert!(rng::AbstractRNG, s::Solution; noise=false)
             if !isopen(c) continue end
             for (j,r) ∈ pairs(R)
                 if iszero(ϕ[j]) continue end
-                d = s.D[r.iᵈ]
+                d  = s.D[r.iᵈ]
                 nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
                 nᵉ = isopt(r) ? C[r.iᵉ] : D[r.iᵉ]
                 nᵗ = d
@@ -136,7 +136,7 @@ function greedyinsert!(rng::AbstractRNG, s::Solution; noise=false)
             if !isopen(c) continue end
             for (j,r) ∈ pairs(R)
                 if iszero(ϕ[j]) continue end
-                d = s.D[r.iᵈ]
+                d  = s.D[r.iᵈ]
                 nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
                 nᵉ = isopt(r) ? C[r.iᵉ] : D[r.iᵉ]
                 nᵗ = d
@@ -158,7 +158,7 @@ function greedyinsert!(rng::AbstractRNG, s::Solution; noise=false)
             end
         end
         # Step 2.2: Randomly select a customer node to insert at its best position        
-        i,j = Tuple(argmin(x))
+        i,j = Tuple(argmin(X))
         c = L[i]
         r = R[j]
         d = s.D[r.iᵈ]
@@ -231,7 +231,7 @@ function regretNinsert!(rng::AbstractRNG, N::Int64, s::Solution)
             for (j,r) ∈ pairs(R)
                 # Step 2.1.1: Iterate through all possible insertion position in route r
                 if iszero(ϕ[j]) continue end
-                d = s.D[r.iᵈ]
+                d  = s.D[r.iᵈ]
                 nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
                 nᵉ = isopt(r) ? C[r.iᵉ] : D[r.iᵉ]
                 nᵗ = d
@@ -267,7 +267,7 @@ function regretNinsert!(rng::AbstractRNG, N::Int64, s::Solution)
         end
         # Step 2.2: Insert customer node with highest regret cost in its best position (break ties by inserting the node with the lowest insertion cost)
         I̲ = findall(i -> i == maximum(Z), Z)
-        i,j = Tuple(argmin(x[I̲,:]))
+        i,j = Tuple(argmin(X[I̲,:]))
         i = I̲[i]
         c = L[i]
         r = R[j]
