@@ -273,8 +273,8 @@ function regretNinsert!(rng::AbstractRNG, N::Int64, s::Solution)
         r = R[j]
         d = s.D[r.iᵈ]
         v = d.V[r.iᵛ]
-        iᵗ = p[i,j][1]
-        iʰ = p[i,j][2]
+        iᵗ = P[i,j][1]
+        iʰ = P[i,j][2]
         nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
         nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
