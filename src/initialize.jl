@@ -51,21 +51,18 @@ function cluster(rng::AbstractRNG, instance)
     V = [v for d ∈ D for v ∈ d.V]
     # Step 1: Initialize
     preinitialize!(s)
-    X = zeros(4, eachindex(C))
-    for (iⁿ,c) ∈ pairs(C) X[:,iⁿ] = [c.x, c.y, c.tᵉ, c.tˡ] end
-    # Step 2: Clustering
-    k = ceil(Int64, sum(getproperty.(C, :q))/mean(getproperty.(V, :q)))
-    Y = kmeans(X.parent, k)
-    # Step 3: Assignment
-    A  = OffsetVector(Y.assignments, eachindex(C))
-    Cᵒ = Y.centers
-    Iᵒ = 1:(size(Cᵒ)[2])
-    w  = ones(Int64, length(D))
+    W = zeros(4, eachindex(C))
+    for (iⁿ,c) ∈ pairs(C) W[:,iⁿ] = [c.x, c.y, c.tᵉ, c.tˡ] end
+    # Step 2: Cluster customer nodes
+    K  = kmeans(W.parent, length(V); rng=rng)
+    A  = OffsetVector(K.assignments, eachindex(C))
+    Cᵒ = K.centers
+    Iᵒ = 1:size(Cᵒ)[2]
+    # Step 3: Build initial solution by assigning each cluster to the closest available depot node and consequently inserting customer nodes into the routes
     for iᵒ ∈ Iᵒ
         Z = fill(Inf, length(D))
-        for d ∈ D
-            iⁿ = d.iⁿ
-            if iszero(w[iⁿ]) continue end
+        for (iⁿ,d) ∈ pairs(D)
+            if all(isopt, d.V) continue end
             xᵒ = Cᵒ[1,iᵒ]
             yᵒ = Cᵒ[2,iᵒ]
             xᵈ = d.x
@@ -74,15 +71,82 @@ function cluster(rng::AbstractRNG, instance)
         end
         iⁿ = argmin(Z)
         d  = D[iⁿ]
-        v  = sample(rng, d.V, Weights((!isopt).(d.V)))
-        r  = sample(rng, v.R)
-        nᵗ = d
-        Cᶜ = filter(c -> isequal(A[c.iⁿ], iᵒ), C)
-        for c ∈ Cᶜ
-            insertnode!(c, nᵗ, d, r, s)
-            nᵗ = c
+        R  = [r for v ∈ d.V for r ∈ v.R]
+        L  = filter(c -> isequal(A[c.iⁿ], iᵒ), C)
+        I = eachindex(L)
+        J = eachindex(R)
+        X = ElasticMatrix(fill(Inf, (I,J)))     # X[i,j]: insertion cost of customer node L[i] at best position in route R[j]
+        P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]: best insertion postion of customer node L[i] in route R[j]
+        ϕ = ones(Int64, J)                      # ϕ[j]  : selection weight for route R[j]
+        # Step 3.1: Iterate until all customer nodes of the cluster have been inserted into the route
+        for _ ∈ I
+            # Step 3.1.1: Iterate through all customer nodes of the cluster and every possible insertion position in each route
+            zᵒ = f(s)
+            for (i,c) ∈ pairs(L)
+                if !isopen(c) continue end
+                for (j,r) ∈ pairs(R)
+                    if iszero(ϕ[j]) continue end
+                    d  = s.D[r.iᵈ]
+                    nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
+                    nᵉ = isopt(r) ? C[r.iᵉ] : D[r.iᵉ]
+                    nᵗ = d
+                    nʰ = nˢ
+                    while true
+                        # Step 3.1.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
+                        insertnode!(c, nᵗ, nʰ, r, s)
+                        # Step 3.1.1.2: Compute the insertion cost
+                        z⁺ = f(s)
+                        Δ  = z⁺ - zᵒ
+                        # Step 3.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
+                        if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
+                        # Step 3.1.1.4: Remove customer node c from its position between tail node nᵗ and head node nʰ
+                        removenode!(c, nᵗ, nʰ, r, s)
+                        if isequal(nᵗ, nᵉ) break end
+                        nᵗ = nʰ
+                        nʰ = isequal(r.iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
+                    end
+                end
+            end
+            # Step 3.1.2: Insert customer node with least insertion cost at its best position
+            i,j = Tuple(argmin(X))
+            c = L[i]
+            r = R[j]
+            d = s.D[r.iᵈ]
+            v = d.V[r.iᵛ]
+            iᵗ = P[i,j][1]
+            iʰ = P[i,j][2]
+            nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
+            nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
+            insertnode!(c, nᵗ, nʰ, r, s)
+            # Step 3.1.3: Revise vectors appropriately
+            X[i,:] .= Inf
+            P[i,:] .= ((0, 0), )
+            ϕ .= 0
+            for (j,r) ∈ pairs(R) 
+                if !isequal(r.iᵛ, v.iᵛ) continue end
+                X[:,j] .= Inf
+                P[:,j] .= ((0, 0), )
+                ϕ[j] = 1  
+            end
+            if addroute(r, s)
+                r = Route(v, d)
+                push!(v.R, r) 
+                push!(R, r)
+                append!(X, fill(Inf, (I,1)))
+                append!(P, fill((0, 0), (I,1)))
+                push!(ϕ, 1)
+            end
+            if addvehicle(v, s)
+                v = Vehicle(v, d)
+                r = Route(v, d)
+                push!(d.V, v)
+                push!(v.R, r) 
+                push!(R, r)
+                append!(X, fill(Inf, (I,1)))
+                append!(P, fill((0, 0), (I,1)))
+                push!(ϕ, 1)
+            end
         end
-        if all(isopt, d.V) w[iⁿ] = 0 end
     end
     postinitialize!(s)
     # Step 4: Return initial solution
