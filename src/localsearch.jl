@@ -65,11 +65,11 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
             end
         end
         # Step 2.4: Move the node to its best position (this could be its original position as well)
-        j = argmin(x)
-        Δ = x[j]
+        j = argmin(X)
+        Δ = X[j]
         r = R[j]
-        iᵗ = p[j][1]
-        iʰ = p[j][2]
+        iᵗ = P[j][1]
+        iʰ = P[j][2]
         nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
         nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
