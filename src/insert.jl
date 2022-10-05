@@ -286,14 +286,14 @@ function regretNinsert!(rng::AbstractRNG, N::Int64, s::Solution)
         Z .= -Inf 
         for (i,c) ∈ pairs(L)
             for n ∈ 1:N
-                if iszero(w[i,n]) break end
+                if iszero(W[i,n]) break end
                 k = findfirst(x -> x.iʳ == W[i,n], R)
                 r = R[k]
                 if isequal(r.iᵛ, v.iᵛ) Y[i,n], W[i,n] = Inf, 0 end
             end
-            ix = sortperm(y[i,:])
-            Y[i,:] .= y[i,ix]
-            W[i,:] .= w[i,ix]
+            ix = sortperm(Y[i,:])
+            Y[i,:] .= Y[i,ix]
+            W[i,:] .= W[i,ix]
         end
         ϕ .= 0
         for (j,r) ∈ pairs(R) 
