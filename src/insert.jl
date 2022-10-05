@@ -220,7 +220,7 @@ function regretNinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]: best insertion postion of customer node L[i] in route R[j]
     Y = fill(Inf, (I,N))                    # Y[i,n]: insertion cost of customer node L[i] at nᵗʰ best position
     W = zeros(Int64, (I,N))                 # W[i,n]: route index of customer node L[j] at nᵗʰ best position
-    Z = fill(-Inf, I)                       # z[i]  : regret-N cost of customer node L[i]
+    Z = fill(-Inf, I)                       # Z[i]  : regret-N cost of customer node L[i]
     ϕ = ones(Int64, J)                      # ϕ[j]  : selection weight for route R[j]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
@@ -266,7 +266,7 @@ function regretNinsert!(rng::AbstractRNG, N::Int64, s::Solution)
             for n ∈ 1:N Z[i] += Y[i,n] - Y[i,1] end
         end
         # Step 2.2: Insert customer node with highest regret cost in its best position (break ties by inserting the node with the lowest insertion cost)
-        I̲ = findall(i -> i == maximum(z), z)
+        I̲ = findall(i -> i == maximum(Z), Z)
         i,j = Tuple(argmin(x[I̲,:]))
         i = I̲[i]
         c = L[i]
