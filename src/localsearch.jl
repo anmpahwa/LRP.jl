@@ -34,7 +34,7 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     # Step 2: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 2.1: Randomly select a node
-        i = sample(rng, I, OffsetWeights(w))
+        i = sample(rng, I, OffsetWeights(W))
         c = C[i]
         # Step 2.2: Remove this node from its position between tail node nᵗ and head node nʰ
         r  = c.r
