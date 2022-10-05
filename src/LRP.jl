@@ -3,6 +3,7 @@ module LRP
 using Clustering
 using CSV
 using DataFrames
+using Distributions
 using ElasticArrays
 using OffsetArrays
 using Plots

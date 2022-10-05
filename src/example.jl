@@ -35,11 +35,13 @@ let
                     :worstdepot!
                 ]                       ,
         Ψᵢ  =   [
-                    :best!          ,
-                    :greedy!        ,
+                    :bestprecise!   ,
+                    :bestperturb!   ,
+                    :greedyprecise! ,
+                    :greedyperturb! ,
                     :regret2!       ,
                     :regret3!
-                ]                       ,
+                ]                           ,
         Ψₗ  =   [
                     :move!          ,
                     :intraopt!      ,
