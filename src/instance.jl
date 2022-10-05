@@ -18,7 +18,7 @@ function build(instance)
         d  = DepotNode(iⁿ, jⁿ, x, y, q, πᵒ, πᶠ, pˡ, pᵘ, Vehicle[])
         D[iⁿ] = d
     end
-    ϕᴱ = !isone(length(unique(getproperty.(D, :jⁿ))))
+    ϕᴱ = Int64(!isone(length(unique(getproperty.(D, :jⁿ)))))::Int64
 
     # Customer nodes
     file = joinpath(dirname(@__DIR__), "instances/$instance/customer_nodes.csv")
@@ -79,7 +79,7 @@ function build(instance)
         push!(d.V, v)
     end
     V  = [v for d ∈ D for v ∈ d.V]
-    ϕᵀ = !(iszero(getproperty.(C, :tᵉ)) && iszero(getproperty.(C, :tˡ)) && iszero(getproperty.(V, :w)))
+    ϕᵀ = Int64(!(iszero(getproperty.(C, :tᵉ)) && iszero(getproperty.(C, :tˡ)) && iszero(getproperty.(V, :w))))::Int64
     G  = (D, C, A, ϕᴱ, ϕᵀ)
     return G
 end
