@@ -157,7 +157,7 @@ function greedyinsert!(rng::AbstractRNG, s::Solution; noise=false)
                 end
             end
         end
-        # Step 2.2: Randomly select a customer node to insert at its best position        
+        # Step 2.2: Insert customer node with least insertion cost at its best position        
         i,j = Tuple(argmin(X))
         c = L[i]
         r = R[j]
