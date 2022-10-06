@@ -59,7 +59,7 @@ function relatednode!(rng::AbstractRNG, q::Int64, s::Solution)
     # Step 1: Randomly select a pivot customer node
     iᵒ = rand(rng, eachindex(C))
     # Step 2: For each customer node, evaluate relatedness to this pivot customer node
-    X  = fill(-Inf, eachindex(C))   # X[iⁿ]: relatedness of customer node C[iⁿ] with customer node C[iᵒ]  
+    X = fill(-Inf, eachindex(C))   # X[iⁿ]: relatedness of customer node C[iⁿ] with customer node C[iᵒ]  
     for iⁿ ∈ eachindex(C) X[iⁿ] = relatedness(C[iⁿ], C[iᵒ], A[(iⁿ,iᵒ)]) end
     # Step 3: Remove q most related customer nodes
     n = 0

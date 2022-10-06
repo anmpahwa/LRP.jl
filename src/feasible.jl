@@ -9,7 +9,7 @@ time-window constraints
 are not violated.
 """
 function isfeasible(s::Solution)
-    x = zeros(Int64, eachindex(s.C))
+    X = zeros(Int64, eachindex(s.C))
     for d ∈ s.D
         qᵈ = 0
         nᵈ = 0.
@@ -30,7 +30,7 @@ function isfeasible(s::Solution)
                 cᵒ = cˢ
                 while true
                     if cᵒ.tᵃ > cᵒ.tˡ return false end                       # Time-window constraint
-                    x[cᵒ.iⁿ] += 1
+                    X[cᵒ.iⁿ] += 1
                     if isequal(cᵒ, cᵉ) break end
                     cᵒ = s.C[cᵒ.iʰ]
                 end
@@ -39,10 +39,10 @@ function isfeasible(s::Solution)
             if tᵛ > v.w return false end                                    # Working-hours constraint 
         end
         pᵈ = nᵈ/length(s.C)
-        if (isone(s.ϕᴱ) && isone(d.jⁿ) && !isopt(d)) return false end       # Depot use constraint
+        if (isone(s.φᴱ) && isone(d.jⁿ) && !isopt(d)) return false end       # Depot use constraint
         if qᵈ > d.q return false end                                        # Depot capacity constraint
         if !(d.pˡ ≤ pᵈ ≤ d.pᵘ) return false end                             # Depot customer share constraint
     end
-    if any(!isone, x) return false end                                      # Node service, customer flow, and sub-tour elimination constrinat
+    if any(!isone, X) return false end                                      # Node service, customer flow, and sub-tour elimination constrinat
     return true
 end

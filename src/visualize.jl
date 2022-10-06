@@ -96,6 +96,10 @@ function visualize(s::Solution; backend=gr)
         end
     end
     scatter!(X, Y, color=M₁, markersize=M₂, markershape=M₃, markerstrokewidth=0)
+     # Annotation
+     x = min(minimum(getproperty.(C, :x)), minimum(getproperty.(D, :x)))
+     y = max(maximum(getproperty.(C, :y)), maximum(getproperty.(D, :y)))
+     annotate!(x, y, text("f(s): $(Int64(round(f(s))))", :left, 10))
     return fig
 end
 
@@ -155,7 +159,7 @@ end
 Plots objective function values for solutions in `S`.
 Uses given `backend` to plot (defaults to `gr`).
 """
-function plotconv(S::Vector{Solution}; backend=gr)
+function pltcnv(S::Vector{Solution}; backend=gr)
     backend()
     Y = [f(s) for s ∈ S]
     X = 0:(length(S)-1)

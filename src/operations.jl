@@ -14,7 +14,7 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     end
     rᵒ.l += s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
     # update arrival and departure time
-    if iszero(s.ϕᵀ) return s end
+    if iszero(s.φᵀ) return s end
     tᵉ = rᵒ.tˢ - vᵒ.τᶠ * (rᵒ.l/vᵒ.l) - vᵒ.τᵈ * rᵒ.q
     for r ∈ vᵒ.R
         if r.tˢ < rᵒ.tˢ continue end
@@ -56,7 +56,7 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     end
     rᵒ.l -= s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
     # update arrival and departure time
-    if iszero(s.ϕᵀ) return s end
+    if iszero(s.φᵀ) return s end
     tᵉ = rᵒ.tˢ - vᵒ.τᶠ * (rᵒ.l/vᵒ.l) - vᵒ.τᵈ * rᵒ.q
     if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = Inf, Inf end
     for r ∈ vᵒ.R

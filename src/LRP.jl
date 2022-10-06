@@ -33,6 +33,6 @@ include("visualize.jl")
 
 export  f, isfeasible, isopt,
         ALNSParameters, initialsolution, ALNS, 
-        visualize, vectorize, animate, plotconv
+        visualize, vectorize, animate, pltcnv
 
 end

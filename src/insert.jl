@@ -19,11 +19,10 @@ insert!(s::Solution, method::Symbol) = insert!(Random.GLOBAL_RNG, s, method)
 
 # Best insertion
 # Iteratively insert randomly selected customer node at its best position until all open customer nodes have been added to the solution
-function bestinsert!(rng::AbstractRNG, s::Solution; noise=false)
+function bestinsert!(rng::AbstractRNG, s::Solution, φ::Bool)
     if all(isclose, s.C) return s end
-    D  = s.D
-    C  = s.C
-    ϕⁿ = noise
+    D = s.D
+    C = s.C
     # Step 1: Initialize
     preinsertion!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
@@ -51,7 +50,7 @@ function bestinsert!(rng::AbstractRNG, s::Solution; noise=false)
                     # Step 2.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
                     insertnode!(c, nᵗ, nʰ, r, s)
                     # Step 2.1.2: Compute the insertion cost
-                    z⁺ = f(s) * (1 + ϕⁿ * rand(rng, Uniform(-0.2, 0.2)))
+                    z⁺ = f(s) * (1 + φ * rand(rng, Uniform(-0.2, 0.2)))
                     Δ  = z⁺ - zᵒ
                     # Step 2.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
@@ -109,16 +108,15 @@ function bestinsert!(rng::AbstractRNG, s::Solution; noise=false)
     # Step 3: Return solution
     return s
 end
-bestprecise!(rng::AbstractRNG, s::Solution) = bestinsert!(rng, s; noise=false)
-bestperturb!(rng::AbstractRNG, s::Solution) = bestinsert!(rng, s; noise=true)
+bestprecise!(rng::AbstractRNG, s::Solution) = bestinsert!(rng, s, false)
+bestperturb!(rng::AbstractRNG, s::Solution) = bestinsert!(rng, s, true)
 
 # Greedy insertion
 # Iteratively insert customer nodes with least insertion cost until all open customer nodes have been added to the solution
-function greedyinsert!(rng::AbstractRNG, s::Solution; noise=false)
+function greedyinsert!(rng::AbstractRNG, s::Solution, φ::Bool)
     if all(isclose, s.C) return s end
-    D  = s.D
-    C  = s.C
-    ϕⁿ = noise
+    D = s.D
+    C = s.C
     # Step 1: Initialize
     preinsertion!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
@@ -145,7 +143,7 @@ function greedyinsert!(rng::AbstractRNG, s::Solution; noise=false)
                     # Step 2.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
                     insertnode!(c, nᵗ, nʰ, r, s)
                     # Step 2.1.2: Compute the insertion cost
-                    z⁺ = f(s) * (1 + ϕⁿ * rand(rng, Uniform(-0.2, 0.2)))
+                    z⁺ = f(s) * (1 + φ * rand(rng, Uniform(-0.2, 0.2)))
                     Δ  = z⁺ - zᵒ
                     # Step 2.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
@@ -201,8 +199,8 @@ function greedyinsert!(rng::AbstractRNG, s::Solution; noise=false)
     # Step 3: Return solution
     return s
 end
-greedyprecise!(rng::AbstractRNG, s::Solution) = greedyinsert!(rng, s; noise=false)
-greedyperturb!(rng::AbstractRNG, s::Solution) = greedyinsert!(rng, s; noise=true)
+greedyprecise!(rng::AbstractRNG, s::Solution) = greedyinsert!(rng, s, false)
+greedyperturb!(rng::AbstractRNG, s::Solution) = greedyinsert!(rng, s, true)
 
 # Regret-N insertion
 # Iteratively add customer nodes with highest regret cost at its best position until all open customer nodes have been added to the solution

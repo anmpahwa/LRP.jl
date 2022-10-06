@@ -26,15 +26,15 @@ function random(rng::AbstractRNG, instance)
     d = sample(rng, D)
     v = sample(rng, d.V)
     r = sample(rng, v.R)
-    w = ones(Int64, eachindex(C))                      # w[i]: selection weight for customer node C[i]
+    W = ones(Int64, eachindex(C))                      # W[i]: selection weight for customer node C[i]
     # Step 2: Iteratively append randomly selected customer node in randomly selected route
     while any(isopen, C)
-        c = sample(rng, C, OffsetWeights(w))
+        c  = sample(rng, C, OffsetWeights(W))
         nᵗ = d
         nʰ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
         insertnode!(c, nᵗ, nʰ, r, s)
         iⁿ = c.iⁿ
-        w[iⁿ] = 0
+        W[iⁿ] = 0
     end
     postinitialize!(s)
     # Step 4: Return initial solution
@@ -54,8 +54,8 @@ function cluster(rng::AbstractRNG, instance)
     W = zeros(4, eachindex(C))
     for (iⁿ,c) ∈ pairs(C) W[:,iⁿ] = [c.x, c.y, c.tᵉ, c.tˡ] end
     # Step 2: Cluster customer nodes
-    K  = kmeans(W.parent, length(V); rng=rng)
-    A  = OffsetVector(K.assignments, eachindex(C))
+    K = kmeans(W.parent, length(V); rng=rng)
+    A = OffsetVector(K.assignments, eachindex(C))
     Cᵒ = K.centers
     Iᵒ = 1:size(Cᵒ)[2]
     # Step 3: Build initial solution by assigning each cluster to the closest available depot node and consequently inserting customer nodes into the routes
@@ -69,10 +69,10 @@ function cluster(rng::AbstractRNG, instance)
             yᵈ = d.y
             Z[iⁿ] = sqrt((xᵒ-xᵈ)^2 + (yᵒ-yᵈ)^2)
         end
-        iⁿ = argmin(Z)
-        d  = D[iⁿ]
-        R  = [r for v ∈ d.V for r ∈ v.R]
-        L  = filter(c -> isequal(A[c.iⁿ], iᵒ), C)
+        iⁿ= argmin(Z)
+        d = D[iⁿ]
+        R = [r for v ∈ d.V for r ∈ v.R]
+        L = filter(c -> isequal(A[c.iⁿ], iᵒ), C)
         I = eachindex(L)
         J = eachindex(R)
         X = ElasticMatrix(fill(Inf, (I,J)))     # X[i,j]: insertion cost of customer node L[i] at best position in route R[j]

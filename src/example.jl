@@ -94,6 +94,6 @@ let
     # Animate ALNS solution search process from inital to best solution
     display(animate(S))
     # Show convergence plot
-    display(plotconv(S))
+    display(pltcnv(S))
     return
 end
