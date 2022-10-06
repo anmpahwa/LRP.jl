@@ -53,9 +53,9 @@ let
             μ̅   =   0.4                     ,
             ρ   =   0.1
         )
-        instances = ["prins20-5-1", "prins50-5-1b", "prins100-10-2b"]
-        methods = [:cluster, :cw, :random]
-        for k ∈ 1:3
+        instances = ["prins20-5-1", "prins50-5-1b"]
+        methods = [:cluster, :random]
+        for k ∈ 1:2
             instance = instances[k]
             method = methods[k]
             println("\nSolving $instance")
