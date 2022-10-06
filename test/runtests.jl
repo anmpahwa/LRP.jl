@@ -59,7 +59,7 @@ let
             instance = instances[k]
             method = methods[k]
             println("\nSolving $instance")
-            sₒ = initialsolution(instance, :random)     
+            sₒ = initialsolution(instance, method)     
             S  = ALNS(χ, sₒ)
             s⃰  = S[end]
             @test isfeasible(s⃰)
