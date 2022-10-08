@@ -27,7 +27,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
     z = f(sₒ)
     s⃰ = s
     z⃰ = z
-    T = ω * f(s)/log(ℯ, 1/τ)
+    T = ω * f(s; penalty=false)/log(1/τ)
     cᵣ, pᵣ, πᵣ, wᵣ = zeros(Int64, R), zeros(R), zeros(R), ones(R)
     cᵢ, pᵢ, πᵢ, wᵢ = zeros(Int64, I), zeros(I), zeros(I), ones(I)
     # Step 2: Loop over segments.
@@ -79,7 +79,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
             else
                 η = rand(rng)
                 pr = exp(-(z′ - z)/T)
-                if η > pr
+                if η < pr
                     s = s′
                     z = z′
                     h = hash(s)
