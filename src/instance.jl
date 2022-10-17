@@ -1,7 +1,7 @@
 # Builds instance as a graph with set of depot nodes, customer nodes, and arcs.
-function build(instance)
+function build(instance; root=joinpath(dirname(@__DIR__), "instances"))
     # Depot nodes
-    file = joinpath(dirname(@__DIR__), "instances/$instance/depot_nodes.csv")
+    file = joinpath(root, "$instance/depot_nodes.csv")
     csv = CSV.File(file, types=[Int64, Int64, Float64, Float64, Int64, Float64, Float64, Float64, Float64])
     df = DataFrame(csv)
     D = Vector{DepotNode}(undef, nrow(df))
@@ -21,7 +21,7 @@ function build(instance)
     φᴱ = Int64(!isone(length(unique(getproperty.(D, :jⁿ)))))::Int64
 
     # Customer nodes
-    file = joinpath(dirname(@__DIR__), "instances/$instance/customer_nodes.csv")
+    file = joinpath(root, "$instance/customer_nodes.csv")
     csv = CSV.File(file, types=[Int64, Float64, Float64, Int64, Float64, Float64])
     df = DataFrame(csv)
     ix = (df[1,1]:df[nrow(df),1])::UnitRange{Int64}
@@ -57,7 +57,7 @@ function build(instance)
         end
     end
     # Vehicles
-    file = joinpath(dirname(@__DIR__), "instances/$instance/vehicles.csv")
+    file = joinpath(root, "$instance/vehicles.csv")
     csv = CSV.File(file, types=[Int64, Int64, Int64, Int64, Int64, Int64, Float64, Float64, Float64, Float64, Float64, Int64, Int64])
     df = DataFrame(csv)
     for k ∈ 1:nrow(df)
