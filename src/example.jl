@@ -11,7 +11,8 @@ let
     # Define a random number generator
     rng = MersenneTwister(1234);
     # Define inital solution method and build the initial solution
-    sₒ = initialsolution(rng, instance, :random);
+    G  = build(instance)
+    sₒ = initialsolution(rng, G, :random);
     # Define ALNS parameters
     x = length(sₒ.D)+length(sₒ.C);
     n = max(500, ceil(x, digits=-(length(digits(x))-1)));
