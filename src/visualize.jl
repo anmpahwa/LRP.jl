@@ -1,5 +1,5 @@
 """
-    visualize(instance; backend=gr)
+    visualize(instance; root=joinpath(dirname(@__DIR__), "instances"), backend=gr)
 
 Plots `instance`.
 Uses given `backend` to plot (defaults to `gr`).
