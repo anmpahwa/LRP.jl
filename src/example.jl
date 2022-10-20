@@ -84,9 +84,9 @@ let
     println("   Optimal: $(isfeasible(s⃰))")
 # Optimal solution characteristics
     println("Optimal solution characteristics:")
-    println("   Number of depots: $(sum([isopt(d) for d ∈ s⃰.D]))")
-    println("   Number of vehicles: $(sum([isopt(v) for d ∈ s⃰.D for v ∈ d.V]))")
-    println("   Number of routes: $(sum([isopt(r) for d ∈ s⃰.D for v ∈ d.V for r ∈ v.R]))")
+    println("   Number of depots: $(sum([LRP.isopt(d) for d ∈ s⃰.D]))")
+    println("   Number of vehicles: $(sum([LRP.isopt(v) for d ∈ s⃰.D for v ∈ d.V]))")
+    println("   Number of routes: $(sum([LRP.isopt(r) for d ∈ s⃰.D for v ∈ d.V for r ∈ v.R]))")
 # Visualizations
     # Visualize initial solution
     display(visualize(sₒ))
