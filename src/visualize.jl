@@ -4,9 +4,9 @@
 Plots `instance`.
 Uses given `backend` to plot (defaults to `gr`).
 """
-function visualize(instance; backend=gr)
+function visualize(instance; root=joinpath(dirname(@__DIR__), "instances"), backend=gr)
     backend()
-    D, C, _ = build(instance)
+    D, C, _ = build(instance; root=root)
     fig = plot(legend=:none)
     K = length(D)+length(C)
     X = zeros(Float64, K)
