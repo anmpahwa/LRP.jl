@@ -12,11 +12,11 @@ struct Arc
 end
 
 @doc """
-    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, iˢ::Int64, iᵉ::Int64, tˢ::Float64, tᵉ::Float64, n::Int64, q::Int64, l::Float64)
+    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, iˢ::Int64, iᵉ::Int64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Int64, l::Float64)
 
 A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`, depot
 node index `iᵈ`, start node index `iˢ`, end node index `iᵉ`, start time `tₛ`, end 
-time `tₑ`, number of customers `n`, load `q`, and length `l`.
+time `tₑ`, slack time `τ`, number of customers `n`, load `q`, and length `l`.
 """
 mutable struct Route
     iʳ::Int64                                                                       # Route index
@@ -26,6 +26,7 @@ mutable struct Route
     iᵉ::Int64                                                                       # Route end node index
     tˢ::Float64                                                                     # Route start time (departure time from the depot node)
     tᵉ::Float64                                                                     # Route end time (subsequent arrival time at the depot node)
+    τ::Float64                                                                      # Route slack time
     n::Int64                                                                        # Route size (number of customers)
     q::Int64                                                                        # Route load
     l::Float64                                                                      # Route length
@@ -145,14 +146,14 @@ isdepot(n::Node) = typeof(n) == DepotNode
 iscustomer(n::Node) = typeof(n) == CustomerNode
 
 # Null route
-const NullRoute = Route(0, 0, 0, 0, 0, Inf, Inf, 0, 0, Inf)
+const NullRoute = Route(0, 0, 0, 0, 0, Inf, Inf, Inf, 0, 0, Inf)
 
 # Create a non-operational route traversed by vehicle v from depot d
 function Route(v::Vehicle, d::DepotNode)
     iʳ = length(v.R) + 1
     iᵛ = v.iᵛ
     iᵈ = d.iⁿ
-    r  = Route(iʳ, iᵛ, iᵈ, iᵈ, iᵈ, 0., 0., 0, 0, 0)
+    r  = Route(iʳ, iᵛ, iᵈ, iᵈ, iᵈ, 0., 0., Inf, 0, 0, 0)
     return r
 end            
 
