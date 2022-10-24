@@ -2,7 +2,9 @@
 function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
     dᵒ =  s.D[rᵒ.iᵈ]
     vᵒ = dᵒ.V[rᵒ.iᵛ]
-    tᵉ = rᵒ.tˢ - vᵒ.τᶠ * (rᵒ.l/vᵒ.l) - vᵒ.τᵈ * rᵒ.q
+    tⁱ = rᵒ.tⁱ
+    θⁱ = rᵒ.θⁱ
+    τ  = Inf
     # update tail node and head node indices
     isdepot(nᵗ) ? rᵒ.iˢ = nᵒ.iⁿ : nᵗ.iʰ = nᵒ.iⁿ
     isdepot(nʰ) ? rᵒ.iᵉ = nᵒ.iⁿ : nʰ.iᵗ = nᵒ.iⁿ
@@ -17,9 +19,12 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     # update arrival and departure time
     if iszero(s.φᵀ) return s end
     for r ∈ vᵒ.R
-        if r.tˢ < rᵒ.tˢ continue end
-        r.tˢ = tᵉ + vᵒ.τᶠ * (r.l/vᵒ.l) + vᵒ.τᵈ * r.q
+        if r.tⁱ < rᵒ.tⁱ continue end
         if isopt(r)
+            r.θⁱ = θⁱ
+            r.θˢ = θⁱ + max(0., (r.l/vᵒ.l - r.θⁱ))
+            r.tⁱ = tⁱ
+            r.tˢ = r.tⁱ + vᵒ.τᶠ * (r.θˢ - r.θⁱ) + vᵒ.τᵈ * r.q
             cˢ = s.C[r.iˢ]
             cᵉ = s.C[r.iᵉ]
             tᵈ = r.tˢ
@@ -31,24 +36,32 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
                 tᵈ = cᵒ.tᵈ
                 cᵒ = s.C[cᵒ.iʰ]
             end
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.s 
-        else r.tᵉ = r.tˢ
+            r.θᵉ = r.θˢ - r.l/vᵒ.l
+            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.s
+        else
+            r.θⁱ = θⁱ
+            r.θˢ = θⁱ
+            r.θᵉ = θⁱ
+            r.tⁱ = tⁱ
+            r.tˢ = tⁱ
+            r.tᵉ = tⁱ
         end
-        tᵉ = r.tᵉ
+        tⁱ = r.tᵉ
+        θⁱ = r.θᵉ
     end
     (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (0., 0.) : (vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ)
-    τᵒ = Inf
+    τ = min(τ, dᵒ.tᵉ - vᵒ.tᵉ)
     for r ∈ reverse(vᵒ.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
         cᵉ = s.C[r.iᵉ]
         cᵒ = cˢ
         while true
-            τᵒ = min(τᵒ, cᵒ.tˡ - cᵒ.tᵃ)
+            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ)
             if isequal(cᵒ, cᵉ) break end
             cᵒ = s.C[cᵒ.iʰ]
         end
-        r.τ = τᵒ
+        r.τ = τ
     end
     return s
 end
@@ -57,7 +70,9 @@ end
 function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
     dᵒ =  s.D[rᵒ.iᵈ]
     vᵒ = dᵒ.V[rᵒ.iᵛ]
-    tᵉ = rᵒ.tˢ - vᵒ.τᶠ * (rᵒ.l/vᵒ.l) - vᵒ.τᵈ * rᵒ.q
+    tⁱ = rᵒ.tⁱ
+    θⁱ = rᵒ.θⁱ
+    τ  = Inf
     # update tail node and head node indices
     isdepot(nᵗ) ? rᵒ.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
     isdepot(nʰ) ? rᵒ.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
@@ -73,9 +88,12 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     if iszero(s.φᵀ) return s end
     if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = Inf, Inf end
     for r ∈ vᵒ.R
-        if r.tˢ < rᵒ.tˢ continue end
-        r.tˢ = tᵉ + vᵒ.τᶠ * (r.l/vᵒ.l) + vᵒ.τᵈ * r.q
+        if r.tⁱ < rᵒ.tⁱ continue end
         if isopt(r)
+            r.θⁱ = θⁱ
+            r.θˢ = θⁱ + max(0., (r.l/vᵒ.l - r.θⁱ))
+            r.tⁱ = tⁱ
+            r.tˢ = r.tⁱ + vᵒ.τᶠ * (r.θˢ - r.θⁱ) + vᵒ.τᵈ * r.q
             cˢ = s.C[r.iˢ]
             cᵉ = s.C[r.iᵉ]
             tᵈ = r.tˢ
@@ -87,24 +105,32 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
                 tᵈ = cᵒ.tᵈ
                 cᵒ = s.C[cᵒ.iʰ]
             end
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.s 
-        else r.tᵉ = r.tˢ
+            r.θᵉ = r.θˢ - r.l/vᵒ.l
+            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.s
+        else
+            r.θⁱ = θⁱ
+            r.θˢ = θⁱ
+            r.θᵉ = θⁱ
+            r.tⁱ = tⁱ
+            r.tˢ = tⁱ
+            r.tᵉ = tⁱ
         end
-        tᵉ = r.tᵉ
+        tⁱ = r.tᵉ
+        θⁱ = r.θᵉ
     end
     (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (0., 0.) : (vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ)
-    τᵒ = Inf
+    τ = min(τ, dᵒ.tᵉ - vᵒ.tᵉ)
     for r ∈ reverse(vᵒ.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
         cᵉ = s.C[r.iᵉ]
         cᵒ = cˢ
         while true
-            τᵒ = min(τᵒ, cᵒ.tˡ - cᵒ.tᵃ)
+            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ)
             if isequal(cᵒ, cᵉ) break end
             cᵒ = s.C[cᵒ.iʰ]
         end
-        r.τ = τᵒ
+        r.τ = τ
     end
     return s
 end
@@ -116,7 +142,8 @@ function addroute(rᵒ::Route, s::Solution)
     # condtions when route mustn't be added
     if isequal(length(vᵒ.R), vᵒ.r̅) return false end
     if any(!isopt, vᵒ.R) return false end
-    if vᵒ.tᵉ > vᵒ.w return false end
+    if vᵒ.tᵉ > dᵒ.tᵉ return false end
+    if (vᵒ.tᵉ - vᵒ.tˢ) > vᵒ.τʷ return false end
     qᵈ = 0
     for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
     if qᵈ ≥ dᵒ.q return false end
@@ -151,7 +178,8 @@ function addvehicle(vᵒ::Vehicle, s::Solution)
     # condition when vehicle could be added
     if qᵈ < dᵒ.q return true end
     for v ∈ dᵒ.V
-        if v.tᵉ > v.w return true end
+        if v.tᵉ > dᵒ.tᵉ return true end
+        if (v.tᵉ - v.tˢ) > v.τʷ return true end
         for r ∈ v.R
             if !isopt(r) continue end
             cˢ = s.C[r.iˢ]

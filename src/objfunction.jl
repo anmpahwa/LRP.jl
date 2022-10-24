@@ -14,21 +14,19 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
         nᵈ = 0
         for v ∈ d.V
             πᶠ += isopt(v) * v.πᶠ
-            tˢ = 0.
-            tᵉ = 0.
             for r ∈ v.R 
                 if !isopt(r) continue end
                 qᵛ = r.q
                 lᵛ = r.l
-                tᵉ = r.tᵉ
                 qᵈ += qᵛ
                 nᵈ += r.n
                 πᵒ += r.l * v.πᵒ
                 πᵖ += (qᵛ > v.q) * (qᵛ - v.q)                               # Vehicle capacity constraint
                 πᵖ += (lᵛ > v.l) * (lᵛ - v.l)                               # Vehicle range constraint
             end
-            tᵛ = tᵉ - tˢ
-            πᵖ += (tᵛ > v.w) * (tᵛ - v.w)                                   # Working-hours constraint 
+            πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)                             # Depot working-hours constraint
+            πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)                             # Depot working-hours constraint
+            πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * (v.tᵉ - v.tˢ - v.τʷ)               # Vehicle working-hours constraint 
         end
         pᵈ  = nᵈ/length(s.C)
         πᵒ += qᵈ * d.πᵒ

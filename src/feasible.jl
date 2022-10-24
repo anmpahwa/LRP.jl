@@ -14,8 +14,6 @@ function isfeasible(s::Solution)
         qᵈ = 0
         nᵈ = 0.
         for v ∈ d.V
-            tˢ = 0.
-            tᵉ = 0.
             for r ∈ v.R
                 if !isopt(r) continue end
                 qᵛ = r.q
@@ -24,7 +22,6 @@ function isfeasible(s::Solution)
                 if lᵛ > v.l return false end                                # Vehicle range constraint
                 qᵈ += r.q
                 nᵈ += r.n
-                tᵉ = r.tᵉ
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
                 cᵒ = cˢ
@@ -35,8 +32,9 @@ function isfeasible(s::Solution)
                     cᵒ = s.C[cᵒ.iʰ]
                 end
             end
-            tᵛ = tᵉ - tˢ
-            if tᵛ > v.w return false end                                    # Working-hours constraint 
+            if d.tˢ > v.tˢ return false end                                 # Depot working-hours constraint
+            if v.tᵉ > d.tᵉ return false end                                 # Depot working-hours constraint
+            if v.tᵉ - v.tˢ > v.τʷ return false end                          # Working-hours constraint 
         end
         pᵈ = nᵈ/length(s.C)
         if (isone(s.φᴱ) && isone(d.jⁿ) && !isopt(d)) return false end       # Depot use constraint
