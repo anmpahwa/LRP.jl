@@ -4,40 +4,14 @@
 
 Returns initial LRP solution using the given `method` for graph `G` given as a tuple of `Nodes` and `Arcs`.
 Available methods include,
-- Random Initialization             : `:random`
 - K-means Clustering Initialization : `:cluster`
+- Random Initialization             : `:random`
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
 initialsolution(rng::AbstractRNG, G, method::Symbol)::Solution = getfield(LRP, method)(rng, G)
 initialsolution(G, method::Symbol) = initialsolution(Random.GLOBAL_RNG, G, method)
-
-# Random Initialization
-# Create initial solution with randomly selcted node-route combination until all customer nodes have been added to the solution
-function random(rng::AbstractRNG, G)
-    s = Solution(G...)
-    D = s.D
-    C = s.C
-    # Step 1: Initialize
-    preinitialize!(s)
-    d = sample(rng, D)
-    v = sample(rng, d.V)
-    r = sample(rng, v.R)
-    W = ones(Int64, eachindex(C))                      # W[i]: selection weight for customer node C[i]
-    # Step 2: Iteratively append randomly selected customer node in randomly selected route
-    while any(isopen, C)
-        c  = sample(rng, C, OffsetWeights(W))
-        nᵗ = d
-        nʰ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
-        insertnode!(c, nᵗ, nʰ, r, s)
-        iⁿ = c.iⁿ
-        W[iⁿ] = 0
-    end
-    postinitialize!(s)
-    # Step 4: Return initial solution
-    return s
-end
 
 # k-means clustering Initialization
 # Create initial solution using k-means clustering algorithm
@@ -144,6 +118,32 @@ function cluster(rng::AbstractRNG, G)
                 push!(ϕ, 1)
             end
         end
+    end
+    postinitialize!(s)
+    # Step 4: Return initial solution
+    return s
+end
+
+# Random Initialization
+# Create initial solution with randomly selcted node-route combination until all customer nodes have been added to the solution
+function random(rng::AbstractRNG, G)
+    s = Solution(G...)
+    D = s.D
+    C = s.C
+    # Step 1: Initialize
+    preinitialize!(s)
+    d = sample(rng, D)
+    v = sample(rng, d.V)
+    r = sample(rng, v.R)
+    W = ones(Int64, eachindex(C))                      # W[i]: selection weight for customer node C[i]
+    # Step 2: Iteratively append randomly selected customer node in randomly selected route
+    while any(isopen, C)
+        c  = sample(rng, C, OffsetWeights(W))
+        nᵗ = d
+        nʰ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
+        insertnode!(c, nᵗ, nʰ, r, s)
+        iⁿ = c.iⁿ
+        W[iⁿ] = 0
     end
     postinitialize!(s)
     # Step 4: Return initial solution
