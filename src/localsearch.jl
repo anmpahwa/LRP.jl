@@ -5,7 +5,8 @@ Return solution `s` performing local seach on the solution using given `method` 
 until improvement.
 
 Available methods include,
-- Move          : `:move!`
+- Intra-Move    : `:intramove!`
+- Inter-Move    : `:intermove!`
 - Inter-Opt     : `:interopt!`
 - Intra-Opt     : `:intraopt!`
 - Split         : `:split!`
@@ -18,14 +19,69 @@ localsearch!(rng::AbstractRNG, k̅::Int64, s::Solution, method::Symbol)::Solutio
 localsearch!(k̅::Int64, s::Solution, method::Symbol) = localsearch!(Random.GLOBAL_RNG, k̅, s, method)
 
 # Move
-# Iteratively move a randomly seceted customer node in its best position if the move 
+# Iteratively move a randomly selected customer node in its best position if the move 
 # results in reduction in objective function value for k̅ iterations until improvement
-function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function intramove!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    I = eachindex(C)
+    W = ones(Int64, I)              # w[i]: selection weight for node C[i]
+    # Step 2: Iterate for k̅ iterations until improvement
+    for _ ∈ 1:k̅
+        # Step 2.1: Randomly select a node
+        i = sample(rng, I, OffsetWeights(W))
+        c = C[i]
+        r = c.r
+        if !isactive(r) continue end
+        # Step 2.2: Remove this node from its position between tail node nᵗ and head node nʰ
+        nᵗ = isequal(r.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
+        nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
+        x  = 0.                     # x: insertion cost in the route
+        p  = (nᵗ.iⁿ, nʰ.iⁿ)         # p: best insertion postion in the route
+        removenode!(c, nᵗ, nʰ, r, s)
+        # Step 2.3: Iterate through all possible insertion positions in the route
+        d  = s.D[r.iᵈ]
+        nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ] 
+        nᵉ = isopt(r) ? C[r.iᵉ] : D[r.iᵉ]
+        nᵗ = d
+        nʰ = nˢ
+        while true
+            # Step 2.3.1: Insert customer node c between tail node nᵗ and head node nʰ
+            insertnode!(c, nᵗ, nʰ, r, s)
+            # Step 2.3.1: Compute insertion cost
+            z′ = f(s)
+            Δ  = z′ - zᵒ
+            # Step 2.3.1: Revise least insertion cost in route r and the corresponding best insertion position in route r
+            if Δ < x x, p = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
+            # Step 2.3: Remove node from its position between tail node nᵗ and head node nʰ
+            removenode!(c, nᵗ, nʰ, r, s)
+            if isequal(nᵗ, nᵉ) break end
+            nᵗ = nʰ
+            nʰ = isequal(r.iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
+        end
+        # Step 2.4: Move the node to its best position (this could be its original position as well)
+        Δ  = x
+        iᵗ = p[1]
+        iʰ = p[2]
+        nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
+        nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
+        insertnode!(c, nᵗ, nʰ, r, s)
+        # Step 2.5: Revise vectors appropriately
+        W[i] = 0
+        # Step 2.6: If the move results in reduction in objective function value, then go to step 3, else return to step 2.1
+        Δ ≥ 0 ? continue : break
+    end
+    # Step 3: Return solution
+    return s
+end
+function intermove!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    zᵒ= f(s)
+    D = s.D
+    C = s.C
+    # Step 1: Initialize
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
     I = eachindex(C)
     J = eachindex(R)
     X = fill(Inf, J)                # x[j]: insertion cost in route R[j]
@@ -36,13 +92,18 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 2.1: Randomly select a node
         i = sample(rng, I, OffsetWeights(W))
         c = C[i]
+        r = c.r
+        if !isactive(r) continue end
         # Step 2.2: Remove this node from its position between tail node nᵗ and head node nʰ
-        r  = c.r
         nᵗ = isequal(r.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
-        nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
+        nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
+        j  = findfirst(x -> isequal(x, r), R)
+        X[j] = 0.
+        P[j] = (nᵗ.iⁿ, nʰ.iⁿ)
         removenode!(c, nᵗ, nʰ, r, s)
         # Step 2.3: Iterate through all routes
         for (j,r) ∈ pairs(R)
+            if isequal(r, c.r) continue end
             # Step 2.3.1: Iterate through all possible insertion positions
             d  = s.D[r.iᵈ]
             nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ] 
@@ -91,7 +152,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
     C = s.C
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
     W = isopt.(R)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
@@ -159,7 +220,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
     C = s.C
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
     W = isopt.(R)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
@@ -277,6 +338,7 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
             for r ∈ v.R
                 # Step 1.2.1: Remove depot node d from its position in route r
                 if !isopt(r) continue end
+                if !isactive(r) continue end
                 cˢ = C[r.iˢ]
                 cᵉ = C[r.iᵉ]
                 x = 0.
@@ -331,6 +393,8 @@ function swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
         n², n⁵ = sample(rng, C), sample(rng, C)
         if isequal(n², n⁵) continue end
         r², r⁵ = n².r, n⁵.r
+        if !isactive(r²) continue end
+        if !isactive(r⁵) continue end
         n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
         n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
         n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
@@ -385,8 +449,12 @@ function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
         d¹, d² = sample(rng, D), sample(rng, D)
         if isequal(d¹, d²) continue end
         if !isequal(d¹.jⁿ, d².jⁿ) continue end
-        V¹, V² = copy(d¹.V), copy(d².V)
-        for v ∈ V¹
+        V¹ = d¹.V
+        V² = d².V
+        I¹ = [iᵛ for (iᵛ,v) ∈ pairs(V¹) if all(isactive.(v.R))]
+        I² = [iᵛ for (iᵛ,v) ∈ pairs(V²) if all(isactive.(v.R))]
+        for iᵛ ∈ I¹
+            v = V¹[iᵛ]
             for r ∈ v.R 
                 if isopt(r)
                     cˢ = C[r.iˢ]
@@ -400,7 +468,8 @@ function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
                 r.iᵈ = d².iⁿ
             end
         end
-        for v ∈ V²
+        for iᵛ ∈ I²
+            v = V²[iᵛ]
             for r ∈ v.R 
                 if isopt(r)
                     cˢ = C[r.iˢ]
@@ -414,40 +483,32 @@ function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
                 r.iᵈ = d¹.iⁿ
             end
         end
-        empty!(d².V)
-        for v ∈ V¹
+        for iᵛ ∈ I¹
+            v = V¹[iᵛ]
             v.iᵈ = d².iⁿ
             push!(d².V, v)
         end
-        empty!(d¹.V)
-        for v ∈ V²
+        for iᵛ ∈ I²
+            v = V²[iᵛ]
             v.iᵈ = d¹.iⁿ
             push!(d¹.V, v)
         end
+        deleteat!(V¹, I¹)
+        deleteat!(V², I²)
+        for (iᵛ,v) ∈ pairs(V¹) v.iᵛ = iᵛ end
+        for (iᵛ,v) ∈ pairs(V²) v.iᵛ = iᵛ end
         # Step 1.2: Compute change in objective function value
         z′ = f(s)
         Δ  = z′ - zᵒ
         # Step 1.3: If the swap results in reduction in objective function value then go to step 2, else go to step 1.4
         if Δ < 0 break end
         # Step 1.4: Reswap the two depot nodes
-        V², V¹ = copy(d¹.V), copy(d².V)
-        for v ∈ V¹
-            for r ∈ v.R 
-                if isopt(r)
-                    cˢ = C[r.iˢ]
-                    cᵉ = C[r.iᵉ]
-                    removenode!(d², cᵉ, cˢ, r, s)
-                    insertnode!(d¹, cᵉ, cˢ, r, s)
-                else
-                    r.iˢ = d¹.iⁿ
-                    r.iᵉ = d¹.iⁿ
-                end
-                r.iᵈ = d¹.iⁿ
-            end
-            v.iᵈ = d¹.iⁿ
-            push!(d¹.V, v)
-        end
-        for v ∈ V²
+        V¹ = d¹.V
+        V² = d².V
+        I¹ = [iᵛ for (iᵛ,v) ∈ pairs(V¹) if all(isactive.(v.R))]
+        I² = [iᵛ for (iᵛ,v) ∈ pairs(V²) if all(isactive.(v.R))]
+        for iᵛ ∈ I¹
+            v = V¹[iᵛ]
             for r ∈ v.R 
                 if isopt(r)
                     cˢ = C[r.iˢ]
@@ -460,18 +521,36 @@ function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
                 end
                 r.iᵈ = d².iⁿ
             end
-
         end
-        empty!(d¹.V)
-        for v ∈ V¹
-            v.iᵈ = d¹.iⁿ
-            push!(d¹.V, v)
+        for iᵛ ∈ I²
+            v = V²[iᵛ]
+            for r ∈ v.R 
+                if isopt(r)
+                    cˢ = C[r.iˢ]
+                    cᵉ = C[r.iᵉ]
+                    removenode!(d², cᵉ, cˢ, r, s)
+                    insertnode!(d¹, cᵉ, cˢ, r, s)
+                else
+                    r.iˢ = d¹.iⁿ
+                    r.iᵉ = d¹.iⁿ
+                end
+                r.iᵈ = d¹.iⁿ
+            end
         end
-        empty!(d².V)
-        for v ∈ V²
+        for iᵛ ∈ I¹
+            v = V¹[iᵛ]
             v.iᵈ = d².iⁿ
             push!(d².V, v)
         end
+        for iᵛ ∈ I²
+            v = V²[iᵛ]
+            v.iᵈ = d¹.iⁿ
+            push!(d¹.V, v)
+        end
+        deleteat!(V¹, I¹)
+        deleteat!(V², I²)
+        for (iᵛ,v) ∈ pairs(V¹) v.iᵛ = iᵛ end
+        for (iᵛ,v) ∈ pairs(V²) v.iᵛ = iᵛ end
     end
     # Step 2: Return solution
     return s
