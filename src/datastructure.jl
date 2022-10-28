@@ -141,8 +141,8 @@ isclose(d::DepotNode) = !isopt(d)                                               
 isclose(c::CustomerNode) = !isopen(c)                                               # A customer node is defined closed it is being served by any vehicle-route
 
 # is equal
-Base.isequal(p::Route, q::Route) = isequal(p.iʳ, q.iʳ)
-Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.iᵛ, q.iᵛ)
+Base.isequal(p::Route, q::Route) = isequal(p.iʳ, q.iʳ) && isequal(p.iᵛ, q.iᵛ) && isequal(p.iᵈ, q.iᵈ)
+Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.iᵛ, q.iᵛ) && isequal(p.iᵈ, q.iᵈ)
 Base.isequal(p::Node, q::Node) = isequal(p.iⁿ, q.iⁿ)
 
 # is identical
