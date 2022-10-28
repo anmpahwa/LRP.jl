@@ -5,11 +5,11 @@ using Random
 let
 # Developing an optimal solution 
     # Define instance
-    instance = "prins100-10-2b";
+    instance = "prins200-10-3";
     # Visualize instance
     display(visualize(instance))
     # Define a random number generator
-    rng = MersenneTwister(1234);
+    rng = MersenneTwister(1403);
     # Define inital solution method and build the initial solution
     G  = build(instance)
     sₒ = initialsolution(rng, G, :random);
@@ -44,7 +44,8 @@ let
                     :regret3!
                 ]                           ,
         Ψₗ  =   [
-                    :move!          ,
+                    :intramove!     ,
+                    :intermove!     ,
                     :intraopt!      ,
                     :interopt!      ,
                     :split!         ,
@@ -93,8 +94,8 @@ let
     # Visualize best solution
     display(visualize(s⃰))
     # Animate ALNS solution search process from inital to best solution
-    display(animate(S))
+    #display(animate(S))
     # Show convergence plot
-    display(pltcnv(S))
+    #display(pltcnv(S))
     return
 end
