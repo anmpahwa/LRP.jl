@@ -12,12 +12,13 @@ struct Arc
 end
 
 @doc """
-    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, iˢ::Int64, iᵉ::Int64, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Int64, l::Float64)
+    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, iˢ::Int64, iᵉ::Int64, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Int64, l::Float64, φ::Int64)
 
 A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`, depot
 node index `iᵈ`, start node index `iˢ`, end node index `iᵉ`, vehicle tank status 
 `θⁱ`, `θˢ`, and `θᵉ` at route initiaition `tⁱ`, start `tˢ`, and end time `tᵉ`, 
-repsectively, slack time `τ`, number of customers `n`, load `q`, and length `l`.
+repsectively, slack time `τ`, number of customers `n`, load `q`, length `l`, and
+status `φ`.
 """
 mutable struct Route
     iʳ::Int64                                                                       # Route index
@@ -35,6 +36,7 @@ mutable struct Route
     n::Int64                                                                        # Route size (number of customers)
     q::Int64                                                                        # Route load
     l::Float64                                                                      # Route length
+    φ::Int64                                                                        # Route status
 end
     
 @doc """
@@ -130,6 +132,9 @@ struct Solution
     φᵀ::Int64                                                                       # Binary (Internal use)
 end
 
+# is active
+isactive(r::Route) = isone(r.ϕ)
+
 # is operational
 isopt(r::Route) = (r.n ≥ 1)                                                         # A route is defined operational if it serves at least one customer
 isopt(v::Vehicle) = any(isopt, v.R)                                                 # A vehicle is defined operational if any of its routes is operational
@@ -153,7 +158,7 @@ isdepot(n::Node) = typeof(n) == DepotNode
 iscustomer(n::Node) = typeof(n) == CustomerNode
 
 # Null route
-const NullRoute = Route(0, 0, 0, 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf)
+const NullRoute = Route(0, 0, 0, 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf, 0)
 
 # Create a non-operational route traversed by vehicle v from depot d
 function Route(v::Vehicle, d::DepotNode)
@@ -172,8 +177,8 @@ function Route(v::Vehicle, d::DepotNode)
     n  = 0 
     q  = 0
     l  = 0.
-    φ  = 0
-    r  = Route(iʳ, iᵛ, iᵈ, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l)
+    φ  = 1
+    r  = Route(iʳ, iᵛ, iᵈ, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l, φ)
     return r
 end            
 
