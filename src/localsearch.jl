@@ -152,13 +152,12 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
     C = s.C
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
-    W = isopt.(R)
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r) && isopt(r)]
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 1.1: Iteratively take 2 arcs from the same route
         # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
-        r = sample(rng, R, Weights(W))
+        r = sample(rng, R)
         (i,j) = sample(rng, 1:r.n, 2)
         (i,j) = j < i ? (j,i) : (i,j)  
         k  = 1
