@@ -133,7 +133,7 @@ struct Solution
 end
 
 # is active
-isactive(r::Route) = isone(r.ϕ)
+isactive(r::Route) = isone(r.φ)
 
 # is operational
 isopt(r::Route) = (r.n ≥ 1)                                                         # A route is defined operational if it serves at least one customer
