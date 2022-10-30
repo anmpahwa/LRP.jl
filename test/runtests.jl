@@ -32,8 +32,7 @@ let
                         ]                       ,
                 Ψₗ  =   [
                             :move!          ,
-                            :intraopt!      ,
-                            :interopt!      ,
+                            :opt!           ,
                             :split!         ,
                             :swapcustomers!
                         ]                               ,
@@ -95,8 +94,7 @@ let
                     ]                       ,
             Ψₗ  =   [
                         :move!          ,
-                        :intraopt!      ,
-                        :interopt!      ,
+                        :opt!           ,
                         :split!         ,
                         :swapcustomers! ,
                         :swapdepots!    

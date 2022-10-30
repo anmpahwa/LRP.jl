@@ -45,8 +45,7 @@ let
                 ]                           ,
         Ψₗ  =   [
                     :move!          ,
-                    :intraopt!      ,
-                    :interopt!      ,
+                    :opt!           ,
                     :split!         ,
                     :swapcustomers! ,
                     :swapdepots!

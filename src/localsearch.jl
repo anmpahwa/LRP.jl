@@ -6,8 +6,7 @@ until improvement.
 
 Available methods include,
 - Move          : `:move!`
-- Inter-Opt     : `:interopt!`
-- Intra-Opt     : `:intraopt!`
+- Opt           : `:opt!`
 - Split         : `:split!`
 - Swap-Customer : `:swapcustomers!`
 - Swap-Depot    : `:swapdepots!`
@@ -87,7 +86,7 @@ end
 # 2-opt
 # Iteratively take 2 arcs and reconfigure them (total possible reconfigurations 2²-1 = 3) if the 
 # reconfigure results in reduction in objective function value for k̅ iterations until improvement
-function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function opt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
     C = s.C
@@ -95,163 +94,151 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     W = isopt.(R)
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
-        # Step 1.1: Iteratively take 2 arcs from the same route
-        # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
-        r = sample(rng, R, Weights(W))
-        (i,j) = sample(rng, 1:r.n, 2)
-        (i,j) = j < i ? (j,i) : (i,j)  
-        k  = 1
-        c  = C[r.iˢ]
-        n² = c
-        n⁵ = c
-        while true
-            if isequal(k, i) n² = c end
-            if isequal(k, j) n⁵ = c end
-            if isequal(k, j) break end
-            k += 1
-            c  = C[c.iʰ]
-        end
-        n¹ = isequal(r.iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
-        n³ = isequal(r.iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
-        n⁴ = isequal(r.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
-        n⁶ = isequal(r.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ] 
-        if isequal(n², n⁵) || isequal(n¹, n⁵) continue end 
-        # Step 1.2: Reconfigure
-        # d → ... → n¹ → n⁵ → n⁴ → ... → n³ → n² → n⁶ → ... → d
-        n  = n²
-        tᵒ = n¹
-        hᵒ = n³
-        tⁿ = n⁵
-        hⁿ = n⁶
-        while true
-            removenode!(n, tᵒ, hᵒ, r, s)
-            insertnode!(n, tⁿ, hⁿ, r, s)
-            hⁿ = n
-            n  = hᵒ
-            hᵒ = isdepot(hᵒ) ? C[r.iˢ] : (isequal(r.iᵉ, hᵒ.iⁿ) ? D[hᵒ.iʰ] : C[hᵒ.iʰ])
-            if isequal(n, n⁵) break end
-        end
-        # Step 1.3: Compute change in objective function value
-        z′ = f(s)
-        Δ  = z′ - zᵒ 
-        # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 2, else go to step 1.5
-        if Δ < 0 return s end
-        # Step 1.5: Reconfigure back to the original state
-        # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
-        n  = n⁵
-        tᵒ = n¹
-        hᵒ = n⁴
-        tⁿ = n²
-        hⁿ = n⁶
-        while true
-            removenode!(n, tᵒ, hᵒ, r, s)
-            insertnode!(n, tⁿ, hⁿ, r, s)
-            hⁿ = n
-            n  = hᵒ
-            hᵒ = isdepot(hᵒ) ? C[r.iˢ] : (isequal(r.iᵉ, hᵒ.iⁿ) ? D[hᵒ.iʰ] : C[hᵒ.iʰ])
-            if isequal(n, n²) break end
-        end
-    end
-    # Step 2: Return solution
-    return s
-end
-function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
-    zᵒ= f(s)
-    D = s.D
-    C = s.C
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
-    W = isopt.(R)
-    # Step 1: Iterate for k̅ iterations until improvement
-    for _ ∈ 1:k̅
-        # Step 1.1: Iteratively take 2 arcs from different routes
+        # Step 1.1: Iteratively take 2 arcs
         # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
         r², r⁵ = sample(rng, R, Weights(W), 2)
         d², d⁵ = D[r².iᵈ], D[r⁵.iᵈ]
-        if isequal(r², r⁵) continue end
-        i  = rand(rng, 1:r².n)
-        k  = 1
-        c² = C[r².iˢ]
-        n² = c²
-        while true
-            if isequal(k, i) n² = c² end
-            if isequal(k, i) break end
-            k += 1
-            c² = C[c².iʰ]
-        end
-        n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
-        n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
-        j  = rand(rng, 1:r⁵.n)
-        k  = 1
-        c⁵ = C[r⁵.iˢ]
-        n⁵ = c⁵
-        while true
-            if isequal(k, j) n⁵ = c⁵ end
-            if isequal(k, j) break end
-            k += 1
-            c⁵ = C[c⁵.iʰ]
-        end
-        n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
-        n⁶ = isequal(r⁵.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
-        # Step 1.2: Reconfigure
-        # d² → ... → n¹ → n⁵ → n⁶ → ...  → d² and d⁵ → ... → n⁴ → n² → n³ → ... → d⁵
-        c² = n²
-        tᵒ = n¹
-        hᵒ = n³
-        tⁿ = n⁴
-        hⁿ = n⁵
-        while true
-            removenode!(c², tᵒ, hᵒ, r², s)
-            insertnode!(c², tⁿ, hⁿ, r⁵, s)
-            if isequal(hᵒ, d²) break end
-            tⁿ = c² 
-            c² = C[hᵒ.iⁿ]
+        if isequal(r², r⁵)
+            r = r²
+            (i,j) = sample(rng, 1:r.n, 2)
+            (i,j) = j < i ? (j,i) : (i,j)  
+            k  = 1
+            c  = C[r.iˢ]
+            n² = c
+            n⁵ = c
+            while true
+                if isequal(k, i) n² = c end
+                if isequal(k, j) n⁵ = c end
+                if isequal(k, j) break end
+                k += 1
+                c  = C[c.iʰ]
+            end
+            n¹ = isequal(r.iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
+            n³ = isequal(r.iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
+            n⁴ = isequal(r.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
+            n⁶ = isequal(r.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ] 
+            if isequal(n², n⁵) || isequal(n¹, n⁵) continue end 
+            # Step 1.2: Reconfigure
+            # d → ... → n¹ → n⁵ → n⁴ → ... → n³ → n² → n⁶ → ... → d
+            n  = n²
+            tᵒ = n¹
+            hᵒ = n³
+            tⁿ = n⁵
+            hⁿ = n⁶
+            while true
+                removenode!(n, tᵒ, hᵒ, r, s)
+                insertnode!(n, tⁿ, hⁿ, r, s)
+                hⁿ = n
+                n  = hᵒ
+                hᵒ = isdepot(hᵒ) ? C[r.iˢ] : (isequal(r.iᵉ, hᵒ.iⁿ) ? D[hᵒ.iʰ] : C[hᵒ.iʰ])
+                if isequal(n, n⁵) break end
+            end
+            # Step 1.3: Compute change in objective function value
+            z′ = f(s)
+            Δ  = z′ - zᵒ 
+            # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 2, else go to step 1.5
+            if Δ < 0 return s end
+            # Step 1.5: Reconfigure back to the original state
+            # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
+            n  = n⁵
+            tᵒ = n¹
+            hᵒ = n⁴
+            tⁿ = n²
+            hⁿ = n⁶
+            while true
+                removenode!(n, tᵒ, hᵒ, r, s)
+                insertnode!(n, tⁿ, hⁿ, r, s)
+                hⁿ = n
+                n  = hᵒ
+                hᵒ = isdepot(hᵒ) ? C[r.iˢ] : (isequal(r.iᵉ, hᵒ.iⁿ) ? D[hᵒ.iʰ] : C[hᵒ.iʰ])
+                if isequal(n, n²) break end
+            end
+        else
+            i  = rand(rng, 1:r².n)
+            k  = 1
+            c² = C[r².iˢ]
+            n² = c²
+            while true
+                if isequal(k, i) n² = c² end
+                if isequal(k, i) break end
+                k += 1
+                c² = C[c².iʰ]
+            end
+            n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
+            n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
+            j  = rand(rng, 1:r⁵.n)
+            k  = 1
+            c⁵ = C[r⁵.iˢ]
+            n⁵ = c⁵
+            while true
+                if isequal(k, j) n⁵ = c⁵ end
+                if isequal(k, j) break end
+                k += 1
+                c⁵ = C[c⁵.iʰ]
+            end
+            n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
+            n⁶ = isequal(r⁵.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
+            # Step 1.2: Reconfigure
+            # d² → ... → n¹ → n⁵ → n⁶ → ...  → d² and d⁵ → ... → n⁴ → n² → n³ → ... → d⁵
+            c² = n²
+            tᵒ = n¹
+            hᵒ = n³
+            tⁿ = n⁴
+            hⁿ = n⁵
+            while true
+                removenode!(c², tᵒ, hᵒ, r², s)
+                insertnode!(c², tⁿ, hⁿ, r⁵, s)
+                if isequal(hᵒ, d²) break end
+                tⁿ = c² 
+                c² = C[hᵒ.iⁿ]
+                hᵒ = isequal(r².iᵉ, c².iⁿ) ? D[c².iʰ] : C[c².iʰ]
+            end
+            c⁵ = n⁵
+            tᵒ = c²
+            hᵒ = n⁶
+            tⁿ = n¹
+            hⁿ = d²
+            while true
+                removenode!(c⁵, tᵒ, hᵒ, r⁵, s)
+                insertnode!(c⁵, tⁿ, hⁿ, r², s)
+                if isequal(hᵒ, d⁵) break end
+                tⁿ = c⁵
+                c⁵ = C[hᵒ.iⁿ]
+                hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
+            end
+            # Step 1.3: Compute change in objective function value
+            z′ = f(s)
+            Δ  = z′ - zᵒ 
+            # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 2, else go to step 1.5
+            if Δ < 0 break end
+            # Step 1.5: Reconfigure back to the original state
+            # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
+            c² = n⁵
+            tᵒ = n¹
             hᵒ = isequal(r².iᵉ, c².iⁿ) ? D[c².iʰ] : C[c².iʰ]
-        end
-        c⁵ = n⁵
-        tᵒ = c²
-        hᵒ = n⁶
-        tⁿ = n¹
-        hⁿ = d²
-        while true
-            removenode!(c⁵, tᵒ, hᵒ, r⁵, s)
-            insertnode!(c⁵, tⁿ, hⁿ, r², s)
-            if isequal(hᵒ, d⁵) break end
-            tⁿ = c⁵
-            c⁵ = C[hᵒ.iⁿ]
+            tⁿ = n⁴
+            hⁿ = n²
+            while true
+                removenode!(c², tᵒ, hᵒ, r², s)
+                insertnode!(c², tⁿ, hⁿ, r⁵, s)
+                if isequal(hᵒ, d²) break end
+                tⁿ = c² 
+                c² = C[hᵒ.iⁿ]
+                hᵒ = isequal(r².iᵉ, c².iⁿ) ? D[c².iʰ] : C[c².iʰ]
+            end
+            c⁵ = n²
+            tᵒ = c²
             hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
-        end
-        # Step 1.3: Compute change in objective function value
-        z′ = f(s)
-        Δ  = z′ - zᵒ 
-        # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 2, else go to step 1.5
-        if Δ < 0 break end
-        # Step 1.5: Reconfigure back to the original state
-        # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
-        c² = n⁵
-        tᵒ = n¹
-        hᵒ = isequal(r².iᵉ, c².iⁿ) ? D[c².iʰ] : C[c².iʰ]
-        tⁿ = n⁴
-        hⁿ = n²
-        while true
-            removenode!(c², tᵒ, hᵒ, r², s)
-            insertnode!(c², tⁿ, hⁿ, r⁵, s)
-            if isequal(hᵒ, d²) break end
-            tⁿ = c² 
-            c² = C[hᵒ.iⁿ]
-            hᵒ = isequal(r².iᵉ, c².iⁿ) ? D[c².iʰ] : C[c².iʰ]
-        end
-        c⁵ = n²
-        tᵒ = c²
-        hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
-        tⁿ = n¹
-        hⁿ = d²
-        while true
-            removenode!(c⁵, tᵒ, hᵒ, r⁵, s)
-            insertnode!(c⁵, tⁿ, hⁿ, r², s)
-            if isequal(hᵒ, d⁵) break end
-            tⁿ = c⁵
-            c⁵ = C[hᵒ.iⁿ]
-            hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
+            tⁿ = n¹
+            hⁿ = d²
+            while true
+                removenode!(c⁵, tᵒ, hᵒ, r⁵, s)
+                insertnode!(c⁵, tⁿ, hⁿ, r², s)
+                if isequal(hᵒ, d⁵) break end
+                tⁿ = c⁵
+                c⁵ = C[hᵒ.iⁿ]
+                hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
+            end
         end
     end
     # Step 2: Return solution
@@ -317,9 +304,9 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     return s
 end
 
-# Swap nodes
-# Iteratively swap two randomly selected nodes if the swap results in
-# reduction in objective function value for k̅ iterations until improvement
+# Swap customer nodes
+# Iteratively swap two randomly selected customer nodes if the swap results
+# in reduction in objective function value for k̅ iterations until improvement
 function swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
@@ -375,6 +362,10 @@ function swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
     # Step 2: Return solution
     return s
 end
+
+# Swap depot nodes
+# Iteratively swap two randomly selected depot nodes if the swap results
+# in reduction in objective function value for k̅ iterations until improvement
 function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
