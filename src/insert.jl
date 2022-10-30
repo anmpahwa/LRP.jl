@@ -25,7 +25,7 @@ function bestinsert!(rng::AbstractRNG, s::Solution, φ::Bool)
     C = s.C
     # Step 1: Initialize
     preinsertion!(s)
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
     J = eachindex(R)
@@ -119,7 +119,7 @@ function greedyinsert!(rng::AbstractRNG, s::Solution, φ::Bool)
     C = s.C
     # Step 1: Initialize
     preinsertion!(s)
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
     J = eachindex(R)
@@ -210,7 +210,7 @@ function regretNinsert!(rng::AbstractRNG, N::Int64, s::Solution)
     C = s.C
     # Step 1: Initialize
     preinsertion!(s)
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
     J = eachindex(R)
