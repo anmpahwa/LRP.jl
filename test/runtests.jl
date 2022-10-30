@@ -31,8 +31,7 @@ let
                             :regret3!
                         ]                       ,
                 Ψₗ  =   [
-                            :intramove!     ,
-                            :intermove!     ,
+                            :move!          ,
                             :intraopt!      ,
                             :interopt!      ,
                             :split!         ,
@@ -95,8 +94,7 @@ let
                         :regret3!
                     ]                       ,
             Ψₗ  =   [
-                        :intramove!     ,
-                        :intermove!     ,
+                        :move!          ,
                         :intraopt!      ,
                         :interopt!      ,
                         :split!         ,
