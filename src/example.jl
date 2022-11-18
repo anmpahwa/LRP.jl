@@ -44,10 +44,11 @@ let
                     :regret3!
                 ]                           ,
         Ψₗ  =   [
-                    :move!          ,
-                    :opt!           ,
-                    :split!         ,
-                    :swapcustomers! ,
+                    :intraopt!          ,
+                    :interopt!          ,
+                    :movecustomer!      ,
+                    :movedepot!         ,
+                    :swapcustomers!     ,
                     :swapdepots!
                 ]                       ,
         σ₁  =   15                      ,

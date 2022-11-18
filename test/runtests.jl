@@ -31,9 +31,9 @@ let
                             :regret3!
                         ]                       ,
                 Ψₗ  =   [
-                            :move!          ,
-                            :opt!           ,
-                            :split!         ,
+                            :intraopt!          ,
+                            :interopt!          ,
+                            :movecustomer!      ,
                             :swapcustomers!
                         ]                               ,
                 σ₁  =   15                      ,
@@ -93,11 +93,12 @@ let
                         :regret3!
                     ]                       ,
             Ψₗ  =   [
-                        :move!          ,
-                        :opt!           ,
-                        :split!         ,
-                        :swapcustomers! ,
-                        :swapdepots!    
+                        :intraopt!          ,
+                        :interopt!          ,
+                        :movecustomer!      ,
+                        :movedepot!         ,
+                        :swapcustomers!     ,
+                        :swapdepots!
                     ]                       ,
             σ₁  =   15                      ,
             σ₂  =   10                      ,
