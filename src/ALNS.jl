@@ -12,7 +12,7 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
     # Step 0: Pre-initialize
-    k̲, l̲, l̅, k̅ = χ.k̲, χ.l̲, χ.l̅, χ.k̅
+    n, k, m, j = χ.n, χ.k, χ.m, χ.j
     Ψᵣ, Ψᵢ, Ψₗ = χ.Ψᵣ, χ.Ψᵢ, χ.Ψₗ
     σ₁, σ₂, σ₃ = χ.σ₁, χ.σ₂, χ.σ₃
     C̲, C̅, μ̲, μ̅ = χ.C̲, χ.C̅, χ.μ̲, χ.μ̅
@@ -33,8 +33,8 @@ function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
     # Step 2: Loop over segments.
     push!(S, s⃰)
     push!(H, hash(s⃰))
-    p = Progress(k̅, desc="Computing...", color=:blue, showspeed=true)
-    for j ∈ 1:(k̅ ÷ k̲)
+    p = Progress(n * k, desc="Computing...", color=:blue, showspeed=true)
+    for u ∈ 1:k
         # Step 2.1: Reset count and score for every removal and insertion operator
         for r ∈ R cᵣ[r], πᵣ[r] = 0, 0. end
         for i ∈ I cᵢ[i], πᵢ[i] = 0, 0. end
@@ -42,7 +42,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
         for r ∈ R pᵣ[r] = wᵣ[r]/sum(values(wᵣ)) end
         for i ∈ I pᵢ[i] = wᵢ[i]/sum(values(wᵢ)) end
         # Step 2.3: Loop over iterations within the segment
-        for k ∈ 1:k̲
+        for _ ∈ 1:n
             # Step 2.3.1: Randomly select a removal and an insertion operator based on operator selection probabilities, and consequently update count for the selected operators.
             r = sample(rng, 1:length(Ψᵣ), Weights(pᵣ))
             i = sample(rng, 1:length(Ψᵢ), Weights(pᵢ))
@@ -98,8 +98,8 @@ function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
         for r ∈ R if !iszero(cᵣ[r]) wᵣ[r] = ρ * πᵣ[r] / cᵣ[r] + (1 - ρ) * wᵣ[r] end end
         for i ∈ I if !iszero(cᵢ[i]) wᵢ[i] = ρ * πᵢ[i] / cᵢ[i] + (1 - ρ) * wᵢ[i] end end
         # Step 2.5: Perform local search.
-        if iszero(j % (l̲ ÷ k̲))
-            for l ∈ L localsearch!(rng, l̅, s, Ψₗ[l]) end
+        if iszero(j % u)
+            for l ∈ L localsearch!(rng, m, s, Ψₗ[l]) end
             h = hash(s)
             z = f(s)
             if z < z⃰

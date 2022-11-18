@@ -7,10 +7,10 @@ let
         # Vehicle Routing Problem with time-windows
         @testset "VRPTW" begin
             χ   = ALNSParameters(
-                k̲   =   4                       ,
-                l̲   =   200                     ,
-                l̅   =   500                     ,
-                k̅   =   1000                    ,
+                n   =   4                       ,
+                k   =   250                     ,
+                m   =   200                     ,
+                j   =   125                     ,
                 Ψᵣ  =   [
                             :randomnode!    , 
                             :relatednode!   , 
@@ -66,10 +66,10 @@ let
     # Location Routing Problem
     @testset "LRP" begin
         χ   = ALNSParameters(
-            k̲   =   4                       ,
-            l̲   =   200                     ,
-            l̅   =   500                     ,
-            k̅   =   1000                    ,
+            n   =   4                       ,
+            k   =   250                     ,
+            m   =   200                     ,
+            j   =   125                     ,
             Ψᵣ  =   [
                         :randomnode!    , 
                         :relatednode!   , 

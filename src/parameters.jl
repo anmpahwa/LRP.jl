@@ -3,10 +3,10 @@
 
 Optimization parameters for Adaptive Large Neighborhood Search (ALNS).
 
-- k̲     :   Number of ALNS iterations triggering operator probability update (segment size)
-- l̲     :   Number of ALNS iterations triggering local search
-- l̅     :   Number of local search iterations
-- k̅     :   Number of ALNS iterations
+- n     :   Number of ALNS iterations in an ALNS segment
+- k     :   Number of ALNS segments
+- m     :   Number of local search iterations
+- j     :   Number of ALNS segments triggering local search
 - Ψᵣ    :   Vector of removal operators
 - Ψᵢ    :   Vector of insertion operators
 - Ψₗ    :   Vector of local search operators
@@ -23,10 +23,10 @@ Optimization parameters for Adaptive Large Neighborhood Search (ALNS).
 - ρ     :   Reaction factor
 """
 Base.@kwdef struct ALNSParameters
-    k̲::Int64
-    l̲::Int64
-    l̅::Int64
-    k̅::Int64
+    n::Int64
+    k::Int64
+    m::Int64
+    j::Int64
     Ψᵣ::Vector{Symbol}
     Ψᵢ::Vector{Symbol}
     Ψₗ::Vector{Symbol}

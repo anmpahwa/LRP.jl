@@ -17,10 +17,10 @@ let
     x = length(sₒ.D)+length(sₒ.C);
     n = max(500, ceil(x, digits=-(length(digits(x))-1)));
     χ = ALNSParameters(
-        k̲   =   n ÷ 25                  ,
-        l̲   =   2n                      ,
-        l̅   =   5n                      ,
-        k̅   =   10n                     ,
+        n   =   n ÷ 25                  ,
+        k   =   250                     ,
+        m   =   2n                      ,
+        j   =   125                     ,
         Ψᵣ  =   [
                     :randomnode!    ,
                     :randomroute!   ,
