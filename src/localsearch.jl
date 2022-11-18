@@ -17,7 +17,7 @@ localsearch!(rng::AbstractRNG, k̅::Int64, s::Solution, method::Symbol)::Solutio
 localsearch!(k̅::Int64, s::Solution, method::Symbol) = localsearch!(Random.GLOBAL_RNG, k̅, s, method)
 
 # Move
-# Iteratively move a randomly seceted customer node in its best position if the move 
+# Iteratively move a randomly selected customer node in its best position if the move 
 # results in reduction in objective function value for k̅ iterations until improvement
 function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)

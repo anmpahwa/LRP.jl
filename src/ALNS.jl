@@ -35,27 +35,27 @@ function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
     push!(H, hash(s⃰))
     p = Progress(k̅, desc="Computing...", color=:blue, showspeed=true)
     for j ∈ 1:(k̅ ÷ k̲)
-        # Step 2.1: Set operator scores and count.
-        for r ∈ R πᵣ[r], cᵣ[r] = 0., 0 end
-        for i ∈ I πᵢ[i], cᵢ[i] = 0., 0 end
-        # Step 2.2: Update operator probabilities
+        # Step 2.1: Reset count and score for every removal and insertion operator
+        for r ∈ R cᵣ[r], πᵣ[r] = 0, 0. end
+        for i ∈ I cᵢ[i], πᵢ[i] = 0, 0. end
+        # Step 2.2: Update selection probability for every removal and insertion operator
         for r ∈ R pᵣ[r] = wᵣ[r]/sum(values(wᵣ)) end
         for i ∈ I pᵢ[i] = wᵢ[i]/sum(values(wᵢ)) end
-        # Step 2.2: Loop over iterations.
+        # Step 2.3: Loop over iterations within the segment
         for k ∈ 1:k̲
-            # Step 2.2.1: Select removal and insertion operators using roulette wheel selection and update operator counts.
+            # Step 2.3.1: Randomly select a removal and an insertion operator based on operator selection probabilities, and consequently update count for the selected operators.
             r = sample(rng, 1:length(Ψᵣ), Weights(pᵣ))
             i = sample(rng, 1:length(Ψᵢ), Weights(pᵢ))
             cᵣ[r] += 1
             cᵢ[i] += 1
-            # Step 2.3.2: Using the removal and insertion operators create new solution.
+            # Step 2.3.2: Using the selected removal and insertion operators destroy and repair the current solution to develop a new solution.
             η = rand(rng)
             q = Int64(floor(((1 - η) * min(C̲, μ̲ * length(s.C)) + η * min(C̅, μ̅ * length(s.C)))))
             s′= deepcopy(s)
             remove!(rng, q, s′, Ψᵣ[r])
             insert!(rng, s′, Ψᵢ[i])
             z′ = f(s′)
-            # Step 2.3.3: If the new solution is better than the best found then update the best and current solutions, and update the operator scores by σ₁.
+            # Step 2.3.3: If this new solution is better than the best solution, then set the best solution and the current solution to the new solution, and accordingly update scores of the selected removal and insertion operators by σ₁.
             if z′ < z⃰
                 s = s′
                 z = z′
@@ -65,7 +65,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
                 πᵣ[r] += σ₁
                 πᵢ[i] += σ₂
                 push!(H, h)
-            # Step 2.3.4: Else if the new solution is better than current solution, update the current solution. If the new solution is also newly found then update the operator scores by σ₂.
+            # Step 2.3.4: Else if this new solution is only better than the current solution, then set the current solution to the new solution and accordingly update scores of the selected removal and insertion operators by σ₂.
             elseif f(s′) < f(s)
                 s = s′
                 z = z′
@@ -90,16 +90,14 @@ function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
                     push!(H, h)
                 end
             end
-            # Step 2.3.6: Update annealing tempertature.
             T *= 𝜃
-            # Step 2.3.7: Miscellaneous
             push!(S, s⃰)
             next!(p)
         end
-        # Step 2.4: Update operator weights.
+        # Step 2.4: Update weights for every removal and insertion operator.
         for r ∈ R if !iszero(cᵣ[r]) wᵣ[r] = ρ * πᵣ[r] / cᵣ[r] + (1 - ρ) * wᵣ[r] end end
         for i ∈ I if !iszero(cᵢ[i]) wᵢ[i] = ρ * πᵢ[i] / cᵢ[i] + (1 - ρ) * wᵢ[i] end end
-        # Step 2.5: Local search.
+        # Step 2.5: Perform local search.
         if iszero(j % (l̲ ÷ k̲))
             for l ∈ L localsearch!(rng, l̅, s, Ψₗ[l]) end
             h = hash(s)
