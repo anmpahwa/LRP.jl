@@ -5,8 +5,8 @@ Return solution `s` performing local seach on the solution using given `method` 
 until improvement.
 
 Available methods include,
-- Inter-Opt     : `:interopt!`
 - Intra-Opt     : `:intraopt!`
+- Inter-Opt     : `:interopt!`
 - Move-Customer : `:movecustomer!`
 - Move-Depot    : `:movedepot!`
 - Swap-Customer : `:swapcustomers!`
