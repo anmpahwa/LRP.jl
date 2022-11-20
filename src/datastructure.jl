@@ -12,18 +12,20 @@ struct Arc
 end
 
 @doc """
-    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, iˢ::Int64, iᵉ::Int64, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Int64, l::Float64, φ::Int64)
+    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, x::Int64, y::Int64, iˢ::Int64, iᵉ::Int64, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Int64, l::Float64, φ::Int64)
 
 A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`, depot
-node index `iᵈ`, start node index `iˢ`, end node index `iᵉ`, vehicle tank status 
-`θⁱ`, `θˢ`, and `θᵉ` at route initiaition `tⁱ`, start `tˢ`, and end time `tᵉ`, 
-repsectively, slack time `τ`, number of customers `n`, load `q`, length `l`, and
-status `φ`.
+node index `iᵈ`, centroid coordinate `x, y` , start node index `iˢ`, end node index 
+`iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition `tⁱ`, start `tˢ`, 
+and end time `tᵉ`, repsectively, slack time `τ`, number of customers `n`, load `q`, 
+length `l`, andstatus `φ`.
 """
 mutable struct Route
     iʳ::Int64                                                                       # Route index
     iᵛ::Int64                                                                       # Vehicle index
     iᵈ::Int64                                                                       # Depot node index
+    x::Float64                                                                      # Centroid x-coordinate
+    y::Float64                                                                      # Centroid y-coordinate
     iˢ::Int64                                                                       # Route start node index
     iᵉ::Int64                                                                       # Route end node index
     θⁱ::Float64                                                                     # Vehicle tank status at the initiation time
@@ -136,35 +138,37 @@ end
 isactive(r::Route) = isone(r.φ)
 
 # is operational
-isopt(r::Route) = (r.n ≥ 1)                                                         # A route is defined operational if it serves at least one customer
-isopt(v::Vehicle) = any(isopt, v.R)                                                 # A vehicle is defined operational if any of its routes is operational
-isopt(d::DepotNode) = any(isopt, d.V)                                               # A depot is defined operational if any of its vehicles is operational
+isopt(r::Route)         = (r.n ≥ 1)                                                 # A route is defined operational if it serves at least one customer
+isopt(v::Vehicle)       = any(isopt, v.R)                                           # A vehicle is defined operational if any of its routes is operational
+isopt(d::DepotNode)     = any(isopt, d.V)                                           # A depot is defined operational if any of its vehicles is operational
 isopen(c::CustomerNode) = isequal(c.r, NullRoute)                                   # A customer is defined open if it is not being served by any vehicle-route
 
 # is close
-isclose(d::DepotNode) = !isopt(d)                                                   # A depot node is defined closed if it is non-operational
+isclose(d::DepotNode)    = !isopt(d)                                                # A depot node is defined closed if it is non-operational
 isclose(c::CustomerNode) = !isopen(c)                                               # A customer node is defined closed it is being served by any vehicle-route
 
 # is equal
-Base.isequal(p::Route, q::Route) = isequal(p.iʳ, q.iʳ) && isequal(p.iᵛ, q.iᵛ) && isequal(p.iᵈ, q.iᵈ)
-Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.iᵛ, q.iᵛ) && isequal(p.iᵈ, q.iᵈ)
-Base.isequal(p::Node, q::Node) = isequal(p.iⁿ, q.iⁿ)
+Base.isequal(p::Route, q::Route)     = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ) && isequal(p.iʳ, q.iʳ)
+Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ)
+Base.isequal(p::Node, q::Node)       = isequal(p.iⁿ, q.iⁿ)
 
 # is identical
 isidentical(v¹::Vehicle, v²::Vehicle) = isequal(v¹.jᵛ, v².jᵛ)
 
 # Node type
-isdepot(n::Node) = typeof(n) == DepotNode
-iscustomer(n::Node) = typeof(n) == CustomerNode
+isdepot(n::Node)    = isequal(typeof(n), DepotNode)
+iscustomer(n::Node) = isequal(typeof(n), CustomerNode)
 
 # Null route
-const NullRoute = Route(0, 0, 0, 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf, 0)
+const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf, 0)
 
 # Create a non-operational route traversed by vehicle v from depot d
 function Route(v::Vehicle, d::DepotNode)
     iʳ = length(v.R) + 1
     iᵛ = v.iᵛ
     iᵈ = d.iⁿ
+    x  = 0.
+    y  = 0. 
     iˢ = iᵈ
     iᵉ = iᵈ
     θⁱ = isone(iʳ) ? 1.0 : v.R[iʳ-1].θᵉ
@@ -178,7 +182,7 @@ function Route(v::Vehicle, d::DepotNode)
     q  = 0
     l  = 0.
     φ  = 1
-    r  = Route(iʳ, iᵛ, iᵈ, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l, φ)
+    r  = Route(iʳ, iᵛ, iᵈ, x, y, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l, φ)
     return r
 end            
 
