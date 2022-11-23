@@ -5,14 +5,14 @@ using Random
 let
 # Developing an optimal solution 
     # Define instance
-    instance = "prins100-5-2";
+    instance = "prins20-5-1";
     # Visualize instance
     display(visualize(instance))
     # Define a random number generator
     rng = MersenneTwister(1234);
     # Define inital solution method and build the initial solution
     G  = build(instance)
-    sₒ = initialsolution(rng, G, :random);
+    sₒ = initialsolution(rng, G, :cluster);
     # Define ALNS parameters
     x = length(sₒ.D)+length(sₒ.C);
     n = max(500, ceil(x, digits=-(length(digits(x))-1)));
@@ -42,13 +42,13 @@ let
                     :greedyperturb! ,
                     :regret2!       ,
                     :regret3!
-                ]                           ,
+                ]                       ,
         Ψₗ  =   [
-                    :intraopt!          ,
-                    :interopt!          ,
-                    :movecustomer!      ,
-                    :movedepot!         ,
-                    :swapcustomers!     ,
+                    :intraopt!      ,
+                    :interopt!      ,
+                    :movecustomer!  ,
+                    :movedepot!     ,
+                    :swapcustomers! ,
                     :swapdepots!
                 ]                       ,
         σ₁  =   15                      ,
