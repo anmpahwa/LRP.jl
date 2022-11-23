@@ -18,7 +18,7 @@ A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`,
 node index `iᵈ`, centroid coordinate `x, y` , start node index `iˢ`, end node index 
 `iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition `tⁱ`, start `tˢ`, 
 and end time `tᵉ`, repsectively, slack time `τ`, number of customers `n`, load `q`, 
-length `l`, andstatus `φ`.
+length `l`, and status `φ`.
 """
 mutable struct Route
     iʳ::Int64                                                                       # Route index
