@@ -25,7 +25,7 @@ function cluster(rng::AbstractRNG, G)
     W = zeros(4, eachindex(C))
     for (iⁿ,c) ∈ pairs(C) W[:,iⁿ] = [c.x, c.y, c.tᵉ, c.tˡ] end
     # Step 2: Cluster customer nodes
-    K = kmeans(W.parent, length(V); rng=rng)
+    K = kmeans(W.parent, min(length(C),length(V)); rng=rng)
     A = OffsetVector(K.assignments, eachindex(C))
     Cᵒ = K.centers
     Iᵒ = 1:size(Cᵒ)[2]
