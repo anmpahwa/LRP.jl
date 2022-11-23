@@ -12,7 +12,7 @@ struct Arc
 end
 
 @doc """
-    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, x::Int64, y::Int64, iˢ::Int64, iᵉ::Int64, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Int64, l::Float64, φ::Int64)
+    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, x::Float64, y::Float64, iˢ::Int64, iᵉ::Int64, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Float64, l::Float64, φ::Int64)
 
 A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`, depot
 node index `iᵈ`, centroid coordinate `x, y` , start node index `iˢ`, end node index 
@@ -36,13 +36,13 @@ mutable struct Route
     tᵉ::Float64                                                                     # Route end time
     τ::Float64                                                                      # Route slack time
     n::Int64                                                                        # Route size (number of customers)
-    q::Int64                                                                        # Route load
+    q::Float64                                                                      # Route load
     l::Float64                                                                      # Route length
     φ::Int64                                                                        # Route status
 end
     
 @doc """
-    Vehicle(iᵛ::Int64, jᵛ::Int64, iᵈ::Int64, q::Int64, l::Int64, s::Int64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, r̅::Int64, τʷ::Int64, tˢ::Float64, tᵉ::Float64, πᵒ::Float64, πᶠ::Float64, R::Vector{Route})
+    Vehicle(iᵛ::Int64, jᵛ::Int64, iᵈ::Int64, q::Float64, l::Float64, s::Float64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, r̅::Int64, τʷ::Float64, tˢ::Float64, tᵉ::Float64, πᵒ::Float64, πᶠ::Float64, R::Vector{Route})
 
 A `Vehicle` is a mode of delivery with index `iᵛ`, vehicle type index `jᵛ`, depot 
 node index `iᵈ`, capacity `q`, range `l`, speed `s`, refueling time `τᶠ`, service 
@@ -55,13 +55,13 @@ mutable struct Vehicle
     iᵛ::Int64                                                                       # Vehicle index
     jᵛ::Int64                                                                       # Vehicle type index
     iᵈ::Int64                                                                       # Depot node index
-    q::Int64                                                                        # Vehicle capacity
-    l::Int64                                                                        # Vehicle range
-    s::Int64                                                                        # Vehicle speed
+    q::Float64                                                                      # Vehicle capacity
+    l::Float64                                                                      # Vehicle range
+    s::Float64                                                                      # Vehicle speed
     τᶠ::Float64                                                                     # Re-fueling time
     τᵈ::Float64                                                                     # Depot node service time per unit demand
     τᶜ::Float64                                                                     # Customer node service time
-    τʷ::Int64                                                                       # Vehicle working-hours duration
+    τʷ::Float64                                                                     # Vehicle working-hours duration
     r̅::Int64                                                                        # Maximum number of vehicle routes permitted
     tˢ::Float64                                                                     # Vehicle start time (initial departure time from the depot node)
     tᵉ::Float64                                                                     # Vehicle end time (final arrival time at the depot node)
@@ -90,7 +90,7 @@ struct DepotNode <: Node
     jⁿ::Int64                                                                       # Depot echelon
     x::Float64                                                                      # Depot node location on the x-axis
     y::Float64                                                                      # Depot node location in the y-axis
-    q::Int64                                                                        # Depot capacity
+    q::Float64                                                                      # Depot capacity
     pˡ::Float64                                                                     # Lower threshold on share of customers handled
     pᵘ::Float64                                                                     # Upper threshold on share of customers handled
     tˢ::Float64                                                                     # Depot working-hours start time
@@ -111,7 +111,7 @@ mutable struct CustomerNode <: Node
     iⁿ::Int64                                                                       # Customer node index
     x::Float64                                                                      # Customer node location on the x-axis
     y::Float64                                                                      # Customer node location in the y-axis
-    q::Int64                                                                        # Customer demand
+    q::Float64                                                                      # Customer demand
     tᵉ::Float64                                                                     # Customer node earliest service time
     tˡ::Float64                                                                     # Customer node latest service time
     iᵗ::Int64                                                                       # Tail (predecessor) node index
