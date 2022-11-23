@@ -5,7 +5,7 @@ using Random
 let
 # Developing an optimal solution 
     # Define instance
-    instance = "prins100-10-2b";
+    instance = "prins100-5-2";
     # Visualize instance
     display(visualize(instance))
     # Define a random number generator
