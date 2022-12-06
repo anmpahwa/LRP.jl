@@ -20,13 +20,14 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
                 lᵛ = r.l
                 qᵈ += qᵛ
                 nᵈ += r.n
-                πᵒ += r.l * v.πᵒ
+                πᵒ += r.l * v.πᵈ
                 πᵖ += (qᵛ > v.q) * (qᵛ - v.q)                               # Vehicle capacity constraint
                 πᵖ += (lᵛ > v.l) * (lᵛ - v.l)                               # Vehicle range constraint
             end
-            πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)                             # Depot working-hours constraint
-            πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)                             # Depot working-hours constraint
-            πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * (v.tᵉ - v.tˢ - v.τʷ)               # Vehicle working-hours constraint 
+            πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
+            πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)                             # Working-hours constraint (start time)
+            πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)                             # Working-hours constraint (end time)
+            πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * (v.tᵉ - v.tˢ - v.τʷ)               # Working-hours constraint (duration)
         end
         pᵈ  = nᵈ/length(s.C)
         πᵒ += qᵈ * d.πᵒ

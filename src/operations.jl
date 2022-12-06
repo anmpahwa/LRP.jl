@@ -51,7 +51,7 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         tⁱ = r.tᵉ
         θⁱ = r.θᵉ
     end
-    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ)
+    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[1].tⁱ, vᵒ.R[length(vᵒ.R)].tᵉ)
     τ = min(τ, dᵒ.tᵉ - vᵒ.tᵉ)
     for r ∈ reverse(vᵒ.R)
         if !isopt(r) continue end
@@ -122,7 +122,7 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         tⁱ = r.tᵉ
         θⁱ = r.θᵉ
     end
-    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[1].tˢ, vᵒ.R[length(vᵒ.R)].tᵉ)
+    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[1].tⁱ, vᵒ.R[length(vᵒ.R)].tᵉ)
     τ = min(τ, dᵒ.tᵉ - vᵒ.tᵉ)
     for r ∈ reverse(vᵒ.R)
         if !isopt(r) continue end

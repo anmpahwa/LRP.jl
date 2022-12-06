@@ -60,7 +60,7 @@ function build(instance; root=joinpath(dirname(@__DIR__), "instances"))
     end
     # Vehicles
     file = joinpath(root, "$instance/vehicles.csv")
-    csv = CSV.File(file, types=[Int64, Int64, Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Int64, Float64, Float64])
+    csv = CSV.File(file, types=[Int64, Int64, Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Int64, Float64, Float64, Float64])
     df = DataFrame(csv)
     for k ∈ 1:nrow(df)
         iᵛ = df[k,1]::Int64
@@ -74,14 +74,15 @@ function build(instance; root=joinpath(dirname(@__DIR__), "instances"))
         τᶜ = df[k,9]::Float64
         τʷ = df[k,10]::Float64
         r̅  = df[k,11]::Int64
-        πᵒ = df[k,12]::Float64
-        πᶠ = df[k,13]::Float64
+        πᵈ = df[k,12]::Float64
+        πᵗ = df[k,13]::Float64
+        πᶠ = df[k,14]::Float64
         d  = D[iᵈ]
-        v  = Vehicle(iᵛ, jᵛ, iᵈ, q, l, s, τᶠ, τᵈ, τᶜ, τʷ, r̅, d.tˢ, d.tˢ, πᵒ, πᶠ, Route[])
+        v  = Vehicle(iᵛ, jᵛ, iᵈ, q, l, s, τᶠ, τᵈ, τᶜ, τʷ, r̅, d.tˢ, d.tˢ, πᵈ, πᵗ, πᶠ, Route[])
         push!(d.V, v)
     end
     V  = [v for d ∈ D for v ∈ d.V]
-    φᵀ = Int64(!(iszero(getproperty.(D, :tˢ)) && iszero(getproperty.(D, :tᵉ)) && iszero(getproperty.(C, :tᵉ)) && iszero(getproperty.(C, :tˡ)) && iszero(getproperty.(V, :τʷ))))::Int64
+    φᵀ = Int64(!(iszero(getproperty.(D, :tˢ)) && iszero(getproperty.(D, :tᵉ)) && iszero(getproperty.(C, :tᵉ)) && iszero(getproperty.(C, :tˡ)) && iszero(getproperty.(V, :τʷ)) && iszero(getproperty.(V, :πᵗ))))::Int64
     G  = (D, C, A, φᴱ, φᵀ)
     return G
 end

@@ -42,14 +42,14 @@ mutable struct Route
 end
     
 @doc """
-    Vehicle(iᵛ::Int64, jᵛ::Int64, iᵈ::Int64, q::Float64, l::Float64, s::Float64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, r̅::Int64, τʷ::Float64, tˢ::Float64, tᵉ::Float64, πᵒ::Float64, πᶠ::Float64, R::Vector{Route})
+    Vehicle(iᵛ::Int64, jᵛ::Int64, iᵈ::Int64, q::Float64, l::Float64, s::Float64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, r̅::Int64, τʷ::Float64, tˢ::Float64, tᵉ::Float64, πᵈ::Float64, πᵗ::Float64, πᶠ::Float64, R::Vector{Route})
 
 A `Vehicle` is a mode of delivery with index `iᵛ`, vehicle type index `jᵛ`, depot 
 node index `iᵈ`, capacity `q`, range `l`, speed `s`, refueling time `τᶠ`, service 
 time `τᵈ` at depot node (per unit demand), service time `τᶜ` at customer node, 
 maximum number of vehicle routes permitted `r̅`, working-hours `τʷ`, initial 
-departure time `tˢ`, final arrival time `tᵉ`, operational cost `πₒ` per unit 
-distance traveled, fixed cost `πᶠ`,  and set of routes `R`.
+departure time `tˢ`, final arrival time `tᵉ`, operational cost `πᵈ` per unit 
+distance and `πᵗ` per unit time, fixed cost `πᶠ`,  and set of routes `R`.
 """
 mutable struct Vehicle
     iᵛ::Int64                                                                       # Vehicle index
@@ -65,7 +65,8 @@ mutable struct Vehicle
     r̅::Int64                                                                        # Maximum number of vehicle routes permitted
     tˢ::Float64                                                                     # Vehicle start time (initial departure time from the depot node)
     tᵉ::Float64                                                                     # Vehicle end time (final arrival time at the depot node)
-    πᵒ::Float64                                                                     # Vehicle operational cost
+    πᵈ::Float64                                                                     # Vehicle operational cost (distance based)
+    πᵗ::Float64                                                                     # Vehicle operational cost (time based)
     πᶠ::Float64                                                                     # Vehicle fixed cost
     R::Vector{Route}                                                                # Vector of vehicle routes
 end
@@ -201,10 +202,11 @@ function Vehicle(v::Vehicle, d::DepotNode)
     r̅  = v.r̅
     tˢ = d.tˢ
     tᵉ = d.tˢ
-    πᵒ = v.πᵒ
+    πᵈ = v.πᵈ
+    πᵗ = v.πᵗ
     πᶠ = v.πᶠ
     R  = Route[]
-    v  = Vehicle(iᵛ, jᵛ, iᵈ, q, l, s, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, πᵒ, πᶠ, R)
+    v  = Vehicle(iᵛ, jᵛ, iᵈ, q, l, s, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, πᵈ, πᵗ, πᶠ, R)
     return v
 end
 

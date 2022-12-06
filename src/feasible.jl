@@ -32,9 +32,9 @@ function isfeasible(s::Solution)
                     cᵒ = s.C[cᵒ.iʰ]
                 end
             end
-            if d.tˢ > v.tˢ return false end                                 # Depot working-hours constraint
-            if v.tᵉ > d.tᵉ return false end                                 # Depot working-hours constraint
-            if v.tᵉ - v.tˢ > v.τʷ return false end                          # Working-hours constraint 
+            if d.tˢ > v.tˢ return false end                                 # Working-hours constraint (start time)
+            if v.tᵉ > d.tᵉ return false end                                 # Working-hours constraint (end time)
+            if v.tᵉ - v.tˢ > v.τʷ return false end                          # Working-hours constraint (duration)
         end
         pᵈ = nᵈ/length(s.C)
         if (isone(s.φᴱ) && isone(d.jⁿ) && !isopt(d)) return false end       # Depot use constraint
