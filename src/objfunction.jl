@@ -31,7 +31,7 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
         end
         pᵈ  = nᵈ/length(s.C)
         πᵒ += qᵈ * d.πᵒ
-        πᵖ += (isone(s.φᴱ) && isone(d.jⁿ) && !isopt(d)) * d.πᶠ              # Depot use constraint
+        πᵖ += (isone(d.φ) && !isopt(d)) * d.πᶠ                              # Depot use constraint
         πᵖ += (qᵈ > d.q) * (qᵈ - d.q)                                       # Depot capacity constraint
         πᵖ += (pᵈ < d.pˡ) * (d.pˡ - pᵈ)                                     # Depot customer share constraint
         πᵖ += (pᵈ > d.pᵘ) * (pᵈ - d.pᵘ)                                     # Depot customer share constraint

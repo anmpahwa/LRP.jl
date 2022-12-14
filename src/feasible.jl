@@ -37,7 +37,7 @@ function isfeasible(s::Solution)
             if v.tᵉ - v.tˢ > v.τʷ return false end                          # Working-hours constraint (duration)
         end
         pᵈ = nᵈ/length(s.C)
-        if (isone(s.φᴱ) && isone(d.jⁿ) && !isopt(d)) return false end       # Depot use constraint
+        if (isone(d.φ) && !isopt(d)) return false end                       # Depot use constraint
         if qᵈ > d.q return false end                                        # Depot capacity constraint
         if !(d.pˡ ≤ pᵈ ≤ d.pᵘ) return false end                             # Depot customer share constraint
     end
