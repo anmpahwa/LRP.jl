@@ -154,14 +154,15 @@ function animate(S::Vector{Solution}; fps=10)
 end
 
 """
-    plotconv(S::Vector{Solution}; backend=gr)
+    plotconv(S::Vector{Solution}; penalty=true, backend=gr)
 
-Plots objective function values for solutions in `S`.
+Plots objective function values for solutions in `S` accounting 
+for penalty by default.
 Uses given `backend` to plot (defaults to `gr`).
 """
-function pltcnv(S::Vector{Solution}; backend=gr)
+function pltcnv(S::Vector{Solution}; penalty=true, backend=gr)
     backend()
-    Y = [f(s) for s ∈ S]
+    Y = [f(s; penalty=penalty) for s ∈ S]
     X = 0:(length(S)-1)
     fig = plot(legend=:none)
     plot!(X,Y, xlabel="iterations", ylabel="objective function value")
