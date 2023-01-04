@@ -154,7 +154,7 @@ function animate(S::Vector{Solution}; fps=10)
 end
 
 """
-    plotconv(S::Vector{Solution}; penalty=true, backend=gr)
+    pltcnv(S::Vector{Solution}; penalty=true, backend=gr)
 
 Plots objective function values for solutions in `S` accounting 
 for penalty by default.
