@@ -42,18 +42,15 @@ function build(instance; root=joinpath(dirname(@__DIR__), "instances"))
         C[iⁿ] = c
     end
     # Arcs
+    f = joinpath(root, "$instance/arcs.csv")
+    csv = CSV.File(f, header=false)
+    df = DataFrame(csv)
     A = Dict{Tuple{Int64,Int64},Arc}()
     N = length(D)+length(C)
     for iᵗ ∈ 1:N
-        nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
-        xᵗ = nᵗ.x
-        yᵗ = nᵗ.y
         for iʰ ∈ 1:N
-            nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
-            xʰ = nʰ.x
-            yʰ = nʰ.y
-            l  = sqrt((xʰ - xᵗ)^2 + (yʰ - yᵗ)^2)
-            a  = Arc(iᵗ, iʰ, l)
+            l = df[iᵗ,iʰ]::Float64 
+            a = Arc(iᵗ, iʰ, l)
             A[(iᵗ,iʰ)] = a
         end
     end
