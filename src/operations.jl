@@ -33,7 +33,7 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
             cᵒ = cˢ
             while true
                 cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.s
-                cᵒ.tᵈ = cᵒ.tᵃ + max(0., cᵒ.tᵉ - cᵒ.tᵃ) + vᵒ.τᶜ
+                cᵒ.tᵈ = cᵒ.tᵃ + vᵒ.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - vᵒ.τᶜ) + cᵒ.τᶜ
                 if isequal(cᵒ, cᵉ) break end
                 tᵈ = cᵒ.tᵈ
                 cᵒ = s.C[cᵒ.iʰ]
@@ -59,7 +59,7 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         cᵉ = s.C[r.iᵉ]
         cᵒ = cˢ
         while true
-            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ)
+            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - vᵒ.τᶜ)
             if isequal(cᵒ, cᵉ) break end
             cᵒ = s.C[cᵒ.iʰ]
         end
@@ -104,7 +104,7 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
             cᵒ = cˢ
             while true
                 cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.s
-                cᵒ.tᵈ = cᵒ.tᵃ + max(0., cᵒ.tᵉ - cᵒ.tᵃ) + vᵒ.τᶜ
+                cᵒ.tᵈ = cᵒ.tᵃ + vᵒ.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - vᵒ.τᶜ) + cᵒ.τᶜ
                 if isequal(cᵒ, cᵉ) break end
                 tᵈ = cᵒ.tᵈ
                 cᵒ = s.C[cᵒ.iʰ]
@@ -130,7 +130,7 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         cᵉ = s.C[r.iᵉ]
         cᵒ = cˢ
         while true
-            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ)
+            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - vᵒ.τᶜ)
             if isequal(cᵒ, cᵉ) break end
             cᵒ = s.C[cᵒ.iʰ]
         end

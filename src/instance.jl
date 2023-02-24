@@ -23,7 +23,7 @@ function build(instance; root=joinpath(dirname(@__DIR__), "instances"))
     end
     # Customer nodes
     file = joinpath(root, "$instance/customer_nodes.csv")
-    csv = CSV.File(file, types=[Int64, Float64, Float64, Float64, Float64, Float64])
+    csv = CSV.File(file, types=[Int64, Float64, Float64, Float64, Float64, Float64, Float64])
     df = DataFrame(csv)
     ix = (df[1,1]:df[nrow(df),1])::UnitRange{Int64}
     C = OffsetVector{CustomerNode}(undef, ix)
@@ -32,13 +32,14 @@ function build(instance; root=joinpath(dirname(@__DIR__), "instances"))
         x  = df[k,2]::Float64
         y  = df[k,3]::Float64
         q  = df[k,4]::Float64
-        tᵉ = df[k,5]::Float64
-        tˡ = df[k,6]::Float64
+        τᶜ = df[k,5]::Float64
+        tᵉ = df[k,6]::Float64
+        tˡ = df[k,7]::Float64
         iᵗ = 0
         iʰ = 0
-        tᵃ = 0
-        tᵈ = 0
-        c  = CustomerNode(iⁿ, x, y, q, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
+        tᵃ = 0.
+        tᵈ = 0.
+        c  = CustomerNode(iⁿ, x, y, q, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
         C[iⁿ] = c
     end
     # Arcs

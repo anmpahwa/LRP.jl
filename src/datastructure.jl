@@ -46,7 +46,7 @@ end
 
 A `Vehicle` is a mode of delivery with index `iᵛ`, vehicle type index `jᵛ`, depot 
 node index `iᵈ`, capacity `q`, range `l`, speed `s`, refueling time `τᶠ`, service 
-time `τᵈ` at depot node (per unit demand), service time `τᶜ` at customer node, 
+time `τᵈ` at depot node (per unit demand), parking time `τᶜ` at customer node, 
 maximum number of vehicle routes permitted `r̅`, working-hours `τʷ`, initial 
 departure time `tˢ`, final arrival time `tᵉ`, operational cost `πᵈ` per unit 
 distance and `πᵗ` per unit time, fixed cost `πᶠ`,  and set of routes `R`.
@@ -60,7 +60,7 @@ mutable struct Vehicle
     s::Float64                                                                      # Vehicle speed
     τᶠ::Float64                                                                     # Re-fueling time
     τᵈ::Float64                                                                     # Depot node service time per unit demand
-    τᶜ::Float64                                                                     # Customer node service time
+    τᶜ::Float64                                                                     # Parking time at customer stop
     τʷ::Float64                                                                     # Vehicle working-hours duration
     r̅::Int64                                                                        # Maximum number of vehicle routes permitted
     tˢ::Float64                                                                     # Vehicle start time (initial departure time from the depot node)
@@ -104,17 +104,19 @@ struct DepotNode <: Node
 end
 
 @doc """
-    CustomerNode(iⁿ::Int64, x::Float64, y::Float64, q::Float64, tᵉ::Float64, tˡ::Float64, iᵗ::Int64, iʰ::Int64, tᵃ::Float64, tᵈ::Float64, r::Route)
+    CustomerNode(iⁿ::Int64, x::Float64, y::Float64, q::Float64, τᶜ::Float64, tᵉ::Float64, tˡ::Float64, iᵗ::Int64, iʰ::Int64, tᵃ::Float64, tᵈ::Float64, r::Route)
 
 A `CustomerNode` is a sink point on the graph at `(x,y)` with index `iⁿ`, demand `q`, 
-earliest service time `tᵉ`, latest service time `tˡ`, tail node index `iᵗ`, head node 
-index `iʰ`, arrival time `tᵃ`, departure time `tᵈ`, on route `r`.
+service time `τᶜ`, earliest service time `tᵉ`, latest service time `tˡ`, tail node 
+index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, departure time `tᵈ`, on route 
+`r`.
 """
 mutable struct CustomerNode <: Node
     iⁿ::Int64                                                                       # Customer node index
     x::Float64                                                                      # Customer node location on the x-axis
     y::Float64                                                                      # Customer node location in the y-axis
     q::Float64                                                                      # Customer demand
+    τᶜ::Float64                                                                     # Customer service time
     tᵉ::Float64                                                                     # Customer node earliest service time
     tˡ::Float64                                                                     # Customer node latest service time
     iᵗ::Int64                                                                       # Tail (predecessor) node index
