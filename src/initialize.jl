@@ -13,8 +13,13 @@ Optionally specify a random number generator `rng` as the first argument
 initialsolution(rng::AbstractRNG, G, method::Symbol)::Solution = getfield(LRP, method)(rng, G)
 initialsolution(G, method::Symbol) = initialsolution(Random.GLOBAL_RNG, G, method)
 
-# k-means clustering Initialization
-# Create initial solution using k-means clustering algorithm
+
+
+"""
+    cluster(rng::AbstractRNG, G)
+
+Return initial solution using k-means clustering algorithm.
+"""
 function cluster(rng::AbstractRNG, G)
     s = Solution(G...)
     D = s.D
@@ -99,9 +104,10 @@ function cluster(rng::AbstractRNG, G)
                 P[:,j] .= ((0, 0), )
                 ϕ[j] = 1  
             end
+            # Step 3.1.4: Update solution appropriately 
             if addroute(r, s)
                 r = Route(v, d)
-                push!(v.R, r) 
+                push!(v.R, r)
                 push!(R, r)
                 append!(X, fill(Inf, (I,1)))
                 append!(P, fill((0, 0), (I,1)))
@@ -124,8 +130,13 @@ function cluster(rng::AbstractRNG, G)
     return s
 end
 
-# Random Initialization
-# Create initial solution with randomly selcted node-route combination until all customer nodes have been added to the solution
+
+
+"""
+    random(rng::AbstractRNG, G)
+
+Create initial solution with randomly selcted node-route combination until all customer nodes have been added to the solution.
+"""
 function random(rng::AbstractRNG, G)
     s = Solution(G...)
     D = s.D

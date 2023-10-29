@@ -1,12 +1,11 @@
 """
-    visualize(instance; root=joinpath(dirname(@__DIR__), "instances"), backend=gr)
+visualize(instance; backend=gr)
 
-Plots `instance`.
-Uses given `backend` to plot (defaults to `gr`).
+Plots `instance`. Uses given `backend` to plot (defaults to `gr`).
 """
-function visualize(instance; root=joinpath(dirname(@__DIR__), "instances"), backend=gr)
+function visualize(instance; backend=gr)
     backend()
-    D, C, _ = build(instance; root=root)
+    D, C, _ = build(instance)
     fig = plot(legend=:none)
     K = length(D)+length(C)
     X = zeros(Float64, K)
@@ -103,36 +102,7 @@ function visualize(s::Solution; backend=gr)
     return fig
 end
 
-"""
-    vectorize(s::Solution)
 
-Returns solution as a sequence of nodes in the order of visits.
-"""
-function vectorize(s::Solution)
-    D = s.D
-    C = s.C
-    Z = [Int64[] for _ ∈ D]
-    for d ∈ D
-        iⁿ = d.iⁿ
-        if !isopt(d) continue end
-        for v ∈ d.V
-            if !isopt(v) continue end
-            for r ∈ v.R
-                if !isopt(r) continue end
-                cˢ, cᵉ = C[r.iˢ], C[r.iᵉ] 
-                push!(Z[iⁿ], d.iⁿ)
-                c = cˢ
-                while true
-                    push!(Z[iⁿ], c.iⁿ)
-                    if isequal(c, cᵉ) break end
-                    c = C[c.iʰ]
-                end
-            end
-        end
-        push!(Z[iⁿ], d.iⁿ)
-    end
-    return Z
-end
 
 """
     animate(S::Vector{Solution}; fps=10)
@@ -153,12 +123,13 @@ function animate(S::Vector{Solution}; fps=10)
     gif(anim, fps=fps, show_msg=false)
 end
 
+
+
 """
     pltcnv(S::Vector{Solution}; penalty=true, backend=gr)
 
 Plots objective function values for solutions in `S` accounting 
-for penalty by default.
-Uses given `backend` to plot (defaults to `gr`).
+for penalty by default. Uses given `backend` to plot (defaults to `gr`).
 """
 function pltcnv(S::Vector{Solution}; penalty=true, backend=gr)
     backend()

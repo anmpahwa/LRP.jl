@@ -1,85 +1,92 @@
-# Builds instance as a graph with set of depot nodes, customer nodes, and arcs.
-function build(instance; root=joinpath(dirname(@__DIR__), "instances"))
+"""
+    build(instance::String)
+    
+Returns a tuple of depot nodes, customer nodes, and arcs for the `instance`.
+"""
+function build(instance::String)
     # Depot nodes
-    file = joinpath(root, "$instance/depot_nodes.csv")
-    csv = CSV.File(file, types=[Int64, Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Int64])
-    df = DataFrame(csv)
-    D = Vector{DepotNode}(undef, nrow(df))
+    df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/depot_nodes.csv")))
+    D  = Vector{DepotNode}(undef, nrow(df))
     for k ∈ 1:nrow(df)
-        iⁿ = df[k,1]::Int64
-        jⁿ = df[k,2]::Int64
-        x  = df[k,3]::Float64
-        y  = df[k,4]::Float64
-        q  = df[k,5]::Float64
-        pˡ = df[k,6]::Float64
-        pᵘ = df[k,7]::Float64
-        tˢ = df[k,8]::Float64
-        tᵉ = df[k,9]::Float64
-        πᵒ = df[k,10]::Float64
-        πᶠ = df[k,11]::Float64
-        φ  = df[k,12]::Int64
+        iⁿ = df[k,1]
+        jⁿ = df[k,2]
+        x  = df[k,3]
+        y  = df[k,4]
+        q  = df[k,5]
+        pˡ = df[k,6]
+        pᵘ = df[k,7]
+        tˢ = df[k,8]
+        tᵉ = df[k,9]
+        πᵒ = df[k,10]
+        πᶠ = df[k,11]
+        φ  = df[k,12]
         d  = DepotNode(iⁿ, jⁿ, x, y, q, pˡ, pᵘ, tˢ, tᵉ, πᵒ, πᶠ, φ, Vehicle[])
         D[iⁿ] = d
     end
+
     # Customer nodes
-    file = joinpath(root, "$instance/customer_nodes.csv")
-    csv = CSV.File(file, types=[Int64, Float64, Float64, Float64, Float64, Float64, Float64])
-    df = DataFrame(csv)
-    ix = (df[1,1]:df[nrow(df),1])::UnitRange{Int64}
-    C = OffsetVector{CustomerNode}(undef, ix)
+    df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/customer_nodes.csv")))
+    I  = (df[1,1]:df[nrow(df),1])
+    C  = OffsetVector{CustomerNode}(undef, I)
     for k ∈ 1:nrow(df)
-        iⁿ = df[k,1]::Int64
-        x  = df[k,2]::Float64
-        y  = df[k,3]::Float64
-        q  = df[k,4]::Float64
-        τᶜ = df[k,5]::Float64
-        tᵉ = df[k,6]::Float64
-        tˡ = df[k,7]::Float64
+        iⁿ = df[k,1]
+        iʳ = 0
+        iᵛ = 0
+        iᵈ = 0
+        x  = df[k,2]
+        y  = df[k,3]
+        q  = df[k,4]
+        τᶜ = df[k,5]
+        tᵉ = df[k,6]
+        tˡ = df[k,7]
         iᵗ = 0
         iʰ = 0
         tᵃ = 0.
         tᵈ = 0.
-        c  = CustomerNode(iⁿ, x, y, q, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
+        c  = CustomerNode(iⁿ, iʳ, iᵛ, iᵈ, x, y, q, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
         C[iⁿ] = c
     end
+
     # Arcs
-    f = joinpath(root, "$instance/arcs.csv")
-    csv = CSV.File(f, header=false)
-    df = DataFrame(csv)
-    A = Dict{Tuple{Int64,Int64},Arc}()
-    N = length(D)+length(C)
+    df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/arcs.csv"), header=false))
+    A  = Dict{Tuple{Int64,Int64},Arc}()
+    N  = length(D)+length(C)
     for iᵗ ∈ 1:N
         for iʰ ∈ 1:N
-            l = df[iᵗ,iʰ]::Float64 
+            l = df[iᵗ,iʰ] 
             a = Arc(iᵗ, iʰ, l)
             A[(iᵗ,iʰ)] = a
         end
     end
+
     # Vehicles
-    file = joinpath(root, "$instance/vehicles.csv")
-    csv = CSV.File(file, types=[Int64, Int64, Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Int64, Float64, Float64, Float64])
-    df = DataFrame(csv)
+    df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/vehicles.csv")))
     for k ∈ 1:nrow(df)
-        iᵛ = df[k,1]::Int64
-        jᵛ = df[k,2]::Int64
-        iᵈ = df[k,3]::Int64
-        q  = df[k,4]::Float64
-        l  = df[k,5]::Float64
-        s  = df[k,6]::Float64
-        τᶠ = df[k,7]::Float64
-        τᵈ = df[k,8]::Float64
-        τᶜ = df[k,9]::Float64
-        τʷ = df[k,10]::Float64
-        r̅  = df[k,11]::Int64
-        πᵈ = df[k,12]::Float64
-        πᵗ = df[k,13]::Float64
-        πᶠ = df[k,14]::Float64
+        iᵛ = df[k,1]
+        jᵛ = df[k,2]
+        iᵈ = df[k,3]
+        q  = df[k,4]
+        l  = df[k,5]
+        s  = df[k,6]
+        τᶠ = df[k,7]
+        τᵈ = df[k,8]
+        τᶜ = df[k,9]
+        τʷ = df[k,10]
+        r̅  = df[k,11]
+        πᵈ = df[k,12]
+        πᵗ = df[k,13]
+        πᶠ = df[k,14]
         d  = D[iᵈ]
         v  = Vehicle(iᵛ, jᵛ, iᵈ, q, l, s, τᶠ, τᵈ, τᶜ, τʷ, r̅, d.tˢ, d.tˢ, πᵈ, πᵗ, πᶠ, Route[])
         push!(d.V, v)
     end
-    V = [v for d ∈ D for v ∈ d.V]
-    φ = Int64(!(iszero(getproperty.(D, :tˢ)) && iszero(getproperty.(D, :tᵉ)) && iszero(getproperty.(C, :tᵉ)) && iszero(getproperty.(C, :tˡ)) && iszero(getproperty.(V, :τʷ)) && iszero(getproperty.(V, :πᵗ))))::Int64
-    G = (D, C, A, φ)
+    V  = [v for d ∈ D for v ∈ d.V]
+
+    φᵈ = iszero(getproperty.(D, :tˢ)) && iszero(getproperty.(D, :tᵉ))
+    φᶜ = iszero(getproperty.(C, :tᵉ)) && iszero(getproperty.(C, :tˡ))
+    φᵛ = iszero(getproperty.(V, :τʷ)) && iszero(getproperty.(V, :πᵗ))
+    global φᵀ = !(φᵈ && φᶜ && φᵛ)::Bool
+    
+    G  = (D, C, A)
     return G
 end

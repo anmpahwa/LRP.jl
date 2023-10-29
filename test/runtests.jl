@@ -6,36 +6,40 @@ using Random
 let
     # Vehicle Routing Problem with time-windows
     @testset "VRPTW" begin
-        χ   = ALNSParameters(
+        χ   = ALNSparameters(
             n   =   4                       ,
             k   =   250                     ,
             m   =   200                     ,
             j   =   125                     ,
             Ψᵣ  =   [
-                        :randomnode!    , 
-                        :relatednode!   , 
-                        :worstnode!     ,
-                        :randomroute!   ,
-                        :relatedroute!  ,
-                        :worstroute!    ,
-                        :randomvehicle! ,
-                        :relatedvehicle!,
-                        :worstvehicle!
-                    ]                        , 
+                        :randomcustomer!    ,
+                        :randomroute!       ,
+                        :randomvehicle!     ,
+                        :randomdepot!       ,
+                        :relatedcustomer!   ,
+                        :relatedroute!      ,
+                        :relatedvehicle!    ,
+                        :relateddepot!      ,
+                        :worstcustomer!     ,
+                        :worstroute!        ,
+                        :worstvehicle!      ,
+                        :worstdepot!
+                    ]                       ,
             Ψᵢ  =   [
-                        :bestprecise!   ,
-                        :bestperturb!   ,
-                        :greedyprecise! ,
-                        :greedyperturb! ,
-                        :regret2!       ,
+                        :best!              ,
+                        :precise!           ,
+                        :perturb!           ,
+                        :regret2!           ,
                         :regret3!
                     ]                       ,
             Ψₗ  =   [
                         :intraopt!          ,
                         :interopt!          ,
                         :movecustomer!      ,
-                        :swapcustomers!
-                    ]                               ,
+                        :movedepot!         ,
+                        :swapcustomers!     ,
+                        :swapdepots!
+                    ]                       ,
             σ₁  =   15                      ,
             σ₂  =   10                      ,
             σ₃  =   3                       ,
@@ -54,10 +58,13 @@ let
             instance = instances[k]
             method = methods[k]
             println("\nSolving $instance")
+            visualize(instance)
             G  = build(instance)
             sₒ = initialsolution(G, method)         
             S  = ALNS(χ, sₒ)
             s⃰  = S[end]
+            visualize(s⃰)
+            pltcnv(S)
             @test isfeasible(s⃰)
             @test f(s⃰) ≤ f(sₒ)
         end
@@ -65,31 +72,30 @@ let
 
     # Location Routing Problem
     @testset "LRP" begin
-        χ   = ALNSParameters(
+        χ   = ALNSparameters(
             n   =   4                       ,
             k   =   250                     ,
             m   =   200                     ,
             j   =   125                     ,
             Ψᵣ  =   [
-                        :randomnode!    , 
-                        :relatednode!   , 
-                        :worstnode!     ,
-                        :randomroute!   ,
-                        :relatedroute!  ,
-                        :worstroute!    ,
-                        :randomvehicle! ,
-                        :relatedvehicle!,
-                        :worstvehicle!  ,
-                        :randomdepot!   ,
-                        :relateddepot!  ,
+                        :randomcustomer!    ,
+                        :randomroute!       ,
+                        :randomvehicle!     ,
+                        :randomdepot!       ,
+                        :relatedcustomer!   ,
+                        :relatedroute!      ,
+                        :relatedvehicle!    ,
+                        :relateddepot!      ,
+                        :worstcustomer!     ,
+                        :worstroute!        ,
+                        :worstvehicle!      ,
                         :worstdepot!
-                    ]                        , 
+                    ]                       ,
             Ψᵢ  =   [
-                        :bestprecise!   ,
-                        :bestperturb!   ,
-                        :greedyprecise! ,
-                        :greedyperturb! ,
-                        :regret2!       ,
+                        :best!              ,
+                        :precise!           ,
+                        :perturb!           ,
+                        :regret2!           ,
                         :regret3!
                     ]                       ,
             Ψₗ  =   [
@@ -118,10 +124,13 @@ let
             instance = instances[k]
             method = methods[k]
             println("\nSolving $instance")
+            visualize(instance)
             G  = build(instance)
             sₒ = initialsolution(G, method)     
             S  = ALNS(χ, sₒ)
             s⃰  = S[end]
+            visualize(s⃰)
+            pltcnv(S)
             @test isfeasible(s⃰)
             @test f(s⃰) ≤ f(sₒ)
         end

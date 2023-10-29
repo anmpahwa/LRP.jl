@@ -1,5 +1,5 @@
-@doc """
-    ALNSParameters
+"""
+    ALNSparameters
 
 Optimization parameters for Adaptive Large Neighborhood Search (ALNS).
 
@@ -22,7 +22,7 @@ Optimization parameters for Adaptive Large Neighborhood Search (ALNS).
 - μ̅     :   Maximum removal fraction
 - ρ     :   Reaction factor
 """
-Base.@kwdef struct ALNSParameters
+Base.@kwdef struct ALNSparameters
     n::Int64
     k::Int64
     m::Int64

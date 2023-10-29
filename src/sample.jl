@@ -1,6 +1,6 @@
 StatsBase.@weights OffsetWeights
 
-@doc """
+"""
     OffsetWeights(vs, wsum=sum(vs))
 
 Construct an `OffsetWeights` with weight values from (offset) vector `vs`.

@@ -1,4 +1,9 @@
-# Insert node nᵒ between tail node nᵗ and head node nʰ in route rᵒ in solution s.
+"""
+    insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
+
+Returns solution `s` after inserting node `nᵒ` between tail node `nᵗ` 
+and head node `nʰ` in route `rᵒ` in solution `s`.
+"""
 function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
     dᵒ =  s.D[rᵒ.iᵈ]
     vᵒ = dᵒ.V[rᵒ.iᵛ]
@@ -19,7 +24,7 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     end
     rᵒ.l += s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
     # update arrival and departure time
-    if iszero(s.φ) return s end
+    if isequal(φᵀ::Bool, false) return s end
     for r ∈ vᵒ.R
         if r.tⁱ < rᵒ.tⁱ continue end
         if isopt(r)
@@ -67,8 +72,12 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     end
     return s
 end
+"""
+    removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
 
-# Remove node nᵒ from its position between tail node nᵗ and head node nʰ in route rᵒ in solution s.
+Returns solution `s` after removing node `nᵒ` from its position between 
+tail node `nᵗ` and head node `nʰ` in route `rᵒ` in solution `s`.
+"""
 function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
     dᵒ =  s.D[rᵒ.iᵈ]
     vᵒ = dᵒ.V[rᵒ.iᵛ]
@@ -89,7 +98,7 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     end
     rᵒ.l -= s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
     # update arrival and departure time
-    if iszero(s.φ) return s end
+    if isequal(φᵀ::Bool, false) return s end
     if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = Inf, Inf end
     for r ∈ vᵒ.R
         if r.tⁱ < rᵒ.tⁱ continue end
@@ -139,7 +148,13 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     return s
 end
 
-# Return true if route of type rᵒ must be added into the solution (adds conservatively)
+
+
+"""
+    addroute(rᵒ::Route, s::Solution)
+
+Returns true if a route `rᵒ` can be added into the solution (conservative).
+"""
 function addroute(rᵒ::Route, s::Solution)
     dᵒ =  s.D[rᵒ.iᵈ]
     vᵒ = dᵒ.V[rᵒ.iᵛ]
@@ -148,22 +163,25 @@ function addroute(rᵒ::Route, s::Solution)
     if any(!isopt, vᵒ.R) return false end
     if vᵒ.tᵉ > dᵒ.tᵉ return false end
     if (vᵒ.tᵉ - vᵒ.tˢ) > vᵒ.τʷ return false end
-    qᵈ = 0
+    qᵈ = 0.
     for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
     if qᵈ ≥ dᵒ.q return false end
     # condition when route could be added
     if isempty(vᵒ.R) return true end
     for v ∈ dᵒ.V for r ∈ v.R if r.q > v.q return true end end end
     for d ∈ s.D
-        qᵈ = 0
+        qᵈ = 0.
         if isequal(dᵒ, d) continue end
         for v ∈ d.V for r ∈ v.R qᵈ += r.q end end
         if qᵈ > d.q return true end
     end
     return false
 end
+"""
+    deleteroute(rᵒ::Route, s::Solution)
 
-# Return true if route rᵒ can be deleted (deletes liberally)
+Returns true if route `rᵒ` can be deleted (liberal).
+"""
 function deleteroute(rᵒ::Route, s::Solution)
     # condtions when route mustn't be deleted
     if isopt(rᵒ) return false end
@@ -171,12 +189,18 @@ function deleteroute(rᵒ::Route, s::Solution)
     return true
 end
 
-# Return true if vehicle of type vᵒ must be added into the solution (adds conservatively)
+
+
+"""
+    addvehicle(vᵒ::Vehicle, s::Solution)
+
+Returns true if vehicle `vᵒ` can be added into the solution (conservative).
+"""
 function addvehicle(vᵒ::Vehicle, s::Solution)
     dᵒ = s.D[vᵒ.iᵈ]
     # condtions when vehicle mustn't be added
     if any(!isopt, filter(v -> isidentical(vᵒ, v), dᵒ.V)) return false end
-    qᵈ = 0
+    qᵈ = 0.
     for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
     if qᵈ ≥ dᵒ.q return false end
     # condition when vehicle could be added
@@ -198,8 +222,11 @@ function addvehicle(vᵒ::Vehicle, s::Solution)
     end
     return false
 end
+"""
+    deletevehicle(vᵒ::Vehicle, s::Solution)
 
-# Return false if vehicle vᵒ can be deleted (deletes liberally)
+Returns true if vehicle `vᵒ` can be deleted (liberal).
+"""
 function deletevehicle(vᵒ::Vehicle, s::Solution)
     dᵒ = s.D[vᵒ.iᵈ]
     # condtions when vehicle mustn't be deleted
@@ -211,7 +238,14 @@ function deletevehicle(vᵒ::Vehicle, s::Solution)
     return true
 end
 
-# Pre intialization procedures
+
+
+"""
+    preinitialize!(s::Solution)
+
+Pre-intialization procedures.
+Returns solution `s` after adding new routes into the solution.
+"""
 function preinitialize!(s::Solution)
     for d ∈ s.D
         for v ∈ d.V
@@ -221,14 +255,25 @@ function preinitialize!(s::Solution)
     end
     return s
 end
+"""
+    postnitialize!(s::Solution)
 
-# Post intialization procedures
+Post-intialization procedures.
+Returns solution `s`.
+"""
 function postinitialize!(s::Solution)
     return s
 end
 
-# Pre insertion procedures
-function preinsertion!(s::Solution)
+
+
+"""
+    preinsert!(s::Solution)
+
+Pre-insertion procedures.
+Returns solution `s` after adding new vehicles and routes into the solution.
+"""
+function preinsert!(s::Solution)
     for d ∈ s.D
         for v ∈ d.V
             rᵒ = Route(v, d)
@@ -239,9 +284,13 @@ function preinsertion!(s::Solution)
     end
     return s
 end
+"""
+    postinsert!(s::Solution)
 
-# Post insertion procedures
-function postinsertion!(s::Solution)
+Post-insertion procedures. 
+Retruns solution `s` after deleting routes and vehicles, and subsequently correcting routes' and customers' indices.
+"""
+function postinsert!(s::Solution)
     for d ∈ s.D
         k = 1
         while true
@@ -270,43 +319,36 @@ function postinsertion!(s::Solution)
             end
         end
     end
-    return s
-end
-
-# Pre removal procedures
-function preremoval!(s::Solution)
-    return s
-end
-
-# Post removal procedures
-function postremoval!(s::Solution)
-    for d ∈ s.D
-        k = 1
-        while true
-            v = d.V[k]
-            if deletevehicle(v, s) 
-                deleteat!(d.V, k)
-            else
-                v.iᵛ = k
-                for r ∈ v.R r.iᵛ = k end
-                k += 1
-            end
-            if k > length(d.V) break end
-        end
-        for v ∈ d.V
-            if isempty(v.R) continue end
-            k = 1
-            while true
-                r = v.R[k]
-                if deleteroute(r, s) 
-                    deleteat!(v.R, k)
-                else
-                    r.iʳ = k
-                    k += 1
-                end
-                if k > length(v.R) break end
-            end
-        end
+    for c ∈ s.C 
+        c.iʳ = c.r.iʳ
+        c.iᵛ = c.r.iᵛ
+        c.iᵈ = c.r.iᵈ
     end
+    return s
+end
+
+
+
+"""
+    preremove!(s::Solution)
+
+Pre-removal procedures. 
+Retruns solution `s` after correcting customers' indices.
+"""
+function preremove!(s::Solution)
+    for c ∈ s.C 
+        c.iʳ = c.r.iʳ
+        c.iᵛ = c.r.iᵛ
+        c.iᵈ = c.r.iᵈ
+    end
+    return s
+end
+"""
+    postremove!(s::Solution)
+
+Post-removal procedures.
+Returns solution `s`.
+"""
+function postremove!(s::Solution)
     return s
 end

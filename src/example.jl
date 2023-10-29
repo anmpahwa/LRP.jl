@@ -16,39 +16,38 @@ let
     # Define ALNS parameters
     x = length(sₒ.D)+length(sₒ.C);
     n = max(500, ceil(x, digits=-(length(digits(x))-1)));
-    χ = ALNSParameters(
+    χ = ALNSparameters(
         n   =   n ÷ 25                  ,
         k   =   250                     ,
         m   =   2n                      ,
         j   =   125                     ,
         Ψᵣ  =   [
-                    :randomnode!    ,
-                    :randomroute!   ,
-                    :randomvehicle! ,
-                    :randomdepot!   ,
-                    :relatednode!   ,
-                    :relatedroute!  ,
-                    :relatedvehicle!,
-                    :relateddepot!  ,
-                    :worstnode!     ,
-                    :worstroute!    ,
-                    :worstvehicle!  ,
+                    :randomcustomer!    ,
+                    :randomroute!       ,
+                    :randomvehicle!     ,
+                    :randomdepot!       ,
+                    :relatedcustomer!   ,
+                    :relatedroute!      ,
+                    :relatedvehicle!    ,
+                    :relateddepot!      ,
+                    :worstcustomer!     ,
+                    :worstroute!        ,
+                    :worstvehicle!      ,
                     :worstdepot!
                 ]                       ,
         Ψᵢ  =   [
-                    :bestprecise!   ,
-                    :bestperturb!   ,
-                    :greedyprecise! ,
-                    :greedyperturb! ,
-                    :regret2!       ,
+                    :best!              ,
+                    :precise!           ,
+                    :perturb!           ,
+                    :regret2!           ,
                     :regret3!
                 ]                       ,
         Ψₗ  =   [
-                    :intraopt!      ,
-                    :interopt!      ,
-                    :movecustomer!  ,
-                    :movedepot!     ,
-                    :swapcustomers! ,
+                    :intraopt!          ,
+                    :interopt!          ,
+                    :movecustomer!      ,
+                    :movedepot!         ,
+                    :swapcustomers!     ,
                     :swapdepots!
                 ]                       ,
         σ₁  =   15                      ,

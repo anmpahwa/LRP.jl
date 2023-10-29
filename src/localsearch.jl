@@ -1,7 +1,7 @@
 """
     localsearch!(rng::AbstractRNG, k̅::Int64, s::Solution, method::Symbol)
 
-Return solution `s` performing local seach on the solution using given `method` for `k̅` iterations 
+Returns solution `s` after performing local seach on the solution using given `method` for `k̅` iterations 
 until improvement.
 
 Available methods include,
@@ -17,20 +17,27 @@ Optionally specify a random number generator `rng` as the first argument (defaul
 localsearch!(rng::AbstractRNG, k̅::Int64, s::Solution, method::Symbol)::Solution = getfield(LRP, method)(rng, k̅, s)
 localsearch!(k̅::Int64, s::Solution, method::Symbol) = localsearch!(Random.GLOBAL_RNG, k̅, s, method)
 
-# Intra-Opt
-# Iteratively take 2 arcs from the same route and reconfigure them (total possible reconfigurations 2²-1 = 3) 
-# if the reconfigure results in reduction in objective function value for k̅ iterations until improvement
+
+
+"""
+    intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
+
+Returns solution `s` after iteratively taking 2 arcs from the same route 
+and reconfiguring them (total possible reconfigurations 2²-1 = 3) if the 
+reconfiguration results in a reduction in objective function value, repeating 
+for `k̅` iterations until improvement.
+"""
 function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
-    w = isopt.(R)
+    W = isopt.(R)                   # W[i]: selection weight for route R[iʳ]
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 1.1: Iteratively take 2 arcs from the same route
         # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
-        r = sample(rng, R, Weights(w))
+        r = sample(rng, R, Weights(W))
         (i,j) = sample(rng, 1:r.n, 2)
         (i,j) = j < i ? (j,i) : (i,j)  
         k  = 1
@@ -89,20 +96,27 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     return s
 end
 
-# Inter-Opt
-# Iteratively take 2 arcs from the different routes and reconfigure them (total possible reconfigurations 2²-1 = 3) 
-# if the reconfigure results in reduction in objective function value for k̅ iterations until improvement
+
+
+"""
+    interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
+
+Returns solution `s` after iteratively taking 2 arcs from the different 
+routes and reconfiguring them (total possible reconfigurations 2²-1 = 3) 
+if the reconfiguration results in a reduction in objective function value, 
+repeating for `k̅` iterations until improvement.
+"""
 function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
-    w = isopt.(R)
+    W = isopt.(R)                   # W[i]: selection weight for route R[iʳ]
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 1.1: Iteratively take 2 arcs from different routes
         # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
-        r², r⁵ = sample(rng, R, Weights(w), 2)
+        r², r⁵ = sample(rng, R, Weights(W), 2)
         d², d⁵ = D[r².iᵈ], D[r⁵.iᵈ]
         if isequal(r², r⁵) continue end
         i  = rand(rng, 1:r².n)
@@ -195,9 +209,15 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     return s
 end
 
-# Move-Customer
-# Iteratively move a randomly selected customer node in its best position if the move 
-# results in reduction in objective function value for k̅ iterations until improvement
+
+
+"""
+    movecustomer!(rng::AbstractRNG, k̅::Int64, s::Solution)
+
+Returns solution `s` after moving a randomly selected customer node 
+to its best position if the move results in a reduction in objective 
+function value, repeating for `k̅` iterations until improvement.
+"""
 function movecustomer!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
@@ -206,9 +226,9 @@ function movecustomer!(rng::AbstractRNG, k̅::Int64, s::Solution)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     I = eachindex(C)
     J = eachindex(R)
+    W = ones(Int64, I)              # W[i]: selection weight for customer node C[i]
     X = fill(Inf, J)                # x[j]: insertion cost in route R[j]
     P = fill((0, 0), J)             # p[j]: best insertion postion in route R[j]
-    W = ones(Int64, I)              # w[i]: selection weight for node C[i]
     # Step 2: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 2.1: Randomly select a node
@@ -262,15 +282,21 @@ function movecustomer!(rng::AbstractRNG, k̅::Int64, s::Solution)
     return s
 end
 
-# Move-Depot
-# Iteratively split routes by moving a randomly selected depot node at best position if the
-# split results in reduction in objective function value for k̅ iterations until improvement
+
+
+"""
+    movedepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
+
+Returns solution `s` after iteratively spliting routes by moving a randomly 
+selected depot node at best position if the split results in reduction in 
+objective function value, repeating for `k̅` iterations until improvement.
+"""
 function movedepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ = f(s)
     z′ = zᵒ
     D = s.D
     C = s.C
-    W = ones(Int64, eachindex(D))
+    W = ones(Int64, eachindex(D))   # W[i]: selection weight for depot node D[i]
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
         # Step 1.1: Select a random depot node d
@@ -321,9 +347,15 @@ function movedepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
     return s
 end
 
-# Swap-Customers
-# Iteratively swap two randomly selected customer nodes if the swap results
-# in reduction in objective function value for k̅ iterations until improvement
+
+
+"""
+    swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
+
+Returns solution `s` after swapping two randomly selected 
+customers if the swap results in a reduction in objective 
+function value, repeating for `k̅` iterations until improvement.
+"""
 function swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D
@@ -380,9 +412,15 @@ function swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
     return s
 end
 
-# Swap-Depots
-# Iteratively swap two randomly selected depot nodes if the swap results
-# in reduction in objective function value for k̅ iterations until improvement
+
+
+"""
+    swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
+
+Returns solution `s` after swapping two randomly selected depots 
+if the swap results in a reduction in objective function value, 
+repeating for `k̅` iterations until improvement.
+"""
 function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
     zᵒ= f(s)
     D = s.D

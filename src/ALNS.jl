@@ -1,5 +1,5 @@
 """
-    ALNS([rng::AbstractRNG], χ::ALNSParameters, sₒ::Solution)
+    ALNS([rng::AbstractRNG], χ::ALNSparameters, sₒ::Solution)
 
 Adaptive Large Neighborhood Search (ALNS)
 
@@ -10,7 +10,7 @@ iteration.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
+function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
     # Step 0: Pre-initialize
     n, k, m, j = χ.n, χ.k, χ.m, χ.j
     Ψᵣ, Ψᵢ, Ψₗ = χ.Ψᵣ, χ.Ψᵢ, χ.Ψₗ
@@ -113,4 +113,4 @@ function ALNS(rng::AbstractRNG, χ::ALNSParameters, sₒ::Solution)
     # Step 3: Return vector of solutions
     return S
 end
-ALNS(χ::ALNSParameters, s::Solution) = ALNS(Random.GLOBAL_RNG, χ, s)
+ALNS(χ::ALNSparameters, s::Solution) = ALNS(Random.GLOBAL_RNG, χ, s)
