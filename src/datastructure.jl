@@ -14,13 +14,13 @@ end
 
 
 """
-    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, x::Float64, y::Float64, iˢ::Int64, iᵉ::Int64, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Float64, l::Float64, φ::Bool)
+    Route(iʳ::Int64, iᵛ::Int64, iᵈ::Int64, x::Float64, y::Float64, iˢ::Int64, iᵉ::Int64, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Float64, l::Float64)
 
 A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`, depot
 node index `iᵈ`, centroid coordinate `x, y` , start node index `iˢ`, end node index 
 `iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition `tⁱ`, start `tˢ`, 
 and end time `tᵉ`, repsectively, slack time `τ`, number of customers `n`, load `q`, 
-length `l`, and route status `φ`.
+and length `l`.
 """
 mutable struct Route
     iʳ::Int64                                                                       # Route index
@@ -40,7 +40,6 @@ mutable struct Route
     n::Int64                                                                        # Number of customers served by the route
     q::Float64                                                                      # Route load
     l::Float64                                                                      # Route length
-    φ::Bool                                                                         # 
 end
 
 
@@ -84,13 +83,12 @@ A `Node` is a point on the graph.
 """
 abstract type Node end
 """
-    DepotNode(iⁿ::Int64, jⁿ::Int64, x::Float64, y::Float64, q::Float64, pˡ::Float64, pᵘ::Float64, tˢ::Float64, tᵉ::Float64, πᵒ::Float64, πᶠ::Float64, φ::Int64, V::Vector{Vehicle})
+    DepotNode(iⁿ::Int64, jⁿ::Int64, x::Float64, y::Float64, q::Float64, pˡ::Float64, pᵘ::Float64, tˢ::Float64, tᵉ::Float64, πᵒ::Float64, πᶠ::Float64, V::Vector{Vehicle})
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ` in echelon
 `jⁿ`, capacity `q`, lower threshold `pˡ` and upper threshold `pᵘ` on share of 
 customers handled, working-hours start time `tˢ` and end tme  `tᵉ`,  operational 
-cost  `πᵒ` per package, fixed cost `πᶠ`, depot use mandate `φ`, and fleet of 
-vehicles `V`.
+cost  `πᵒ` per package, fixed cost `πᶠ`, and fleet of vehicles `V`.
 """
 struct DepotNode <: Node
     iⁿ::Int64                                                                       # Depot node index
@@ -104,7 +102,6 @@ struct DepotNode <: Node
     tᵉ::Float64                                                                     # Depot working-hours end time
     πᵒ::Float64                                                                     # Depot operational cost
     πᶠ::Float64                                                                     # Depot fixed cost
-    φ::Int64                                                                        # Mandated depot use
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
 end
 """

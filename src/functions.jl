@@ -1,14 +1,4 @@
 """
-    isactive(r::Route)
-
-Returns true if route `r` is active.
-A route is defined active if the vehicle repsonsible for the route is yet to depart.
-"""
-isactive(r::Route) = r.φ
-
-
-
-"""
     isopt(r::Route)
 
 Returns true if route `r` is operational.
@@ -128,11 +118,10 @@ function Route(v::Vehicle, d::DepotNode)
     n  = 0 
     q  = 0.
     l  = 0.
-    φ  = true
-    r  = Route(iʳ, iᵛ, iᵈ, x, y, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l, φ)
+    r  = Route(iʳ, iᵛ, iᵈ, x, y, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l)
     return r
 end            
-const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf, true)
+const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf)
 
 
 
@@ -213,6 +202,7 @@ Returns objective function evaluation for solution `s`. Include `fixed`,
 function f(s::Solution; fixed=true, operational=true, penalty=true)
     πᶠ, πᵒ, πᵖ = 0., 0., 0.
     φᶠ, φᵒ, φᵖ = fixed, operational, penalty
+    φ = all(!isopt, filter(d -> isone(d.jⁿ), s.D))
     for d ∈ s.D
         πᶠ += isopt(d) * d.πᶠ
         qᵈ = 0
@@ -236,7 +226,7 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
         end
         pᵈ  = nᵈ/length(s.C)
         πᵒ += qᵈ * d.πᵒ
-        πᵖ += (isone(d.φ) && !isopt(d)) * d.πᶠ                              # Depot use constraint
+        πᵖ += (φ && isone(d.jⁿ)) * d.πᶠ                                     # Depot use constraint
         πᵖ += (qᵈ > d.q) * (qᵈ - d.q)                                       # Depot capacity constraint
         πᵖ += (pᵈ < d.pˡ) * (d.pˡ - pᵈ)                                     # Depot customer share constraint
         πᵖ += (pᵈ > d.pᵘ) * (pᵈ - d.pᵘ)                                     # Depot customer share constraint
@@ -285,10 +275,10 @@ function isfeasible(s::Solution)
             if v.tᵉ - v.tˢ > v.τʷ return false end                          # Working-hours constraint (duration)
         end
         pᵈ = nᵈ/length(s.C)
-        if (isone(d.φ) && !isopt(d)) return false end                       # Depot use constraint
         if qᵈ > d.q return false end                                        # Depot capacity constraint
         if !(d.pˡ ≤ pᵈ ≤ d.pᵘ) return false end                             # Depot customer share constraint
     end
+    if all(!isopt, filter(d -> isone(d.jⁿ), s.D)) return false end          # Depot use constraint
     if any(!isone, X) return false end                                      # Node service, customer flow, and sub-tour elimination constrinat
     return true
 end
