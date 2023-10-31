@@ -1,4 +1,14 @@
 """
+    isactive(r::Route)
+
+Returns true if route `r` is active.
+A route is defined active if the vehicle repsonsible for the route is yet to depart.
+"""
+isactive(r::Route) = r.φ
+
+
+
+"""
     isopt(r::Route)
 
 Returns true if route `r` is operational.
@@ -38,7 +48,7 @@ isopen(c::CustomerNode) = isequal(c.r, NullRoute)
 Returns true if depot node `d` is not operational.
 A depot node is defined operational if any of its vehicles is operational.
 """  
-isclose(d::DepotNode)    = !isopt(d)
+isclose(d::DepotNode) = !isopt(d)
 """
     isclose(c::CustomerNode)
 
@@ -55,7 +65,7 @@ isclose(c::CustomerNode) = !isopen(c)
 Return true if route `p` equals route `q`.
 Two routes are the equal if their indices (`iᵈ`, `iᵛ`, `iʳ`) match.
 """
-Base.isequal(p::Route, q::Route)     = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ) && isequal(p.iʳ, q.iʳ)
+Base.isequal(p::Route, q::Route) = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ) && isequal(p.iʳ, q.iʳ)
 """
     isequal(p::Vehicle, q::Vehicle)
 
@@ -69,7 +79,7 @@ Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ
 Return true if node `p` equals node `q`.
 Two node are equal if their indices (`iⁿ`) match.
 """
-Base.isequal(p::Node, q::Node)       = isequal(p.iⁿ, q.iⁿ)
+Base.isequal(p::Node, q::Node) = isequal(p.iⁿ, q.iⁿ)
 
 """
     isidentical(p::Vehicle, q::Vehicle)
@@ -85,7 +95,7 @@ isidentical(p::Vehicle, q::Vehicle) = isequal(p.jᵛ, q.jᵛ)
 
 Returns true if node `n` is a depot.
 """
-isdepot(n::Node)    = isequal(typeof(n), DepotNode)
+isdepot(n::Node) = isequal(typeof(n), DepotNode)
 """
     iscustomer(n::Node)
     
@@ -118,10 +128,11 @@ function Route(v::Vehicle, d::DepotNode)
     n  = 0 
     q  = 0.
     l  = 0.
-    r  = Route(iʳ, iᵛ, iᵈ, x, y, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l)
+    φ  = true
+    r  = Route(iʳ, iᵛ, iᵈ, x, y, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l, φ)
     return r
 end            
-const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf)
+const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf, true)
 
 
 
