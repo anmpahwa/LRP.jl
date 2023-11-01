@@ -52,7 +52,7 @@ node index `iᵈ`, capacity `q`, range `l`, speed `s`, refueling time `τᶠ`, s
 time `τᵈ` at depot node (per unit demand), parking time `τᶜ` at customer node, 
 maximum number of vehicle routes permitted `r̅`, working-hours `τʷ`, initial 
 departure time `tˢ`, final arrival time `tᵉ`, operational cost `πᵈ` per unit 
-distance and `πᵗ` per unit time, fixed cost `πᶠ`,  and set of routes `R`.
+distance and `πᵗ` per unit time, fixed cost `πᶠ`, and set of routes `R`.
 """
 mutable struct Vehicle
     iᵛ::Int64                                                                       # Vehicle index
@@ -87,8 +87,8 @@ abstract type Node end
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ` in echelon
 `jⁿ`, capacity `q`, lower threshold `pˡ` and upper threshold `pᵘ` on share of 
-customers handled, working-hours start time `tˢ` and end tme  `tᵉ`,  operational 
-cost  `πᵒ` per package, fixed cost `πᶠ`, and fleet of vehicles `V`.
+customers handled, working-hours start time `tˢ` and end tme `tᵉ`, operational 
+cost `πᵒ` per package, fixed cost `πᶠ`, and fleet of vehicles `V`.
 """
 struct DepotNode <: Node
     iⁿ::Int64                                                                       # Depot node index

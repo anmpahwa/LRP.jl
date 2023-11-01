@@ -9,11 +9,12 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     vᵒ = dᵒ.V[rᵒ.iᵛ]
     tⁱ = rᵒ.tⁱ
     θⁱ = rᵒ.θⁱ
-    τ  = Inf
-    # update tail node and head node indices
+
+    # update node
     isdepot(nᵗ) ? rᵒ.iˢ = nᵒ.iⁿ : nᵗ.iʰ = nᵒ.iⁿ
     isdepot(nʰ) ? rᵒ.iᵉ = nᵒ.iⁿ : nʰ.iᵗ = nᵒ.iⁿ
     isdepot(nᵒ) ? (rᵒ.iˢ, rᵒ.iᵉ) = (nʰ.iⁿ, nᵗ.iⁿ) : (nᵒ.iʰ, nᵒ.iᵗ) = (nʰ.iⁿ, nᵗ.iⁿ)
+    
     # update route
     if iscustomer(nᵒ)
         rᵒ.x = (rᵒ.n * rᵒ.x + nᵒ.x)/(rᵒ.n + 1)
@@ -23,8 +24,10 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         rᵒ.q += nᵒ.q
     end
     rᵒ.l += s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
-    # update arrival and departure time
+
     if isequal(φᵀ::Bool, false) return s end
+
+    # update arrival and departure time
     for r ∈ vᵒ.R
         if r.tⁱ < rᵒ.tⁱ continue end
         if isopt(r)
@@ -56,8 +59,12 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         tⁱ = r.tᵉ
         θⁱ = r.θᵉ
     end
-    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[1].tⁱ, vᵒ.R[length(vᵒ.R)].tᵉ)
-    τ = min(τ, dᵒ.tᵉ - vᵒ.tᵉ)
+
+    # update start and end time
+    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[firstindex(vᵒ.R)].tⁱ, vᵒ.R[lastindex(vᵒ.R)].tᵉ)
+
+    # update slack
+    τ = dᵒ.tᵉ - vᵒ.tᵉ
     for r ∈ reverse(vᵒ.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
@@ -70,6 +77,7 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         end
         r.τ = τ
     end
+
     return s
 end
 """
@@ -83,11 +91,12 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     vᵒ = dᵒ.V[rᵒ.iᵛ]
     tⁱ = rᵒ.tⁱ
     θⁱ = rᵒ.θⁱ
-    τ  = Inf
-    # update tail node and head node indices
+
+    # update node
     isdepot(nᵗ) ? rᵒ.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
     isdepot(nʰ) ? rᵒ.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
     isdepot(nᵒ) ? false : (nᵒ.iʰ, nᵒ.iᵗ) = (0, 0)
+
     # update route
     if iscustomer(nᵒ)
         rᵒ.x = isone(rᵒ.n) ? 0. : (rᵒ.n * rᵒ.x - nᵒ.x)/(rᵒ.n - 1)
@@ -97,8 +106,10 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         rᵒ.q -= nᵒ.q
     end
     rᵒ.l -= s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
-    # update arrival and departure time
+
     if isequal(φᵀ::Bool, false) return s end
+    
+    # update arrival and departure time
     if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = Inf, Inf end
     for r ∈ vᵒ.R
         if r.tⁱ < rᵒ.tⁱ continue end
@@ -131,8 +142,11 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         tⁱ = r.tᵉ
         θⁱ = r.θᵉ
     end
-    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[1].tⁱ, vᵒ.R[length(vᵒ.R)].tᵉ)
-    τ = min(τ, dᵒ.tᵉ - vᵒ.tᵉ)
+    # update start and end time
+    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[firstindex(vᵒ.R)].tⁱ, vᵒ.R[lastindex(vᵒ.R)].tᵉ)
+
+    # update slack
+    τ = dᵒ.tᵉ - vᵒ.tᵉ
     for r ∈ reverse(vᵒ.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
@@ -145,6 +159,7 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         end
         r.τ = τ
     end
+
     return s
 end
 
@@ -158,6 +173,7 @@ Returns true if a route `rᵒ` can be added into the solution (conservative).
 function addroute(rᵒ::Route, s::Solution)
     dᵒ =  s.D[rᵒ.iᵈ]
     vᵒ = dᵒ.V[rᵒ.iᵛ]
+
     # condtions when route mustn't be added
     if isequal(length(vᵒ.R), vᵒ.r̅) return false end
     if any(!isopt, vᵒ.R) return false end
@@ -166,6 +182,7 @@ function addroute(rᵒ::Route, s::Solution)
     qᵈ = 0.
     for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
     if qᵈ ≥ dᵒ.q return false end
+
     # condition when route could be added
     if isempty(vᵒ.R) return true end
     for v ∈ dᵒ.V for r ∈ v.R if r.q > v.q return true end end end
@@ -175,6 +192,7 @@ function addroute(rᵒ::Route, s::Solution)
         for v ∈ d.V for r ∈ v.R qᵈ += r.q end end
         if qᵈ > d.q return true end
     end
+
     return false
 end
 """
@@ -185,7 +203,10 @@ Returns true if route `rᵒ` can be deleted (liberal).
 function deleteroute(rᵒ::Route, s::Solution)
     # condtions when route mustn't be deleted
     if isopt(rᵒ) return false end
+
     # condition when route could be deleted
+
+
     return true
 end
 
@@ -198,11 +219,13 @@ Returns true if vehicle `vᵒ` can be added into the solution (conservative).
 """
 function addvehicle(vᵒ::Vehicle, s::Solution)
     dᵒ = s.D[vᵒ.iᵈ]
+
     # condtions when vehicle mustn't be added
     if any(!isopt, filter(v -> isidentical(vᵒ, v), dᵒ.V)) return false end
     qᵈ = 0.
     for v ∈ dᵒ.V for r ∈ v.R qᵈ += r.q end end
     if qᵈ ≥ dᵒ.q return false end
+
     # condition when vehicle could be added
     if qᵈ < dᵒ.q return true end
     for v ∈ dᵒ.V
@@ -220,6 +243,7 @@ function addvehicle(vᵒ::Vehicle, s::Solution)
             end
         end
     end
+
     return false
 end
 """
@@ -229,12 +253,16 @@ Returns true if vehicle `vᵒ` can be deleted (liberal).
 """
 function deletevehicle(vᵒ::Vehicle, s::Solution)
     dᵒ = s.D[vᵒ.iᵈ]
+
     # condtions when vehicle mustn't be deleted
     if isopt(vᵒ) return false end
     nʲ = 0
     for v ∈ dᵒ.V if isidentical(vᵒ, v) nʲ += 1 end end
     if isone(nʲ) return false end
+
     # condition when vehicle could be deleted
+
+    
     return true
 end
 
