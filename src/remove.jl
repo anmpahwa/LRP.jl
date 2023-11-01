@@ -245,7 +245,7 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
         if !isopt(r) continue end
         d = s.D[r.iᵈ]
         v = d.V[r.iᵛ]
-        X[iʳ] = r.q/v.q
+        X[iʳ] = r.q/v.qᵛ
     end
     # Step 2: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
     n = 0
@@ -376,15 +376,7 @@ function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
     X = fill(Inf, eachindex(V))     # X[iʳ] : utilization of vehicle V[iᵛ]
     W = ones(Int64, eachindex(V))   # W[iᵛ] : selection weight for vehicle V[iᵛ]
     # Step 1: Evaluate utilization for each vehicle
-    for (iᵛ,v) ∈ pairs(V)
-        a = 0.
-        b = 0.
-        for r ∈ v.R
-            a += r.q
-            b += v.q
-        end
-        X[iᵛ] = a/b
-    end
+    for (iᵛ,v) ∈ pairs(V) X[iᵛ] = v.q/(length(v.R) * v.qᵛ) end
     # Step 2: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
     n = 0
     while n < q
@@ -503,11 +495,7 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
     X = fill(Inf, eachindex(D))     # X[iᵈ] : utilization of vehicle D[iᵈ]
     W = ones(Int64, eachindex(D))   # W[iᵈ] : selection weight for vehicle D[iᵈ]
     # Step 1: Evaluate utilization for each depot
-    for (iᵈ,d) ∈ pairs(D)
-        u = 0.
-        for v ∈ d.V for r ∈ v.R u += r.q/d.q end end
-        X[iᵈ] = u
-    end
+    for (iᵈ,d) ∈ pairs(D) X[iᵈ] = d.q/d.qᵈ end
     # Step 2: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
     n = 0
     while n < q

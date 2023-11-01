@@ -111,9 +111,9 @@ function Route(v::Vehicle, d::DepotNode)
     θⁱ = isone(iʳ) ? 1.0 : v.R[iʳ-1].θᵉ
     θˢ = θⁱ
     θᵉ = θˢ
-    tⁱ = d.tˢ
-    tˢ = d.tˢ
-    tᵉ = d.tˢ
+    tⁱ = isone(iʳ) ? d.tˢ : v.R[iʳ-1].tᵉ
+    tˢ = tⁱ
+    tᵉ = tⁱ
     τ  = Inf
     n  = 0 
     q  = 0.
@@ -134,9 +134,9 @@ function Vehicle(v::Vehicle, d::DepotNode)
     iᵛ = length(d.V) + 1
     jᵛ = v.jᵛ
     iᵈ = v.iᵈ
-    q  = v.q
-    l  = v.l
-    s  = v.s
+    qᵛ = v.qᵛ
+    lᵛ = v.lᵛ
+    sᵛ = v.sᵛ
     τᶠ = v.τᶠ
     τᵈ = v.τᵈ
     τᶜ = v.τᶜ
@@ -144,11 +144,15 @@ function Vehicle(v::Vehicle, d::DepotNode)
     r̅  = v.r̅
     tˢ = d.tˢ
     tᵉ = d.tˢ
+    τ  = Inf
+    n  = 0
+    q  = 0.
+    l  = 0.
     πᵈ = v.πᵈ
     πᵗ = v.πᵗ
     πᶠ = v.πᶠ
     R  = Route[]
-    v  = Vehicle(iᵛ, jᵛ, iᵈ, q, l, s, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, πᵈ, πᵗ, πᶠ, R)
+    v  = Vehicle(iᵛ, jᵛ, iᵈ, qᵛ, lᵛ, sᵛ, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, τ, n, q, l, πᵈ, πᵗ, πᶠ, R)
     return v
 end
 
@@ -205,29 +209,23 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
     φ = all(!isopt, filter(d -> isone(d.jⁿ), s.D))
     for d ∈ s.D
         πᶠ += isopt(d) * d.πᶠ
-        qᵈ = 0
-        nᵈ = 0
         for v ∈ d.V
             πᶠ += isopt(v) * v.πᶠ
             for r ∈ v.R 
                 if !isopt(r) continue end
-                qᵛ = r.q
-                lᵛ = r.l
-                qᵈ += qᵛ
-                nᵈ += r.n
                 πᵒ += r.l * v.πᵈ
-                πᵖ += (qᵛ > v.q) * (qᵛ - v.q)                               # Vehicle capacity constraint
-                πᵖ += (lᵛ > v.l) * (lᵛ - v.l)                               # Vehicle range constraint
+                πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)                           # Vehicle capacity constraint
+                πᵖ += (r.l > v.lᵛ) * (r.l - v.lᵛ)                           # Vehicle range constraint
             end
             πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
             πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)                             # Working-hours constraint (start time)
             πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)                             # Working-hours constraint (end time)
             πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * (v.tᵉ - v.tˢ - v.τʷ)               # Working-hours constraint (duration)
         end
-        pᵈ  = nᵈ/length(s.C)
-        πᵒ += qᵈ * d.πᵒ
+        pᵈ  = d.n/length(s.C)
+        πᵒ += d.q * d.πᵒ
         πᵖ += (φ && isone(d.jⁿ)) * d.πᶠ                                     # Depot use constraint
-        πᵖ += (qᵈ > d.q) * (qᵈ - d.q)                                       # Depot capacity constraint
+        πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)                                   # Depot capacity constraint
         πᵖ += (pᵈ < d.pˡ) * (d.pˡ - pᵈ)                                     # Depot customer share constraint
         πᵖ += (pᵈ > d.pᵘ) * (pᵈ - d.pᵘ)                                     # Depot customer share constraint
     end
@@ -249,17 +247,11 @@ violated.
 function isfeasible(s::Solution)
     X = zeros(Int64, eachindex(s.C))
     for d ∈ s.D
-        qᵈ = 0
-        nᵈ = 0.
         for v ∈ d.V
             for r ∈ v.R
                 if !isopt(r) continue end
-                qᵛ = r.q
-                lᵛ = r.l
-                if qᵛ > v.q return false end                                # Vehicle capacity constraint
-                if lᵛ > v.l return false end                                # Vehicle range constraint
-                qᵈ += r.q
-                nᵈ += r.n
+                if r.q > v.qᵛ return false end                              # Vehicle capacity constraint
+                if r.l > v.lᵛ return false end                              # Vehicle range constraint
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
                 cᵒ = cˢ
@@ -274,8 +266,8 @@ function isfeasible(s::Solution)
             if v.tᵉ > d.tᵉ return false end                                 # Working-hours constraint (end time)
             if v.tᵉ - v.tˢ > v.τʷ return false end                          # Working-hours constraint (duration)
         end
-        pᵈ = nᵈ/length(s.C)
-        if qᵈ > d.q return false end                                        # Depot capacity constraint
+        pᵈ = d.n/length(s.C)
+        if d.q > d.qᵈ return false end                                      # Depot capacity constraint
         if !(d.pˡ ≤ pᵈ ≤ d.pᵘ) return false end                             # Depot customer share constraint
     end
     if all(!isopt, filter(d -> isone(d.jⁿ), s.D)) return false end          # Depot use constraint
@@ -291,12 +283,13 @@ end
 Returns a measure of similarity between customer nodes `c` and depot node `d`.
 """
 function relatedness(c::CustomerNode, d::DepotNode, s::Solution)
+    q = 0
+    φ = 1 + isequal(c.iᵈ, d.iⁿ)
     l = s.A[(c.iⁿ,d.iⁿ)].l
     t = 0
-    q = 0
-    r = c.r
-    φ = 1 + isequal(r.iᵈ, d.iⁿ)
+
     z = (q + φ)/(l + t)
+
     return z
 end
 """
@@ -312,20 +305,26 @@ Returns a measure of similarity between customer nodes `c¹` and `c²`.
 """
 function relatedness(c¹::CustomerNode, c²::CustomerNode, s::Solution)
     if isequal(c¹, c²) return Inf end
+    
     r¹ = c¹.r
     r² = c².r
+    φʳ = isequal(r¹, r²)
+
     d¹ = s.D[r¹.iᵈ]
     d² = s.D[r².iᵈ]
+    φᵈ = isequal(d¹, d²)
+
     v¹ = d¹.V[r¹.iᵛ]
     v² = d².V[r².iᵛ]
-    φᵈ = isequal(d¹, d²)
     φᵛ = isequal(v¹, v²)
-    φʳ = isequal(r¹, r²)
+    
+    q  = abs(c¹.q - c².q)
     φ  = 1 + φᵈ + φᵛ + φʳ  
     l  = s.A[(c¹.iⁿ,c².iⁿ)].l
     t  = abs(c¹.tᵉ - c².tᵉ) + abs(c¹.tˡ - c².tˡ)
-    q  = abs(c¹.q - c².q)
+
     z  = (q + φ)/(l + t)
+    
     return z
 end
 """
@@ -336,17 +335,22 @@ Returns a measure of similarity between routes `r¹` and `r²`.
 function relatedness(r¹::Route, r²::Route, s::Solution)
     if !isopt(r¹) || !isopt(r²) return -Inf end
     if isequal(r¹, r²) return Inf end
+
     d¹ = s.D[r¹.iᵈ]
     d² = s.D[r².iᵈ]
+    φᵈ = isequal(d¹, d²)
+
     v¹ = d¹.V[r¹.iᵛ]
     v² = d².V[r².iᵛ]
-    φᵈ = isequal(d¹, d²)
     φᵛ = isequal(v¹, v²)
+    
+    q  = abs(r¹.q - r².q)
     φ  = 1 + φᵈ + φᵛ 
     l  = sqrt((r¹.x - r².x)^2 + (r¹.y - r².y)^2)
     t  = abs(r¹.tˢ - r².tˢ) + abs(r¹.tᵉ - r².tᵉ)
-    q  = abs(r¹.q - r².q)
+
     z  = (q + φ)/(l + t)
+
     return z
 end
 """
@@ -357,37 +361,31 @@ Returns a measure of similarity between vehicles `v¹` and `v²`.
 function relatedness(v¹::Vehicle, v²::Vehicle, s::Solution)
     if !isopt(v¹) || !isopt(v²) return -Inf end
     if isequal(v¹, v²) return Inf end
+
     d¹ = s.D[v¹.iᵈ]
     d² = s.D[v².iᵈ]
     φᵈ = isequal(d¹, d²)
-    a  = 0.
-    b  = 0.
-    c  = 0
+    
+
+    x¹ = 0.
+    y¹ = 0.
     for r ∈ v¹.R 
-        a += r.n * r.x
-        b += r.n * r.y
-        c += r.n
+        x¹ += r.n * r.x / v¹.n
+        y¹ += r.n * r.y / v¹.n 
     end
-    x¹ = a/c
-    y¹ = b/c 
-    a  = 0.
-    b  = 0.
-    c  = 0
+    x² = 0.
+    y² = 0.
     for r ∈ v².R 
-        a += r.n * r.x
-        b += r.n * r.y
-        c += r.n
+        x² += r.n * r.x / v².n
+        y² += r.n * r.y / v².n
     end
-    x² = a/c
-    y² = b/c 
-    q¹ = 0
-    q² = 0
-    for r ∈ v¹.R q¹ += r.q end
-    for r ∈ v².R q² += r.q end
+    
+    q  = abs(v¹.q - v².q)
     φ  = 1 + φᵈ
     l  = sqrt((x¹ - x²)^2 + (y¹ - y²)^2)
     t  = abs(v¹.tˢ - v².tˢ) + abs(v¹.tᵉ - v².tᵉ)
-    q  = abs(q¹ - q²)
+
     z  = (q + φ)/(l + t)
+
     return z
 end

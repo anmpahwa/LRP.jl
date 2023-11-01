@@ -12,14 +12,18 @@ function build(instance::String)
         jⁿ = df[k,2]
         x  = df[k,3]
         y  = df[k,4]
-        q  = df[k,5]
+        qᵈ = df[k,5]
         pˡ = df[k,6]
         pᵘ = df[k,7]
         tˢ = df[k,8]
         tᵉ = df[k,9]
+        τ  = Inf
+        n  = 0
+        q  = 0.
+        l  = 0.
         πᵒ = df[k,10]
         πᶠ = df[k,11]
-        d  = DepotNode(iⁿ, jⁿ, x, y, q, pˡ, pᵘ, tˢ, tᵉ, πᵒ, πᶠ, Vehicle[])
+        d  = DepotNode(iⁿ, jⁿ, x, y, qᵈ, pˡ, pᵘ, tˢ, tᵉ, τ, n, q, l, πᵒ, πᶠ, Vehicle[])
         D[iⁿ] = d
     end
 
@@ -61,22 +65,28 @@ function build(instance::String)
     # Vehicles
     df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/vehicles.csv")))
     for k ∈ 1:nrow(df)
+        d  = D[df[k,3]]
         iᵛ = df[k,1]
         jᵛ = df[k,2]
         iᵈ = df[k,3]
-        q  = df[k,4]
-        l  = df[k,5]
-        s  = df[k,6]
+        qᵛ = df[k,4]
+        lᵛ = df[k,5]
+        sᵛ = df[k,6]
         τᶠ = df[k,7]
         τᵈ = df[k,8]
         τᶜ = df[k,9]
         τʷ = df[k,10]
         r̅  = df[k,11]
+        tˢ = d.tˢ
+        tᵉ = d.tˢ
+        τ  = Inf
+        n  = 0
+        q  = 0.
+        l  = 0.
         πᵈ = df[k,12]
         πᵗ = df[k,13]
         πᶠ = df[k,14]
-        d  = D[iᵈ]
-        v  = Vehicle(iᵛ, jᵛ, iᵈ, q, l, s, τᶠ, τᵈ, τᶜ, τʷ, r̅, d.tˢ, d.tˢ, πᵈ, πᵗ, πᶠ, Route[])
+        v  = Vehicle(iᵛ, jᵛ, iᵈ, qᵛ, lᵛ, sᵛ, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, τ, n, q, l, πᵈ, πᵗ, πᶠ, Route[])
         push!(d.V, v)
     end
     V  = [v for d ∈ D for v ∈ d.V]
