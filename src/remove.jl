@@ -20,10 +20,7 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function remove!(rng::AbstractRNG, q::Int64, s::Solution, method::Symbol)::Solution 
-    try return getfield(LRP, method)(rng, q, s) catch end
-    return getfield(Main, method)(rng, q, s)
-end
+remove!(rng::AbstractRNG, q::Int64, s::Solution, method::Symbol)::Solution = isdefined(LRP, method) ? getfield(LRP, method)(rng, q, s) : getfield(Main, method)(rng, q, s)
 remove!(q::Int64, s::Solution, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s, method)
 
 # -------------------------------------------------- NODE REMOVAL --------------------------------------------------

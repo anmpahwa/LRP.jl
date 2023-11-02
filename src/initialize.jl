@@ -9,10 +9,7 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function initialsolution(rng::AbstractRNG, G, method::Symbol)::Solution
-    try return getfield(LRP, method)(rng, G) catch end 
-    return getfield(Main, method)(rng, G)
-end
+initialsolution(rng::AbstractRNG, G, method::Symbol)::Solution = isdefined(LRP, method) ? getfield(LRP, method)(rng, G) : getfield(Main, method)(rng, G)
 initialsolution(G, method::Symbol) = initialsolution(Random.GLOBAL_RNG, G, method)
 
 

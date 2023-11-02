@@ -13,10 +13,7 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function insert!(rng::AbstractRNG, s::Solution, method::Symbol)::Solution
-    try return getfield(LRP, method)(rng, s) catch end 
-    return getfield(Main, method)(rng, s)
-end
+insert!(rng::AbstractRNG, s::Solution, method::Symbol)::Solution = isdefined(LRP, method) ? getfield(LRP, method)(rng, s) : getfield(Main, method)(rng, s)
 insert!(s::Solution, method::Symbol) = insert!(Random.GLOBAL_RNG, s, method)
 
 
