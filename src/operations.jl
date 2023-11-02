@@ -31,8 +31,8 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         dᵒ.q += nᵒ.q
     end
     rᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
-    vᵒ.l += aₜ.l + aʰ.l - aᵒ.l
-    dᵒ.l += aₜ.l + aʰ.l - aᵒ.l
+    vᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
+    dᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
 
     if isequal(φᵀ::Bool, false) return s end
 
@@ -124,8 +124,8 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         dᵒ.q -= nᵒ.q
     end
     rᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
-    vᵒ.l -= aₜ.l + aʰ.l - aᵒ.l
-    dᵒ.l -= aₜ.l + aʰ.l - aᵒ.l
+    vᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
+    dᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
 
     if isequal(φᵀ::Bool, false) return s end
     
