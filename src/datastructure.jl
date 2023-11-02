@@ -145,7 +145,7 @@ end
 """
     Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int64,Int64}, Arc}, V::Vector{Vehicle})
 
-A Solution is a graph with depot nodes `D`, customer nodes `C`, arcs `A`, and vehicles `V`.
+A `Solution` is a graph with depot nodes `D`, customer nodes `C`, arcs `A`, and vehicles `V`.
 """
 struct Solution
     D::Vector{DepotNode}                                                            # Vector of depot nodes

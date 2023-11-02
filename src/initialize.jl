@@ -1,8 +1,7 @@
-# Initial solution
 """
     initialsolution([rng], G, method)
 
-Returns initial LRP solution using the given `method` for graph `G` given as a tuple of `Nodes` and `Arcs`.
+Returns initial LRP `Solution` created using the given `method` for graph `G` given as a tuple of nodes and arcs.
 Available methods include,
 - K-means Clustering Initialization : `:cluster`
 - Random Initialization             : `:random`
@@ -21,7 +20,7 @@ initialsolution(G, method::Symbol) = initialsolution(Random.GLOBAL_RNG, G, metho
 """
     cluster(rng::AbstractRNG, G)
 
-Return initial solution using k-means clustering algorithm.
+Returns initial `Solution` created using k-means clustering algorithm.
 """
 function cluster(rng::AbstractRNG, G)
     s = Solution(G...)
@@ -138,7 +137,7 @@ end
 """
     random(rng::AbstractRNG, G)
 
-Create initial solution with randomly selcted node-route combination until all customer nodes have been added to the solution.
+Returns initial `Solution` created with randomly selcted node-route combination until all customer nodes have been added to the solution.
 """
 function random(rng::AbstractRNG, G)
     s = Solution(G...)

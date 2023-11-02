@@ -9,6 +9,9 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     vᵒ = dᵒ.V[rᵒ.iᵛ]
     tⁱ = rᵒ.tⁱ
     θⁱ = rᵒ.θⁱ
+    aᵒ = s.A[(nᵗ.iⁿ, nʰ.iⁿ)]
+    aᵗ = s.A[(nᵗ.iⁿ, nᵒ.iⁿ)]
+    aʰ = s.A[(nᵒ.iⁿ, nʰ.iⁿ)]
 
     # update node
     isdepot(nᵗ) ? rᵒ.iˢ = nᵒ.iⁿ : nᵗ.iʰ = nᵒ.iⁿ
@@ -27,9 +30,9 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         vᵒ.q += nᵒ.q
         dᵒ.q += nᵒ.q
     end
-    rᵒ.l += s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
-    vᵒ.l += s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
-    dᵒ.l += s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
+    rᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
+    vᵒ.l += aₜ.l + aʰ.l - aᵒ.l
+    dᵒ.l += aₜ.l + aʰ.l - aᵒ.l
 
     if isequal(φᵀ::Bool, false) return s end
 
@@ -99,6 +102,9 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     vᵒ = dᵒ.V[rᵒ.iᵛ]
     tⁱ = rᵒ.tⁱ
     θⁱ = rᵒ.θⁱ
+    aᵒ = s.A[(nᵗ.iⁿ, nʰ.iⁿ)]
+    aᵗ = s.A[(nᵗ.iⁿ, nᵒ.iⁿ)]
+    aʰ = s.A[(nᵒ.iⁿ, nʰ.iⁿ)]
 
     # update node
     isdepot(nᵗ) ? rᵒ.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
@@ -117,9 +123,9 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         vᵒ.q -= nᵒ.q
         dᵒ.q -= nᵒ.q
     end
-    rᵒ.l -= s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
-    vᵒ.l -= s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
-    dᵒ.l -= s.A[(nᵗ.iⁿ, nᵒ.iⁿ)].l + s.A[(nᵒ.iⁿ, nʰ.iⁿ)].l - s.A[(nᵗ.iⁿ, nʰ.iⁿ)].l
+    rᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
+    vᵒ.l -= aₜ.l + aʰ.l - aᵒ.l
+    dᵒ.l -= aₜ.l + aʰ.l - aᵒ.l
 
     if isequal(φᵀ::Bool, false) return s end
     
@@ -185,7 +191,7 @@ end
 """
     addroute(rᵒ::Route, s::Solution)
 
-Returns true if a route `rᵒ` can be added into the solution (conservative).
+Returns `true` if a route `rᵒ` can be added into solution `s` (conservative).
 """
 function addroute(rᵒ::Route, s::Solution)
     dᵒ =  s.D[rᵒ.iᵈ]
@@ -208,7 +214,7 @@ end
 """
     deleteroute(rᵒ::Route, s::Solution)
 
-Returns true if route `rᵒ` can be deleted (liberal).
+Returns `true` if route `rᵒ` can be deleted from solution `s` (liberal).
 """
 function deleteroute(rᵒ::Route, s::Solution)
     # condtions when route mustn't be deleted
@@ -225,7 +231,7 @@ end
 """
     addvehicle(vᵒ::Vehicle, s::Solution)
 
-Returns true if vehicle `vᵒ` can be added into the solution (conservative).
+Returns `true` if vehicle `vᵒ` can be added into solution `s` (conservative).
 """
 function addvehicle(vᵒ::Vehicle, s::Solution)
     dᵒ = s.D[vᵒ.iᵈ]
@@ -257,7 +263,7 @@ end
 """
     deletevehicle(vᵒ::Vehicle, s::Solution)
 
-Returns true if vehicle `vᵒ` can be deleted (liberal).
+Returns `true` if vehicle `vᵒ` can be deleted from solution `s`(liberal).
 """
 function deletevehicle(vᵒ::Vehicle, s::Solution)
     dᵒ = s.D[vᵒ.iᵈ]

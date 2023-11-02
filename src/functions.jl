@@ -1,22 +1,22 @@
 """
     isopt(r::Route)
 
-Returns true if route `r` is operational.
-A route is defined operational if it serves at least one customer.
+Returns `true` if route `r` is operational.
+A `Route` is defined operational if it serves at least one customer.
 """
 isopt(r::Route) = (r.n ≥ 1)
 """
     isopt(v::Vehicle)
 
-Returns true if vehicle `v` is operational.
-A vehicle is defined operational if any of its routes is operational.
+Returns `true` if vehicle `v` is operational.
+A `Vehicle` is defined operational if any of its routes is operational.
 """
 isopt(v::Vehicle) = any(isopt, v.R)
 """
     isopt(d::DepotNode)
     
-Returns true if depot node `d` is operational.
-A depot node is defined operational if any of its vehicles is operational.
+Returns `true` if depot node `d` is operational.
+A `DepotNode` is defined operational if any of its vehicles is operational.
 """
 isopt(d::DepotNode) = any(isopt, d.V)
 
@@ -25,8 +25,8 @@ isopt(d::DepotNode) = any(isopt, d.V)
 """
     isopen(c::CustomerNode)
     
-Returns true if customer node `c` is open.
-A customer node is defined open if it is not being served by any vehicle-route.
+Returns `true` if customer node `c` is open.
+A `CustomerNode` is defined open if it is not being served by any vehicle-route.
 """
 isopen(c::CustomerNode) = isequal(c.r, NullRoute)
 
@@ -35,15 +35,15 @@ isopen(c::CustomerNode) = isequal(c.r, NullRoute)
 """
     isclose(d::DepotNode)
 
-Returns true if depot node `d` is not operational.
-A depot node is defined operational if any of its vehicles is operational.
+Returns `true` if depot node `d` is not operational.
+A `DepotNode` is defined operational if any of its vehicles is operational.
 """  
 isclose(d::DepotNode) = !isopt(d)
 """
     isclose(c::CustomerNode)
 
-Returns true if customer node `c` is not open.
-A customer node is defined open if it is not being served by any vehicle-route.
+Returns `true` if customer node `c` is not open.
+A `CustomerNode` is defined open if it is not being served by any vehicle-route.
 """  
 isclose(c::CustomerNode) = !isopen(c)
 
@@ -52,29 +52,29 @@ isclose(c::CustomerNode) = !isopen(c)
 """
     isequal(p::Route, q::Route)
 
-Return true if route `p` equals route `q`.
+Return `true` if route `p` equals route `q`.
 Two routes are the equal if their indices (`iᵈ`, `iᵛ`, `iʳ`) match.
 """
 Base.isequal(p::Route, q::Route) = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ) && isequal(p.iʳ, q.iʳ)
 """
     isequal(p::Vehicle, q::Vehicle)
 
-Return true if vehicle `p` equals vehicle `q`.
+Return `true` if vehicle `p` equals vehicle `q`.
 Two vehicles are equal if their indices (`iᵈ`, `iᵛ`) match.
 """
 Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ)
 """
     isequal(p::Node, q::Node)
 
-Return true if node `p` equals node `q`.
-Two node are equal if their indices (`iⁿ`) match.
+Return `true` if node `p` equals node `q`.
+Two nodes are equal if their indices (`iⁿ`) match.
 """
 Base.isequal(p::Node, q::Node) = isequal(p.iⁿ, q.iⁿ)
 
 """
     isidentical(p::Vehicle, q::Vehicle)
 
-Return true if vehicle `p` is identical to vehicle `q`.
+Return `true` if vehicle `p` is identical to vehicle `q`.
 Two vehicles are identical if they are of the same type,
 i.e. if their type indices (`jᵛ`) match.
 """
@@ -83,13 +83,13 @@ isidentical(p::Vehicle, q::Vehicle) = isequal(p.jᵛ, q.jᵛ)
 """
     isdepot(n::Node)
 
-Returns true if node `n` is a depot.
+Returns `true` if node `n` is a depot.
 """
 isdepot(n::Node) = isequal(typeof(n), DepotNode)
 """
     iscustomer(n::Node)
     
-Returns true if node `n` is a customer.
+Returns `true` if node `n` is a customer.
 """
 iscustomer(n::Node) = isequal(typeof(n), CustomerNode)
 
@@ -98,7 +98,7 @@ iscustomer(n::Node) = isequal(typeof(n), CustomerNode)
 """
     Route(v::Vehicle, d::DepotNode)
 
-Returns a non-operational route traversed by vehicle `v` from depot node `d`.
+Returns a non-operational `Route` traversed by vehicle `v` from depot node `d`.
 """
 function Route(v::Vehicle, d::DepotNode)
     iʳ = length(v.R) + 1
@@ -128,7 +128,7 @@ const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0,
 """
     Route(v::Vehicle, d::DepotNode)
 
-    Returns a non-operational vehicle cloning vehicle `v` at depot node `d`.
+    Returns a non-operational `Vehicle` cloning vehicle `v` at depot node `d`.
 """
 function Vehicle(v::Vehicle, d::DepotNode)
     iᵛ = length(d.V) + 1
@@ -161,7 +161,7 @@ end
 """
     vectorize(s::Solution)
 
-Returns solution as a sequence of nodes in the order of visits.
+Returns `Solution` as a sequence of nodes in the order of visits.
 """
 function vectorize(s::Solution)
     D = s.D
@@ -191,7 +191,7 @@ end
 """
     hash(s::Solution)
 
-Returns hash on vectorized solution.
+Returns hash on vectorized `Solution`.
 """
 Base.hash(s::Solution) = hash(vectorize(s))
 
@@ -239,7 +239,7 @@ end
 """
     isfeasible(s::Solution)
 
-Returns true if node service, node flow, and sub-tour elimination
+Returns `true` if node service, node flow, and sub-tour elimination
 constraints; depot and vehicle capacity constriants; vehicle range 
 and working-hours constraints; and time-window constraints are not 
 violated.
