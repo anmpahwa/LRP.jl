@@ -14,7 +14,10 @@ Available methods include,
 
 Optionally specify a random number generator `rng` as the first argument (defaults to `Random.GLOBAL_RNG`).
 """
-localsearch!(rng::AbstractRNG, k̅::Int64, s::Solution, method::Symbol)::Solution = getfield(LRP, method)(rng, k̅, s)
+function localsearch!(rng::AbstractRNG, k̅::Int64, s::Solution, method::Symbol)::Solution 
+    try return getfield(LRP, method)(rng, k̅, s) catch end
+    return getfield(Main, method)(rng, k̅, s)
+end
 localsearch!(k̅::Int64, s::Solution, method::Symbol) = localsearch!(Random.GLOBAL_RNG, k̅, s, method)
 
 
