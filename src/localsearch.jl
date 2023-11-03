@@ -437,48 +437,50 @@ function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
         I² = eachindex(V²)
         for iᵛ ∈ I¹
             v = V¹[iᵛ]
-            for r ∈ v.R 
+            for r ∈ v.R
                 if isopt(r)
                     cˢ = C[r.iˢ]
                     cᵉ = C[r.iᵉ]
                     removenode!(d¹, cᵉ, cˢ, r, s)
+                    r.iᵈ = d².iⁿ
                     insertnode!(d², cᵉ, cˢ, r, s)
                 else
+                    r.iᵈ = d².iⁿ
                     r.iˢ = d².iⁿ
                     r.iᵉ = d².iⁿ
                 end
-                r.iᵈ = d².iⁿ
             end
-        end
-        for iᵛ ∈ I²
-            v = V²[iᵛ]
-            for r ∈ v.R 
-                if isopt(r)
-                    cˢ = C[r.iˢ]
-                    cᵉ = C[r.iᵉ]
-                    removenode!(d², cᵉ, cˢ, r, s)
-                    insertnode!(d¹, cᵉ, cˢ, r, s)
-                else
-                    r.iˢ = d¹.iⁿ
-                    r.iᵉ = d¹.iⁿ
-                end
-                r.iᵈ = d¹.iⁿ
-            end
-        end
-        for iᵛ ∈ I¹
-            v = V¹[iᵛ]
             v.iᵈ = d².iⁿ
             push!(d².V, v)
         end
         for iᵛ ∈ I²
             v = V²[iᵛ]
+            for r ∈ v.R
+                if isopt(r)
+                    cˢ = C[r.iˢ]
+                    cᵉ = C[r.iᵉ]
+                    removenode!(d², cᵉ, cˢ, r, s)
+                    r.iᵈ = d¹.iⁿ
+                    insertnode!(d¹, cᵉ, cˢ, r, s)
+                else
+                    r.iᵈ = d¹.iⁿ
+                    r.iˢ = d¹.iⁿ
+                    r.iᵉ = d¹.iⁿ
+                end
+            end
             v.iᵈ = d¹.iⁿ
             push!(d¹.V, v)
         end
-        deleteat!(V¹, I¹)
-        deleteat!(V², I²)
-        for (iᵛ,v) ∈ pairs(V¹) v.iᵛ = iᵛ end
-        for (iᵛ,v) ∈ pairs(V²) v.iᵛ = iᵛ end
+        deleteat!(d¹.V, I¹)
+        deleteat!(d².V, I²)
+        n¹ = d¹.n
+        n² = d².n
+        q¹ = d¹.q
+        q² = d².q
+        d¹.n = n²
+        d².n = n¹
+        d¹.q = q²
+        d².q = q¹
         # Step 1.2: Compute change in objective function value
         z′ = f(s)
         Δ  = z′ - zᵒ
@@ -491,48 +493,50 @@ function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
         I² = eachindex(V²)
         for iᵛ ∈ I¹
             v = V¹[iᵛ]
-            for r ∈ v.R 
+            for r ∈ v.R
                 if isopt(r)
                     cˢ = C[r.iˢ]
                     cᵉ = C[r.iᵉ]
                     removenode!(d¹, cᵉ, cˢ, r, s)
+                    r.iᵈ = d².iⁿ
                     insertnode!(d², cᵉ, cˢ, r, s)
                 else
+                    r.iᵈ = d².iⁿ
                     r.iˢ = d².iⁿ
                     r.iᵉ = d².iⁿ
                 end
-                r.iᵈ = d².iⁿ
             end
-        end
-        for iᵛ ∈ I²
-            v = V²[iᵛ]
-            for r ∈ v.R 
-                if isopt(r)
-                    cˢ = C[r.iˢ]
-                    cᵉ = C[r.iᵉ]
-                    removenode!(d², cᵉ, cˢ, r, s)
-                    insertnode!(d¹, cᵉ, cˢ, r, s)
-                else
-                    r.iˢ = d¹.iⁿ
-                    r.iᵉ = d¹.iⁿ
-                end
-                r.iᵈ = d¹.iⁿ
-            end
-        end
-        for iᵛ ∈ I¹
-            v = V¹[iᵛ]
             v.iᵈ = d².iⁿ
             push!(d².V, v)
         end
         for iᵛ ∈ I²
             v = V²[iᵛ]
+            for r ∈ v.R
+                if isopt(r)
+                    cˢ = C[r.iˢ]
+                    cᵉ = C[r.iᵉ]
+                    removenode!(d², cᵉ, cˢ, r, s)
+                    r.iᵈ = d¹.iⁿ
+                    insertnode!(d¹, cᵉ, cˢ, r, s)
+                else
+                    r.iᵈ = d¹.iⁿ
+                    r.iˢ = d¹.iⁿ
+                    r.iᵉ = d¹.iⁿ
+                end
+            end
             v.iᵈ = d¹.iⁿ
             push!(d¹.V, v)
         end
-        deleteat!(V¹, I¹)
-        deleteat!(V², I²)
-        for (iᵛ,v) ∈ pairs(V¹) v.iᵛ = iᵛ end
-        for (iᵛ,v) ∈ pairs(V²) v.iᵛ = iᵛ end
+        deleteat!(d¹.V, I¹)
+        deleteat!(d².V, I²)
+        n¹ = d¹.n
+        n² = d².n
+        q¹ = d¹.q
+        q² = d².q
+        d¹.n = n²
+        d².n = n¹
+        d¹.q = q²
+        d².q = q¹
     end
     # Step 2: Return solution
     return s

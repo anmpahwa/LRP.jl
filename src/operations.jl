@@ -5,6 +5,8 @@ Returns solution `s` after inserting node `nᵒ` between tail node `nᵗ`
 and head node `nʰ` in route `rᵒ` in solution `s`.
 """
 function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
+    if isdepot(nᵒ) && !isequal(nᵒ.iⁿ, rᵒ.iᵈ) return s end
+
     dᵒ =  s.D[rᵒ.iᵈ]
     vᵒ = dᵒ.V[rᵒ.iᵛ]
     tⁱ = rᵒ.tⁱ
@@ -13,26 +15,40 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     aᵗ = s.A[(nᵗ.iⁿ, nᵒ.iⁿ)]
     aʰ = s.A[(nᵒ.iⁿ, nʰ.iⁿ)]
 
-    # update node
-    isdepot(nᵗ) ? rᵒ.iˢ = nᵒ.iⁿ : nᵗ.iʰ = nᵒ.iⁿ
-    isdepot(nʰ) ? rᵒ.iᵉ = nᵒ.iⁿ : nʰ.iᵗ = nᵒ.iⁿ
-    isdepot(nᵒ) ? (rᵒ.iˢ, rᵒ.iᵉ) = (nʰ.iⁿ, nᵗ.iⁿ) : (nᵒ.iʰ, nᵒ.iᵗ) = (nʰ.iⁿ, nᵗ.iⁿ)
-    
-    # update associated route, vehicle, and depot node
+    # update associated customer nodes, route, vehicle, and depot node
     if iscustomer(nᵒ)
+        isdepot(nᵗ) ? rᵒ.iˢ = nᵒ.iⁿ : nᵗ.iʰ = nᵒ.iⁿ
+        isdepot(nʰ) ? rᵒ.iᵉ = nᵒ.iⁿ : nʰ.iᵗ = nᵒ.iⁿ
+        nᵒ.iʰ = nʰ.iⁿ
+        nᵒ.iᵗ = nᵗ.iⁿ
+        nᵒ.r = rᵒ
+
         rᵒ.x = (rᵒ.n * rᵒ.x + nᵒ.x)/(rᵒ.n + 1)
         rᵒ.y = (rᵒ.n * rᵒ.y + nᵒ.y)/(rᵒ.n + 1)
-        nᵒ.r = rᵒ
         rᵒ.n += 1
-        vᵒ.n += 1
-        dᵒ.n += 1
         rᵒ.q += nᵒ.q
+        rᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
+
+        vᵒ.n += 1
         vᵒ.q += nᵒ.q
+        vᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
+
+        dᵒ.n += 1
         dᵒ.q += nᵒ.q
+        dᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
     end
-    rᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
-    vᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
-    dᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
+    if isdepot(nᵒ)
+        nᵗ.iʰ = nᵒ.iⁿ
+        nʰ.iᵗ = nᵒ.iⁿ
+
+        rᵒ.iˢ = nʰ.iⁿ
+        rᵒ.iᵉ = nᵗ.iⁿ
+        rᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
+
+        vᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
+
+        dᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
+    end
 
     if isequal(φᵀ::Bool, false) return s end
 
@@ -98,6 +114,8 @@ Returns solution `s` after removing node `nᵒ` from its position between
 tail node `nᵗ` and head node `nʰ` in route `rᵒ` in solution `s`.
 """
 function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
+    if isdepot(nᵒ) && !isequal(nᵒ.iⁿ, rᵒ.iᵈ) return s end
+
     dᵒ =  s.D[rᵒ.iᵈ]
     vᵒ = dᵒ.V[rᵒ.iᵛ]
     tⁱ = rᵒ.tⁱ
@@ -106,26 +124,41 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     aᵗ = s.A[(nᵗ.iⁿ, nᵒ.iⁿ)]
     aʰ = s.A[(nᵒ.iⁿ, nʰ.iⁿ)]
 
-    # update node
-    isdepot(nᵗ) ? rᵒ.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
-    isdepot(nʰ) ? rᵒ.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
-    isdepot(nᵒ) ? false : (nᵒ.iʰ, nᵒ.iᵗ) = (0, 0)
 
-    # update assocaited route, vehicle, and depot node
+    # update associated customer nodes, route, vehicle, and depot node
     if iscustomer(nᵒ)
+        isdepot(nᵗ) ? rᵒ.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
+        isdepot(nʰ) ? rᵒ.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
+        nᵒ.iʰ = 0
+        nᵒ.iᵗ = 0
+        nᵒ.r = NullRoute
+
         rᵒ.x = isone(rᵒ.n) ? 0. : (rᵒ.n * rᵒ.x - nᵒ.x)/(rᵒ.n - 1)
         rᵒ.y = isone(rᵒ.n) ? 0. : (rᵒ.n * rᵒ.y - nᵒ.y)/(rᵒ.n - 1)
-        nᵒ.r = NullRoute
         rᵒ.n -= 1
-        vᵒ.n -= 1
-        dᵒ.n -= 1
         rᵒ.q -= nᵒ.q
+        rᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
+
+        vᵒ.n -= 1
         vᵒ.q -= nᵒ.q
+        vᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
+
+        dᵒ.n -= 1
         dᵒ.q -= nᵒ.q
+        dᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
     end
-    rᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
-    vᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
-    dᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
+    if isdepot(nᵒ)
+        nᵗ.iʰ = nʰ.iⁿ
+        nʰ.iᵗ = nᵗ.iⁿ
+
+        rᵒ.iˢ = nʰ.iⁿ
+        rᵒ.iᵉ = nᵗ.iⁿ
+        rᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
+
+        vᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
+
+        dᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
+    end
 
     if isequal(φᵀ::Bool, false) return s end
     
