@@ -23,7 +23,8 @@ function build(instance::String)
         l  = 0.
         πᵒ = df[k,10]
         πᶠ = df[k,11]
-        d  = DepotNode(iⁿ, jⁿ, x, y, qᵈ, pˡ, pᵘ, tˢ, tᵉ, τ, n, q, l, πᵒ, πᶠ, Vehicle[])
+        φ  = df[k,12]
+        d  = DepotNode(iⁿ, jⁿ, x, y, qᵈ, pˡ, pᵘ, tˢ, tᵉ, τ, n, q, l, πᵒ, πᶠ, φ, Vehicle[])
         D[iⁿ] = d
     end
 
