@@ -130,7 +130,7 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     if isequal(φᵀ::Bool, false) return s end
     
     # update arrival and departure time
-    if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = Inf, Inf end
+    if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = 0., 0. end
     for r ∈ vᵒ.R
         if r.tⁱ < rᵒ.tⁱ continue end
         if isopt(r)
