@@ -4,21 +4,21 @@
 Returns `true` if route `r` is operational.
 A `Route` is defined operational if it serves at least one customer.
 """
-isopt(r::Route) = (r.n ≥ 1)
+isopt(r::Route) = !iszero(r.n)
 """
     isopt(v::Vehicle)
 
 Returns `true` if vehicle `v` is operational.
 A `Vehicle` is defined operational if any of its routes is operational.
 """
-isopt(v::Vehicle) = any(isopt, v.R)
+isopt(v::Vehicle) = !iszero(v.n)
 """
     isopt(d::DepotNode)
     
 Returns `true` if depot node `d` is operational.
 A `DepotNode` is defined operational if any of its vehicles is operational.
 """
-isopt(d::DepotNode) = any(isopt, d.V)
+isopt(d::DepotNode) = !iszero(d.n)
 
 
 
@@ -206,11 +206,15 @@ Returns objective function evaluation for solution `s`. Include `fixed`,
 function f(s::Solution; fixed=true, operational=true, penalty=true)
     πᶠ, πᵒ, πᵖ = 0., 0., 0.
     φᶠ, φᵒ, φᵖ = fixed, operational, penalty
-    φ = all(!isopt, filter(d -> isone(d.jⁿ), s.D))
     for d ∈ s.D
-        πᶠ += isopt(d) * d.πᶠ
+        πᵖ += (d.n < d.pˡ * length(s.C)) * (d.pˡ * length(s.C) - d.n)       # Depot customer share constraint
+        πᵖ += (d.n > d.pᵘ * length(s.C)) * (d.n - d.pᵘ * length(s.C))       # Depot customer share constraint
+        πᵖ += (isone(d.φ) && !isopt(d)) * d.πᶠ                              # Depot use constraint
+        if !isopt(d) continue end
+        πᶠ += d.πᶠ
         for v ∈ d.V
-            πᶠ += isopt(v) * v.πᶠ
+            if !isopt(v) continue end
+            πᶠ += v.πᶠ
             for r ∈ v.R 
                 if !isopt(r) continue end
                 πᵒ += r.l * v.πᵈ
@@ -222,14 +226,13 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
             πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)                             # Working-hours constraint (end time)
             πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * (v.tᵉ - v.tˢ - v.τʷ)               # Working-hours constraint (duration)
         end
-        pᵈ  = d.n/length(s.C)
         πᵒ += d.q * d.πᵒ
-        πᵖ += (φ && isone(d.jⁿ)) * d.πᶠ                                     # Depot use constraint
         πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)                                   # Depot capacity constraint
-        πᵖ += (pᵈ < d.pˡ) * (d.pˡ - pᵈ)                                     # Depot customer share constraint
-        πᵖ += (pᵈ > d.pᵘ) * (pᵈ - d.pᵘ)                                     # Depot customer share constraint
     end
-    for c ∈ s.C πᵖ += isopen(c) ? 0. : (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ) end    # Time-window constraint
+    for c ∈ s.C 
+        πᵖ += isopen(c) * c.q                                               # Service constraint
+        πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)                                 # Time-window constraint
+    end
     z = φᶠ * πᶠ + φᵒ * πᵒ + φᵖ * πᵖ * 10^(ceil(log10(πᶠ + πᵒ)))
     return z
 end
@@ -239,39 +242,33 @@ end
 """
     isfeasible(s::Solution)
 
-Returns `true` if node service, node flow, and sub-tour elimination
-constraints; depot and vehicle capacity constriants; vehicle range 
-and working-hours constraints; and time-window constraints are not 
-violated.
+Returns `true` if node service and time-window constraints;
+vehicle capacity, range, and working-hours constraints; and 
+depot use, share, and capacity constriants are not violated.
 """
 function isfeasible(s::Solution)
-    X = zeros(Int64, eachindex(s.C))
     for d ∈ s.D
+        if d.n < d.pˡ * length(s.C) return false end                        # Depot customer share constraint
+        if d.n > d.pᵘ * length(s.C) return false end                        # Depot customer share constraint
+        if isone(d.φ) && !isopt(d) return  false end                        # Depot use constraint
+        if !isopt(d) continue end
         for v ∈ d.V
+            if !isopt(v) continue end
             for r ∈ v.R
                 if !isopt(r) continue end
                 if r.q > v.qᵛ return false end                              # Vehicle capacity constraint
                 if r.l > v.lᵛ return false end                              # Vehicle range constraint
-                cˢ = s.C[r.iˢ]
-                cᵉ = s.C[r.iᵉ]
-                cᵒ = cˢ
-                while true
-                    if cᵒ.tᵃ > cᵒ.tˡ return false end                       # Time-window constraint
-                    X[cᵒ.iⁿ] += 1
-                    if isequal(cᵒ, cᵉ) break end
-                    cᵒ = s.C[cᵒ.iʰ]
-                end
             end
             if d.tˢ > v.tˢ return false end                                 # Working-hours constraint (start time)
             if v.tᵉ > d.tᵉ return false end                                 # Working-hours constraint (end time)
             if v.tᵉ - v.tˢ > v.τʷ return false end                          # Working-hours constraint (duration)
         end
-        pᵈ = d.n/length(s.C)
         if d.q > d.qᵈ return false end                                      # Depot capacity constraint
-        if !(d.pˡ ≤ pᵈ ≤ d.pᵘ) return false end                             # Depot customer share constraint
     end
-    if all(!isopt, filter(d -> isone(d.jⁿ), s.D)) return false end          # Depot use constraint
-    if any(!isone, X) return false end                                      # Node service, customer flow, and sub-tour elimination constrinat
+    for c ∈ s.C 
+        if isopen(c) return false end                                       # Service constraint
+        if (c.tᵃ > c.tˡ) return false end                                   # Time-window constraint
+    end
     return true
 end
 
