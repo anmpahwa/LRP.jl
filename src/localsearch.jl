@@ -7,10 +7,9 @@ until improvement.
 Available methods include,
 - Intra-Opt     : `:intraopt!`
 - Inter-Opt     : `:interopt!`
-- Move-Customer : `:movecustomer!`
-- Move-Depot    : `:movedepot!`
-- Swap-Customer : `:swapcustomers!`
-- Swap-Depot    : `:swapdepots!`
+- Move          : `:move!`
+- split         : `:split!`
+- swap          : `:swap!`
 
 Optionally specify a random number generator `rng` as the first argument (defaults to `Random.GLOBAL_RNG`).
 """
@@ -29,9 +28,9 @@ for `k̅` iterations until improvement.
 """
 function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
+    zᵒ= f(s)
     D = s.D
     C = s.C
-    zᵒ= f(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     W = isopt.(R)                   # W[i]: selection weight for route R[iʳ]
     # Step 1: Iterate for k̅ iterations until improvement
@@ -216,13 +215,13 @@ end
 
 
 """
-    movecustomer!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    move!(rng::AbstractRNG, k̅::Int64, s::Solution)
 
 Returns solution `s` after moving a randomly selected customer node 
 to its best position if the move results in a reduction in objective 
 function value, repeating for `k̅` iterations until improvement.
 """
-function movecustomer!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
     zᵒ= f(s)
     D = s.D
@@ -291,80 +290,13 @@ end
 
 
 """
-    movedepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
-
-Returns solution `s` after iteratively spliting routes by moving a randomly 
-selected depot node at best position if the split results in reduction in 
-objective function value, repeating for `k̅` iterations until improvement.
-"""
-function movedepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
-    prelocalsearch!(s)
-    zᵒ = f(s)
-    z′ = zᵒ
-    D = s.D
-    C = s.C
-    W = ones(Int64, eachindex(D))   # W[i]: selection weight for depot node D[i]
-    # Step 1: Iterate for k̅ iterations until improvement
-    for _ ∈ 1:k̅
-        # Step 1.1: Select a random depot node d
-        i = sample(rng, eachindex(D), Weights(W))
-        d = D[i]
-        # Step 1.2: Iterate through every route originating from this depot node
-        for v ∈ d.V
-            for r ∈ v.R
-                # Step 1.2.1: Remove depot node d from its position in route r
-                if !isopt(r) continue end
-                cˢ = C[r.iˢ]
-                cᵉ = C[r.iᵉ]
-                x = 0.
-                p = (cᵉ.iⁿ, cˢ.iⁿ)
-                removenode!(d, cᵉ, cˢ, r, s)
-                # Step 1.2.2: Iterate through all possible positions in route r
-                cᵗ = cˢ
-                cʰ = C[cᵗ.iʰ]
-                while true
-                    # Step 1.2.2.1: Insert depot node d between tail node nᵗ and head node nʰ
-                    insertnode!(d, cᵗ, cʰ, r, s)
-                    # Step 1.2.2.2: Compute change in objective function value
-                    z″ = f(s) 
-                    Δ  = z″ - z′
-                    # Step 1.2.2.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
-                    if Δ < x x, p = Δ, (cᵗ.iⁿ, cʰ.iⁿ) end
-                    # Step 1.2.2.4: Remove depot node d from its position between tail node nᵗ and head node nʰ
-                    removenode!(d, cᵗ, cʰ, r, s)
-                    if isequal(cʰ, cᵉ) break end
-                    cᵗ = cʰ
-                    cʰ = C[cᵗ.iʰ]
-                end
-                # Step 1.2.3: Move the depot node to its best position in route r (this could be its original position as well)
-                iᵗ, iʰ = p
-                cᵗ = C[iᵗ]
-                cʰ = C[iʰ]
-                insertnode!(d, cᵗ, cʰ, r, s)
-                z′ = f(s) 
-            end
-        end
-        # Step 1.3: Revise vectors appropriately
-        W[i] = 0
-        Δ = z′ - zᵒ
-        # Step 1.4: If the overall change results in reduction in objective function value, then go to step 2, else return to step 1.1
-        Δ ≥ 0 ? continue : break
-    end
-    postlocalsearch!(s)
-    # Step 2: Return solution
-    return s
-end
-
-
-
-"""
-    swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
 
 Returns solution `s` after swapping two randomly selected 
 customers if the swap results in a reduction in objective 
 function value, repeating for `k̅` iterations until improvement.
 """
-function swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
     zᵒ= f(s)
     D = s.D
@@ -425,129 +357,64 @@ end
 
 
 """
-    swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    split!(rng::AbstractRNG, k̅::Int64, s::Solution)
 
-Returns solution `s` after swapping two randomly selected depots 
-if the swap results in a reduction in objective function value, 
-repeating for `k̅` iterations until improvement.
+Returns solution `s` after iteratively spliting routes by moving a randomly 
+selected depot node at best position if the split results in reduction in 
+objective function value, repeating for `k̅` iterations until improvement.
 """
-function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
-    zᵒ= f(s)
+    zᵒ = f(s)
+    z′ = zᵒ
     D = s.D
     C = s.C
+    W = ones(Int64, eachindex(D))   # W[i]: selection weight for depot node D[i]
     # Step 1: Iterate for k̅ iterations until improvement
     for _ ∈ 1:k̅
-        # Step 1.1: Swap two randomly selected depot nodes
-        d¹, d² = sample(rng, D), sample(rng, D)
-        if isequal(d¹, d²) continue end
-        if !isequal(d¹.jⁿ, d².jⁿ) continue end
-        V¹ = d¹.V
-        V² = d².V
-        I¹ = eachindex(V¹)
-        I² = eachindex(V²)
-        for iᵛ ∈ I¹
-            v = V¹[iᵛ]
+        # Step 1.1: Select a random depot node d
+        i = sample(rng, eachindex(D), Weights(W))
+        d = D[i]
+        # Step 1.2: Iterate through every route originating from this depot node
+        for v ∈ d.V
             for r ∈ v.R
-                if isopt(r)
-                    cˢ = C[r.iˢ]
-                    cᵉ = C[r.iᵉ]
-                    removenode!(d¹, cᵉ, cˢ, r, s)
-                    r.iᵈ = d².iⁿ
-                    insertnode!(d², cᵉ, cˢ, r, s)
-                else
-                    r.iᵈ = d².iⁿ
-                    r.iˢ = d².iⁿ
-                    r.iᵉ = d².iⁿ
+                # Step 1.2.1: Remove depot node d from its position in route r
+                if !isopt(r) continue end
+                cˢ = C[r.iˢ]
+                cᵉ = C[r.iᵉ]
+                x = 0.
+                p = (cᵉ.iⁿ, cˢ.iⁿ)
+                removenode!(d, cᵉ, cˢ, r, s)
+                # Step 1.2.2: Iterate through all possible positions in route r
+                cᵗ = cˢ
+                cʰ = C[cᵗ.iʰ]
+                while true
+                    # Step 1.2.2.1: Insert depot node d between tail node nᵗ and head node nʰ
+                    insertnode!(d, cᵗ, cʰ, r, s)
+                    # Step 1.2.2.2: Compute change in objective function value
+                    z″ = f(s) 
+                    Δ  = z″ - z′
+                    # Step 1.2.2.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
+                    if Δ < x x, p = Δ, (cᵗ.iⁿ, cʰ.iⁿ) end
+                    # Step 1.2.2.4: Remove depot node d from its position between tail node nᵗ and head node nʰ
+                    removenode!(d, cᵗ, cʰ, r, s)
+                    if isequal(cʰ, cᵉ) break end
+                    cᵗ = cʰ
+                    cʰ = C[cᵗ.iʰ]
                 end
+                # Step 1.2.3: Move the depot node to its best position in route r (this could be its original position as well)
+                iᵗ, iʰ = p
+                cᵗ = C[iᵗ]
+                cʰ = C[iʰ]
+                insertnode!(d, cᵗ, cʰ, r, s)
+                z′ = f(s) 
             end
-            v.iᵈ = d².iⁿ
-            push!(d².V, v)
         end
-        for iᵛ ∈ I²
-            v = V²[iᵛ]
-            for r ∈ v.R
-                if isopt(r)
-                    cˢ = C[r.iˢ]
-                    cᵉ = C[r.iᵉ]
-                    removenode!(d², cᵉ, cˢ, r, s)
-                    r.iᵈ = d¹.iⁿ
-                    insertnode!(d¹, cᵉ, cˢ, r, s)
-                else
-                    r.iᵈ = d¹.iⁿ
-                    r.iˢ = d¹.iⁿ
-                    r.iᵉ = d¹.iⁿ
-                end
-            end
-            v.iᵈ = d¹.iⁿ
-            push!(d¹.V, v)
-        end
-        deleteat!(d¹.V, I¹)
-        deleteat!(d².V, I²)
-        n¹ = d¹.n
-        n² = d².n
-        q¹ = d¹.q
-        q² = d².q
-        d¹.n = n²
-        d².n = n¹
-        d¹.q = q²
-        d².q = q¹
-        # Step 1.2: Compute change in objective function value
-        z′ = f(s)
-        Δ  = z′ - zᵒ
-        # Step 1.3: If the swap results in reduction in objective function value then go to step 2, else go to step 1.4
-        if Δ < 0 break end
-        # Step 1.4: Reswap the two depot nodes
-        V¹ = d¹.V
-        V² = d².V
-        I¹ = eachindex(V¹)
-        I² = eachindex(V²)
-        for iᵛ ∈ I¹
-            v = V¹[iᵛ]
-            for r ∈ v.R
-                if isopt(r)
-                    cˢ = C[r.iˢ]
-                    cᵉ = C[r.iᵉ]
-                    removenode!(d¹, cᵉ, cˢ, r, s)
-                    r.iᵈ = d².iⁿ
-                    insertnode!(d², cᵉ, cˢ, r, s)
-                else
-                    r.iᵈ = d².iⁿ
-                    r.iˢ = d².iⁿ
-                    r.iᵉ = d².iⁿ
-                end
-            end
-            v.iᵈ = d².iⁿ
-            push!(d².V, v)
-        end
-        for iᵛ ∈ I²
-            v = V²[iᵛ]
-            for r ∈ v.R
-                if isopt(r)
-                    cˢ = C[r.iˢ]
-                    cᵉ = C[r.iᵉ]
-                    removenode!(d², cᵉ, cˢ, r, s)
-                    r.iᵈ = d¹.iⁿ
-                    insertnode!(d¹, cᵉ, cˢ, r, s)
-                else
-                    r.iᵈ = d¹.iⁿ
-                    r.iˢ = d¹.iⁿ
-                    r.iᵉ = d¹.iⁿ
-                end
-            end
-            v.iᵈ = d¹.iⁿ
-            push!(d¹.V, v)
-        end
-        deleteat!(d¹.V, I¹)
-        deleteat!(d².V, I²)
-        n¹ = d¹.n
-        n² = d².n
-        q¹ = d¹.q
-        q² = d².q
-        d¹.n = n²
-        d².n = n¹
-        d¹.q = q²
-        d².q = q¹
+        # Step 1.3: Revise vectors appropriately
+        W[i] = 0
+        Δ = z′ - zᵒ
+        # Step 1.4: If the overall change results in reduction in objective function value, then go to step 2, else return to step 1.1
+        Δ ≥ 0 ? continue : break
     end
     postlocalsearch!(s)
     # Step 2: Return solution

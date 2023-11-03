@@ -56,10 +56,9 @@ and consequently inserts removed nodes using,
 In every few iterations, the ALNS metaheuristic performs local search with,
 - Intra-Opt     : `:intraopt!`
 - Inter-Opt     : `:interopt!`
-- Move-Customer : `:movecustomer!`
-- Move-Depot    : `:movedepot!`
-- Swap-Customer : `:swapcustomers!`
-- Swap-Depot    : `:swapdepots!`
+- Move          : `:move!`
+- split         : `:split!`
+- swap          : `:swap!`
 
 See example.jl for usage
 

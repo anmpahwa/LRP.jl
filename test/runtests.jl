@@ -35,10 +35,9 @@ let
             Ψₗ  =   [
                         :intraopt!          ,
                         :interopt!          ,
-                        :movecustomer!      ,
-                        :movedepot!         ,
-                        :swapcustomers!     ,
-                        :swapdepots!
+                        :move!              ,
+                        :swap!              ,
+                        :split!
                     ]                       ,
             σ₁  =   15                      ,
             σ₂  =   10                      ,
@@ -102,10 +101,9 @@ let
             Ψₗ  =   [
                         :intraopt!          ,
                         :interopt!          ,
-                        :movecustomer!      ,
-                        :movedepot!         ,
-                        :swapcustomers!     ,
-                        :swapdepots!
+                        :move!              ,
+                        :swap!              ,
+                        :split!
                     ]                       ,
             σ₁  =   15                      ,
             σ₂  =   10                      ,

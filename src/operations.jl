@@ -5,6 +5,9 @@ Returns solution `s` after inserting node `nᵒ` between tail node `nᵗ`
 and head node `nʰ` in route `rᵒ` in solution `s`.
 """
 function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
+    # Note: if nᵒ is a depot node to be inserted between tail node nᵗ and
+    # head node nʰ in route rᵒ in solution s, then the route must belong
+    # to the depot node nᵒ in the first place
     if isdepot(nᵒ) && !isequal(nᵒ.iⁿ, rᵒ.iᵈ) return s end
 
     dᵒ =  s.D[rᵒ.iᵈ]
@@ -17,6 +20,9 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
 
     # update associated customer nodes, route, vehicle, and depot node
     if iscustomer(nᵒ)
+        nᵒ.iʳ = rᵒ.iʳ
+        nᵒ.iᵛ = rᵒ.iᵛ
+        nᵒ.iᵈ = rᵒ.iᵈ
         isdepot(nᵗ) ? rᵒ.iˢ = nᵒ.iⁿ : nᵗ.iʰ = nᵒ.iⁿ
         isdepot(nʰ) ? rᵒ.iᵉ = nᵒ.iⁿ : nʰ.iᵗ = nᵒ.iⁿ
         nᵒ.iʰ = nʰ.iⁿ
@@ -37,6 +43,10 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         dᵒ.q += nᵒ.q
         dᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
     end
+    # Note: In the context of the above note, on removal of a depot node
+    # the associated, routes', vehicles', and customers' hierarchical indices 
+    # are not changed, and therefore on insertion of a depot node, the
+    # corresponding changes are not required.
     if isdepot(nᵒ)
         nᵗ.iʰ = nᵒ.iⁿ
         nʰ.iᵗ = nᵒ.iⁿ
@@ -50,60 +60,60 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         dᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
     end
 
-    if isequal(φᵀ::Bool, false) return s end
-
     # update arrival and departure time
-    for r ∈ vᵒ.R
-        if r.tⁱ < rᵒ.tⁱ continue end
-        if isopt(r)
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ + max(0., (r.l/vᵒ.lᵛ - r.θⁱ))
-            r.tⁱ = tⁱ
-            r.tˢ = r.tⁱ + vᵒ.τᶠ * (r.θˢ - r.θⁱ) + vᵒ.τᵈ * r.q
+    if isequal(φᵀ::Bool, true)
+        for r ∈ vᵒ.R
+            if r.tⁱ < rᵒ.tⁱ continue end
+            if isopt(r)
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ + max(0., (r.l/vᵒ.lᵛ - r.θⁱ))
+                r.tⁱ = tⁱ
+                r.tˢ = r.tⁱ + vᵒ.τᶠ * (r.θˢ - r.θⁱ) + vᵒ.τᵈ * r.q
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ]
+                tᵈ = r.tˢ
+                cᵒ = cˢ
+                while true
+                    cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.sᵛ
+                    cᵒ.tᵈ = cᵒ.tᵃ + vᵒ.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - vᵒ.τᶜ) + cᵒ.τᶜ
+                    if isequal(cᵒ, cᵉ) break end
+                    tᵈ = cᵒ.tᵈ
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
+                r.θᵉ = r.θˢ - r.l/vᵒ.lᵛ
+                r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.sᵛ
+            else
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ
+                r.θᵉ = θⁱ
+                r.tⁱ = tⁱ
+                r.tˢ = tⁱ
+                r.tᵉ = tⁱ
+            end
+            tⁱ = r.tᵉ
+            θⁱ = r.θᵉ
+        end
+
+        # update start and end time
+        (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[firstindex(vᵒ.R)].tⁱ, vᵒ.R[lastindex(vᵒ.R)].tᵉ)
+
+        # update slack
+        τ = dᵒ.tᵉ - vᵒ.tᵉ
+        for r ∈ reverse(vᵒ.R)
+            if !isopt(r) continue end
             cˢ = s.C[r.iˢ]
             cᵉ = s.C[r.iᵉ]
-            tᵈ = r.tˢ
             cᵒ = cˢ
             while true
-                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.sᵛ
-                cᵒ.tᵈ = cᵒ.tᵃ + vᵒ.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - vᵒ.τᶜ) + cᵒ.τᶜ
+                τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - vᵒ.τᶜ)
                 if isequal(cᵒ, cᵉ) break end
-                tᵈ = cᵒ.tᵈ
                 cᵒ = s.C[cᵒ.iʰ]
             end
-            r.θᵉ = r.θˢ - r.l/vᵒ.lᵛ
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.sᵛ
-        else
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ
-            r.θᵉ = θⁱ
-            r.tⁱ = tⁱ
-            r.tˢ = tⁱ
-            r.tᵉ = tⁱ
+            r.τ = τ
         end
-        tⁱ = r.tᵉ
-        θⁱ = r.θᵉ
+        vᵒ.τ = min(τ, vᵒ.τ)
+        dᵒ.τ = min(τ, dᵒ.τ)
     end
-
-    # update start and end time
-    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[firstindex(vᵒ.R)].tⁱ, vᵒ.R[lastindex(vᵒ.R)].tᵉ)
-
-    # update slack
-    τ = dᵒ.tᵉ - vᵒ.tᵉ
-    for r ∈ reverse(vᵒ.R)
-        if !isopt(r) continue end
-        cˢ = s.C[r.iˢ]
-        cᵉ = s.C[r.iᵉ]
-        cᵒ = cˢ
-        while true
-            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - vᵒ.τᶜ)
-            if isequal(cᵒ, cᵉ) break end
-            cᵒ = s.C[cᵒ.iʰ]
-        end
-        r.τ = τ
-    end
-    vᵒ.τ = min(τ, vᵒ.τ)
-    dᵒ.τ = min(τ, dᵒ.τ)
 
     return s
 end
@@ -114,6 +124,9 @@ Returns solution `s` after removing node `nᵒ` from its position between
 tail node `nᵗ` and head node `nʰ` in route `rᵒ` in solution `s`.
 """
 function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
+    # Note: if nᵒ is a depot node to be removed from its position between
+    # tail node nᵗ and head node nʰ in route rᵒ in solution s, then the 
+    # route must belong to the depot node nᵒ in the first place
     if isdepot(nᵒ) && !isequal(nᵒ.iⁿ, rᵒ.iᵈ) return s end
 
     dᵒ =  s.D[rᵒ.iᵈ]
@@ -124,9 +137,11 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
     aᵗ = s.A[(nᵗ.iⁿ, nᵒ.iⁿ)]
     aʰ = s.A[(nᵒ.iⁿ, nʰ.iⁿ)]
 
-
     # update associated customer nodes, route, vehicle, and depot node
     if iscustomer(nᵒ)
+        nᵒ.iʳ = 0
+        nᵒ.iᵛ = 0
+        nᵒ.iᵈ = 0
         isdepot(nᵗ) ? rᵒ.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
         isdepot(nʰ) ? rᵒ.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
         nᵒ.iʰ = 0
@@ -147,6 +162,9 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         dᵒ.q -= nᵒ.q
         dᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
     end
+    # Note: In the context of the above note, on removal of a depot node
+    # the associated, routes', vehicles', and customers' hierarchical indices 
+    # are not changed
     if isdepot(nᵒ)
         nᵗ.iʰ = nʰ.iⁿ
         nʰ.iᵗ = nᵗ.iⁿ
@@ -160,61 +178,61 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         dᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
     end
 
-    if isequal(φᵀ::Bool, false) return s end
-    
     # update arrival and departure time
-    if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = 0., 0. end
-    for r ∈ vᵒ.R
-        if r.tⁱ < rᵒ.tⁱ continue end
-        if isopt(r)
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ + max(0., (r.l/vᵒ.lᵛ - r.θⁱ))
-            r.tⁱ = tⁱ
-            r.tˢ = r.tⁱ + vᵒ.τᶠ * (r.θˢ - r.θⁱ) + vᵒ.τᵈ * r.q
+    if isequal(φᵀ::Bool, true)
+        if iscustomer(nᵒ) nᵒ.tᵃ, nᵒ.tᵈ = 0., 0. end
+        for r ∈ vᵒ.R
+            if r.tⁱ < rᵒ.tⁱ continue end
+            if isopt(r)
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ + max(0., (r.l/vᵒ.lᵛ - r.θⁱ))
+                r.tⁱ = tⁱ
+                r.tˢ = r.tⁱ + vᵒ.τᶠ * (r.θˢ - r.θⁱ) + vᵒ.τᵈ * r.q
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ]
+                tᵈ = r.tˢ
+                cᵒ = cˢ
+                while true
+                    cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.sᵛ
+                    cᵒ.tᵈ = cᵒ.tᵃ + vᵒ.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - vᵒ.τᶜ) + cᵒ.τᶜ
+                    if isequal(cᵒ, cᵉ) break end
+                    tᵈ = cᵒ.tᵈ
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
+                r.θᵉ = r.θˢ - r.l/vᵒ.lᵛ
+                r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.sᵛ
+            else
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ
+                r.θᵉ = θⁱ
+                r.tⁱ = tⁱ
+                r.tˢ = tⁱ
+                r.tᵉ = tⁱ
+            end
+            tⁱ = r.tᵉ
+            θⁱ = r.θᵉ
+        end
+
+        # update start and end time
+        (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[firstindex(vᵒ.R)].tⁱ, vᵒ.R[lastindex(vᵒ.R)].tᵉ)
+
+        # update slack
+        τ = dᵒ.tᵉ - vᵒ.tᵉ
+        for r ∈ reverse(vᵒ.R)
+            if !isopt(r) continue end
             cˢ = s.C[r.iˢ]
             cᵉ = s.C[r.iᵉ]
-            tᵈ = r.tˢ
             cᵒ = cˢ
             while true
-                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/vᵒ.sᵛ
-                cᵒ.tᵈ = cᵒ.tᵃ + vᵒ.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - vᵒ.τᶜ) + cᵒ.τᶜ
+                τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - vᵒ.τᶜ)
                 if isequal(cᵒ, cᵉ) break end
-                tᵈ = cᵒ.tᵈ
                 cᵒ = s.C[cᵒ.iʰ]
             end
-            r.θᵉ = r.θˢ - r.l/vᵒ.lᵛ
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, dᵒ.iⁿ)].l/vᵒ.sᵛ
-        else
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ
-            r.θᵉ = θⁱ
-            r.tⁱ = tⁱ
-            r.tˢ = tⁱ
-            r.tᵉ = tⁱ
+            r.τ = τ
         end
-        tⁱ = r.tᵉ
-        θⁱ = r.θᵉ
+        vᵒ.τ = min(τ, vᵒ.τ)
+        dᵒ.τ = min(τ, dᵒ.τ)
     end
-
-    # update start and end time
-    (vᵒ.tˢ, vᵒ.tᵉ) = isempty(vᵒ.R) ? (dᵒ.tˢ, dᵒ.tˢ) : (vᵒ.R[firstindex(vᵒ.R)].tⁱ, vᵒ.R[lastindex(vᵒ.R)].tᵉ)
-
-    # update slack
-    τ = dᵒ.tᵉ - vᵒ.tᵉ
-    for r ∈ reverse(vᵒ.R)
-        if !isopt(r) continue end
-        cˢ = s.C[r.iˢ]
-        cᵉ = s.C[r.iᵉ]
-        cᵒ = cˢ
-        while true
-            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - vᵒ.τᶜ)
-            if isequal(cᵒ, cᵉ) break end
-            cᵒ = s.C[cᵒ.iʰ]
-        end
-        r.τ = τ
-    end
-    vᵒ.τ = min(τ, vᵒ.τ)
-    dᵒ.τ = min(τ, dᵒ.τ)
 
     return s
 end
@@ -296,7 +314,7 @@ end
 """
     deletevehicle(vᵒ::Vehicle, s::Solution)
 
-Returns `true` if vehicle `vᵒ` can be deleted from solution `s`(liberal).
+Returns `true` if vehicle `vᵒ` can be deleted from solution `s` (liberal).
 """
 function deletevehicle(vᵒ::Vehicle, s::Solution)
     dᵒ = s.D[vᵒ.iᵈ]
@@ -306,10 +324,10 @@ function deletevehicle(vᵒ::Vehicle, s::Solution)
     nʲ = 0
     for v ∈ dᵒ.V if isidentical(vᵒ, v) nʲ += 1 end end
     if isone(nʲ) return false end
-
+    
     # condition when vehicle could be deleted
 
-    
+
     return true
 end
 
@@ -363,7 +381,7 @@ end
     postinsert!(s::Solution)
 
 Post-insertion procedures. 
-Retruns solution `s` after deleting routes and vehicles, and subsequently correcting routes' and customers' indices.
+Retruns solution `s` after deleting routes and vehicles, and subsequently correcting vehicle and route indices.
 """
 function postinsert!(s::Solution)
     for d ∈ s.D
@@ -394,11 +412,6 @@ function postinsert!(s::Solution)
             end
         end
     end
-    for c ∈ s.C 
-        c.iʳ = c.r.iʳ
-        c.iᵛ = c.r.iᵛ
-        c.iᵈ = c.r.iᵈ
-    end
     return s
 end
 
@@ -408,14 +421,9 @@ end
     preremove!(s::Solution)
 
 Pre-removal procedures. 
-Retruns solution `s` after correcting customers' indices.
+Returns solution `s`.
 """
 function preremove!(s::Solution)
-    for c ∈ s.C 
-        c.iʳ = c.r.iʳ
-        c.iᵛ = c.r.iᵛ
-        c.iᵈ = c.r.iᵈ
-    end
     return s
 end
 """
@@ -443,13 +451,8 @@ end
     postlocalsearch!(s::Solution)
 
 Post-localsearch procedures. 
-Retruns solution `s` after correcting customers' indices.
+Retruns solution `s`.
 """
 function postlocalsearch!(s::Solution)
-    for c ∈ s.C 
-        c.iʳ = c.r.iʳ
-        c.iᵛ = c.r.iᵛ
-        c.iᵈ = c.r.iᵈ
-    end
     return s
 end
