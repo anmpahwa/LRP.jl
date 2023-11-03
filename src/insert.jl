@@ -27,10 +27,10 @@ solution.
 """
 function best!(rng::AbstractRNG, s::Solution)
     if all(isclose, s.C) return s end
+    preinsert!(s)
     D  = s.D
     C  = s.C
     # Step 1: Initialize
-    preinsert!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
@@ -125,11 +125,11 @@ Available modes include `:pcs` (precise estimation of insertion cost) and
 """
 function greedy!(rng::AbstractRNG, s::Solution, mode::Symbol)
     if all(isclose, s.C) return s end
+    preinsert!(s)
     D  = s.D
     C  = s.C
     φ  = isequal(mode,  :ptb)
     # Step 1: Initialize
-    preinsert!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
@@ -238,10 +238,10 @@ nodes have been added to the solution.
 """
 function regretk!(rng::AbstractRNG, s::Solution, k̅::Int64)
     if all(isclose, s.C) return s end
+    preinsert!(s)
     D  = s.D
     C  = s.C
     # Step 1: Initialize
-    preinsert!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)

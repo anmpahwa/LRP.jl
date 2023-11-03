@@ -30,9 +30,9 @@ remove!(q::Int64, s::Solution, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s
 Returns solution `s` after removing `q` customer nodes randomly.
 """
 function randomcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     W = isclose.(C)     # W[iⁿ]: selection weight of customer node C[iⁿ]
     # Step 1: Randomly select customer nodes to remove until q customer nodes have been removed
     n = 0
@@ -61,9 +61,9 @@ Returns solution `s` after removing `q` customer nodes most
 related to a randomly selected pivot customer node.
 """
 function relatedcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     X = fill(-Inf, eachindex(C))   # X[iⁿ]: relatedness of customer node C[iⁿ] with pivot customer node C[iᵒ]
     # Step 1: Randomly select a pivot customer node
     iᵒ= rand(rng, eachindex(C))
@@ -96,9 +96,9 @@ Returns solution `s` after removing `q` customer nodes with
 highest removal cost (savings).
 """
 function worstcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     V = [v for d ∈ D for v ∈ d.V]
     X = fill(-Inf, eachindex(C))    # X[i]: removal cost of customer node C[i]
     ϕ = ones(Int64, eachindex(V))   # ϕ[j]: binary weight for vehicle V[j]
@@ -155,9 +155,9 @@ removing customer nodes from it until at least `q` customer nodes
 are removed.
 """
 function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     W = isopt.(R)                   # W[iʳ] : selection weight for route R[iʳ]
     # Step 1: Iteratively select a random route and remove customer nodes from it until at least q customer nodes are removed
@@ -192,9 +192,9 @@ Returns solution `s` after removing `q` customer nodes from
 the routes most related to a randomly selected pivot route.
 """
 function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     X = fill(-Inf, eachindex(R))    # X[iʳ]: relatedness of route R[iʳ] with pivot route R[iᵒ]
     W = isopt.(R)                   # W[iʳ] : selection weight for route R[iʳ]
@@ -234,9 +234,9 @@ end
 Returns solution `s` after removing at least `q` customer nodes from low-utilization routes.
 """
 function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     X = fill(Inf, eachindex(R))     # X[iʳ] : utilization of route R[iʳ]
     W = isopt.(R)                   # W[iʳ] : selection weight for route R[iʳ]
@@ -282,9 +282,9 @@ removing customer nodes from its routes until at least `q` customer nodes
 are removed.
 """
 function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     V = [v for d ∈ D for v ∈ d.V]
     W = ones(Int64, eachindex(V))   # W[iᵛ] : selection weight for vehicle V[iᵛ]
     # Step 1: Iteratively select a random vehicle and remove customer nodes from it until at least q customer nodes are removed
@@ -323,9 +323,9 @@ the routes of the vehicles most related to a randomly selected
 pivot vehicle.
 """
 function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     V = [v for d ∈ D for v ∈ d.V]
     X = fill(-Inf, eachindex(V))    # X[iᵛ]: relatedness of vehicle V[iᵛ] with pivot vehicle V[iᵒ]
     W = ones(Int64, eachindex(V))   # W[iᵛ] : selection weight for vehicle V[iᵛ]
@@ -369,9 +369,9 @@ Returns solution `s` after removing at least `q` customer
 nodes from routes of low-utilization vehicles.
 """
 function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     V = [v for d ∈ D for v ∈ d.V]
     X = fill(Inf, eachindex(V))     # X[iʳ] : utilization of vehicle V[iᵛ]
     W = ones(Int64, eachindex(V))   # W[iᵛ] : selection weight for vehicle V[iᵛ]
@@ -415,9 +415,9 @@ removing customer nodes from its routes until at least `q` customer nodes
 are removed.
 """
 function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     W = ones(Int64, eachindex(D))   # W[iᵈ] : selection weight for depot node D[iᵈ]
     # Step 1: Iteratively select a random depot and remove customer nodes from it until at least q customer nodes are removed
     n = 0
@@ -455,9 +455,9 @@ Returns solution `s` after removing `q` customer nodes most
 related to a randomly selected pivot depot node.
 """
 function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     X = fill(-Inf, eachindex(C))   # X[iᵛ]: relatedness of customer node C[iⁿ] with pivot depot node D[iᵒ]
     # Step 1: Select a random closed depot node
     iᵒ= sample(rng, eachindex(D), Weights(isclose.(D)))
@@ -489,9 +489,9 @@ Returns solution `s` after removing at least `q` customer
 nodes from routes of low-utilization depot nodes.
 """
 function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
+    preremove!(s)
     D = s.D
     C = s.C
-    preremove!(s)
     X = fill(Inf, eachindex(D))     # X[iᵈ] : utilization of vehicle D[iᵈ]
     W = ones(Int64, eachindex(D))   # W[iᵈ] : selection weight for vehicle D[iᵈ]
     # Step 1: Evaluate utilization for each depot
