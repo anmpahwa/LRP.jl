@@ -427,3 +427,29 @@ Returns solution `s`.
 function postremove!(s::Solution)
     return s
 end
+
+
+
+"""
+    prelocalsearch!(s::Solution)
+
+Pre-localsearch procedures. 
+Returns solution `s`.
+"""
+function prelocalsearch!(s::Solution)
+    return s
+end
+"""
+    postlocalsearch!(s::Solution)
+
+Post-localsearch procedures. 
+Retruns solution `s` after correcting customers' indices.
+"""
+function postlocalsearch!(s::Solution)
+    for c ∈ s.C 
+        c.iʳ = c.r.iʳ
+        c.iᵛ = c.r.iᵛ
+        c.iᵈ = c.r.iᵈ
+    end
+    return s
+end

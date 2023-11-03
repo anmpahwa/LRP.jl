@@ -28,9 +28,10 @@ reconfiguration results in a reduction in objective function value, repeating
 for `k̅` iterations until improvement.
 """
 function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
-    zᵒ= f(s)
+    prelocalsearch!(s)
     D = s.D
     C = s.C
+    zᵒ= f(s)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     W = isopt.(R)                   # W[i]: selection weight for route R[iʳ]
     # Step 1: Iterate for k̅ iterations until improvement
@@ -92,6 +93,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             if isequal(n, n²) break end
         end
     end
+    postlocalsearch!(s)
     # Step 2: Return solution
     return s
 end
@@ -107,6 +109,7 @@ if the reconfiguration results in a reduction in objective function value,
 repeating for `k̅` iterations until improvement.
 """
 function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    prelocalsearch!(s)
     zᵒ= f(s)
     D = s.D
     C = s.C
@@ -205,6 +208,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
             hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
         end
     end
+    postlocalsearch!(s)
     # Step 2: Return solution
     return s
 end
@@ -219,6 +223,7 @@ to its best position if the move results in a reduction in objective
 function value, repeating for `k̅` iterations until improvement.
 """
 function movecustomer!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    prelocalsearch!(s)
     zᵒ= f(s)
     D = s.D
     C = s.C
@@ -278,6 +283,7 @@ function movecustomer!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 2.6: If the move results in reduction in objective function value, then go to step 3, else return to step 2.1
         Δ ≥ 0 ? continue : break
     end
+    postlocalsearch!(s)
     # Step 3: Return solution
     return s
 end
@@ -292,6 +298,7 @@ selected depot node at best position if the split results in reduction in
 objective function value, repeating for `k̅` iterations until improvement.
 """
 function movedepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    prelocalsearch!(s)
     zᵒ = f(s)
     z′ = zᵒ
     D = s.D
@@ -343,6 +350,7 @@ function movedepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.4: If the overall change results in reduction in objective function value, then go to step 2, else return to step 1.1
         Δ ≥ 0 ? continue : break
     end
+    postlocalsearch!(s)
     # Step 2: Return solution
     return s
 end
@@ -357,6 +365,7 @@ customers if the swap results in a reduction in objective
 function value, repeating for `k̅` iterations until improvement.
 """
 function swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    prelocalsearch!(s)
     zᵒ= f(s)
     D = s.D
     C = s.C
@@ -408,6 +417,7 @@ function swapcustomers!(rng::AbstractRNG, k̅::Int64, s::Solution)
             insertnode!(n⁵, n⁴, n⁶, r⁵, s)
         end
     end
+    postlocalsearch!(s)
     # Step 2: Return solution
     return s
 end
@@ -422,6 +432,7 @@ if the swap results in a reduction in objective function value,
 repeating for `k̅` iterations until improvement.
 """
 function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    prelocalsearch!(s)
     zᵒ= f(s)
     D = s.D
     C = s.C
@@ -538,6 +549,7 @@ function swapdepots!(rng::AbstractRNG, k̅::Int64, s::Solution)
         d¹.q = q²
         d².q = q¹
     end
+    postlocalsearch!(s)
     # Step 2: Return solution
     return s
 end
