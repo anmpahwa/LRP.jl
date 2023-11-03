@@ -21,11 +21,11 @@ Returns initial `Solution` created using k-means clustering algorithm.
 """
 function cluster(rng::AbstractRNG, G)
     s = Solution(G...)
+    preinitialize!(s)
     D = s.D
     C = s.C
     V = [v for d ∈ D for v ∈ d.V]
     # Step 1: Initialize
-    preinitialize!(s)
     W = zeros(4, eachindex(C))
     for (iⁿ,c) ∈ pairs(C) W[:,iⁿ] = [c.x, c.y, c.tᵉ, c.tˡ] end
     # Step 2: Cluster customer nodes
@@ -138,10 +138,10 @@ Returns initial `Solution` created with randomly selcted node-route combination 
 """
 function random(rng::AbstractRNG, G)
     s = Solution(G...)
+    preinitialize!(s)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    preinitialize!(s)
     d = sample(rng, D)
     v = sample(rng, d.V)
     r = sample(rng, v.R)
