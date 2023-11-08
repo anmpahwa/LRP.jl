@@ -290,73 +290,6 @@ end
 
 
 """
-    swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
-
-Returns solution `s` after swapping two randomly selected 
-customers if the swap results in a reduction in objective 
-function value, repeating for `k̅` iterations until improvement.
-"""
-function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
-    prelocalsearch!(s)
-    zᵒ= f(s)
-    D = s.D
-    C = s.C
-    # Step 1: Iterate for k̅ iterations until improvement
-    for _ ∈ 1:k̅
-        # Step 1.1: Swap two randomly selected customer nodes
-        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶
-        n², n⁵ = sample(rng, C), sample(rng, C)
-        if isequal(n², n⁵) continue end
-        r², r⁵ = n².r, n⁵.r
-        n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
-        n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
-        n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
-        n⁶ = isequal(r⁵.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
-        # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
-        if isequal(n³, n⁵)
-            removenode!(n², n¹, n³, r², s)
-            insertnode!(n², n⁵, n⁶, r⁵, s)
-        # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
-        elseif isequal(n², n⁶)
-            removenode!(n², n¹, n³, r², s)
-            insertnode!(n², n⁴, n⁵, r⁵, s)
-        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
-        else 
-            removenode!(n², n¹, n³, r², s)
-            removenode!(n⁵, n⁴, n⁶, r⁵, s)
-            insertnode!(n⁵, n¹, n³, r², s)
-            insertnode!(n², n⁴, n⁶, r⁵, s)
-        end
-        # Step 1.2: Compute change in objective function value
-        z′ = f(s)
-        Δ  = z′ - zᵒ 
-        # Step 1.3: If the swap results in reduction in objective function value then go to step 2, else go to step 1.4
-        if Δ < 0 break end
-        # Step 1.4: Reswap the two customer nodes and go to step 1.1
-        # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
-        if isequal(n³, n⁵)
-            removenode!(n², n⁵, n⁶, r⁵, s)
-            insertnode!(n², n¹, n³, r², s)
-        # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
-        elseif isequal(n², n⁶)
-            removenode!(n², n⁴, n⁵, r⁵, s)
-            insertnode!(n², n¹, n³, r², s)
-        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
-        else 
-            removenode!(n⁵, n¹, n³, r², s)
-            removenode!(n², n⁴, n⁶, r⁵, s)
-            insertnode!(n², n¹, n³, r², s)
-            insertnode!(n⁵, n⁴, n⁶, r⁵, s)
-        end
-    end
-    postlocalsearch!(s)
-    # Step 2: Return solution
-    return s
-end
-
-
-
-"""
     split!(rng::AbstractRNG, k̅::Int64, s::Solution)
 
 Returns solution `s` after iteratively spliting routes by moving a randomly 
@@ -415,6 +348,73 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
         Δ = z′ - zᵒ
         # Step 1.4: If the overall change results in reduction in objective function value, then go to step 2, else return to step 1.1
         Δ ≥ 0 ? continue : break
+    end
+    postlocalsearch!(s)
+    # Step 2: Return solution
+    return s
+end
+
+
+
+"""
+    swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
+
+Returns solution `s` after swapping two randomly selected 
+customers if the swap results in a reduction in objective 
+function value, repeating for `k̅` iterations until improvement.
+"""
+function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    prelocalsearch!(s)
+    zᵒ= f(s)
+    D = s.D
+    C = s.C
+    # Step 1: Iterate for k̅ iterations until improvement
+    for _ ∈ 1:k̅
+        # Step 1.1: Swap two randomly selected customer nodes
+        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶
+        n², n⁵ = sample(rng, C), sample(rng, C)
+        if isequal(n², n⁵) continue end
+        r², r⁵ = n².r, n⁵.r
+        n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
+        n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
+        n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
+        n⁶ = isequal(r⁵.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
+        # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
+        if isequal(n³, n⁵)
+            removenode!(n², n¹, n³, r², s)
+            insertnode!(n², n⁵, n⁶, r⁵, s)
+        # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
+        elseif isequal(n², n⁶)
+            removenode!(n², n¹, n³, r², s)
+            insertnode!(n², n⁴, n⁵, r⁵, s)
+        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
+        else 
+            removenode!(n², n¹, n³, r², s)
+            removenode!(n⁵, n⁴, n⁶, r⁵, s)
+            insertnode!(n⁵, n¹, n³, r², s)
+            insertnode!(n², n⁴, n⁶, r⁵, s)
+        end
+        # Step 1.2: Compute change in objective function value
+        z′ = f(s)
+        Δ  = z′ - zᵒ 
+        # Step 1.3: If the swap results in reduction in objective function value then go to step 2, else go to step 1.4
+        if Δ < 0 break end
+        # Step 1.4: Reswap the two customer nodes and go to step 1.1
+        # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
+        if isequal(n³, n⁵)
+            removenode!(n², n⁵, n⁶, r⁵, s)
+            insertnode!(n², n¹, n³, r², s)
+        # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
+        elseif isequal(n², n⁶)
+            removenode!(n², n⁴, n⁵, r⁵, s)
+            insertnode!(n², n¹, n³, r², s)
+        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
+        else 
+            removenode!(n⁵, n¹, n³, r², s)
+            removenode!(n², n⁴, n⁶, r⁵, s)
+            insertnode!(n², n¹, n³, r², s)
+            insertnode!(n⁵, n⁴, n⁶, r⁵, s)
+        end
     end
     postlocalsearch!(s)
     # Step 2: Return solution

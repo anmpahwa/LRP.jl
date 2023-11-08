@@ -36,8 +36,8 @@ let
                         :intraopt!          ,
                         :interopt!          ,
                         :move!              ,
-                        :swap!              ,
-                        :split!
+                        :split!             ,
+                        :swap!
                     ]                       ,
             σ₁  =   15                      ,
             σ₂  =   10                      ,
@@ -102,8 +102,8 @@ let
                         :intraopt!          ,
                         :interopt!          ,
                         :move!              ,
-                        :swap!              ,
-                        :split!
+                        :split!             ,
+                        :swap!
                     ]                       ,
             σ₁  =   15                      ,
             σ₂  =   10                      ,

@@ -12,7 +12,7 @@ let
     rng = MersenneTwister(1234);
     # Define inital solution method and build the initial solution
     G  = build(instance)
-    sₒ = initialsolution(rng, G, :cluster);
+    sₒ = initialsolution(rng, G, :random);
     # Define ALNS parameters
     x = length(sₒ.D)+length(sₒ.C);
     n = max(500, ceil(x, digits=-(length(digits(x))-1)));
@@ -46,8 +46,8 @@ let
                     :intraopt!          ,
                     :interopt!          ,
                     :move!              ,
-                    :swap!              ,
-                    :split!
+                    :split!             ,
+                    :swap!              
                 ]                       ,
         σ₁  =   15                      ,
         σ₂  =   10                      ,
