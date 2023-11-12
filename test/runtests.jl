@@ -7,10 +7,10 @@ let
     # Vehicle Routing Problem with time-windows
     @testset "VRPTW" begin
         χ   = ALNSparameters(
+            j   =   250                     ,
+            k   =   125                     ,
             n   =   4                       ,
-            k   =   250                     ,
             m   =   200                     ,
-            j   =   125                     ,
             Ψᵣ  =   [
                         :randomcustomer!    ,
                         :randomroute!       ,
@@ -37,20 +37,22 @@ let
                         :interopt!          ,
                         :move!              ,
                         :split!             ,
-                        :swap!
+                        :swap!              
                     ]                       ,
             σ₁  =   15                      ,
             σ₂  =   10                      ,
             σ₃  =   3                       ,
-            ω   =   0.05                    ,
-            τ   =   0.5                     ,
+            ω̅   =   0.1                     ,
+            τ̅   =   0.5                     ,
+            ω̲   =   0.01                    ,
+            τ̲   =   0.01                    ,
             𝜃   =   0.9975                  ,
-            C̲   =   4                       ,
-            C̅   =   60                      ,
             μ̲   =   0.1                     ,
+            C̲   =   4                       ,
             μ̅   =   0.4                     ,
+            C̅   =   60                      ,
             ρ   =   0.1
-        )
+        );
         instances = ["r101", "c101"]
         methods = [:cluster, :random]
         for k ∈ 1:2
@@ -73,10 +75,10 @@ let
     # Location Routing Problem
     @testset "LRP" begin
         χ   = ALNSparameters(
+            j   =   250                     ,
+            k   =   125                     ,
             n   =   4                       ,
-            k   =   250                     ,
             m   =   200                     ,
-            j   =   125                     ,
             Ψᵣ  =   [
                         :randomcustomer!    ,
                         :randomroute!       ,
@@ -103,20 +105,22 @@ let
                         :interopt!          ,
                         :move!              ,
                         :split!             ,
-                        :swap!
+                        :swap!              
                     ]                       ,
             σ₁  =   15                      ,
             σ₂  =   10                      ,
             σ₃  =   3                       ,
-            ω   =   0.05                    ,
-            τ   =   0.5                     ,
+            ω̅   =   0.1                     ,
+            τ̅   =   0.5                     ,
+            ω̲   =   0.01                    ,
+            τ̲   =   0.01                    ,
             𝜃   =   0.9975                  ,
-            C̲   =   4                       ,
-            C̅   =   60                      ,
             μ̲   =   0.1                     ,
+            C̲   =   4                       ,
             μ̅   =   0.4                     ,
+            C̅   =   60                      ,
             ρ   =   0.1
-        )
+        );
         instances = ["prins20-5-1", "prins50-5-1b"]
         methods = [:cluster, :random]
         for k ∈ 1:2

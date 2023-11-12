@@ -12,11 +12,15 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
     # Step 0: Pre-initialize
-    n, k, m, j = χ.n, χ.k, χ.m, χ.j
+    j, k = χ.j, χ.k
+    n, m = χ.n, χ.m
     Ψᵣ, Ψᵢ, Ψₗ = χ.Ψᵣ, χ.Ψᵢ, χ.Ψₗ
     σ₁, σ₂, σ₃ = χ.σ₁, χ.σ₂, χ.σ₃
-    C̲, C̅, μ̲, μ̅ = χ.C̲, χ.C̅, χ.μ̲, χ.μ̅
-    ω, τ, 𝜃, ρ = χ.ω, χ.τ, χ.𝜃, χ.ρ   
+    μ̲, C̲ = χ.μ̲, χ.C̲
+    μ̅, C̅ = χ.μ̅, χ.C̅
+    ω̅, τ̅ = χ.ω̅, χ.τ̅
+    ω̲, τ̲ = χ.ω̲, χ.τ̲
+    𝜃, ρ = χ.𝜃, χ.ρ   
     R = eachindex(Ψᵣ)
     I = eachindex(Ψᵢ)
     L = eachindex(Ψₗ)
@@ -27,14 +31,14 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
     z = f(sₒ)
     s⃰ = s
     z⃰ = z
-    T = ω * f(s; penalty=false)/log(1/τ)
+    T = ω̅ * z⃰/log(1/τ̅)
     cᵣ, pᵣ, πᵣ, wᵣ = zeros(Int64, R), zeros(R), zeros(R), ones(R)
     cᵢ, pᵢ, πᵢ, wᵢ = zeros(Int64, I), zeros(I), zeros(I), ones(I)
     # Step 2: Loop over segments.
     push!(S, s⃰)
     push!(H, hash(s⃰))
-    p = Progress(n * k, desc="Computing...", color=:blue, showspeed=true)
-    for u ∈ 1:k
+    p = Progress(n * j, desc="Computing...", color=:blue, showspeed=true)
+    for u ∈ 1:j
         # Step 2.1: Reset count and score for every removal and insertion operator
         for r ∈ R cᵣ[r], πᵣ[r] = 0, 0. end
         for i ∈ I cᵢ[i], πᵢ[i] = 0, 0. end
@@ -42,7 +46,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
         for r ∈ R pᵣ[r] = wᵣ[r]/sum(values(wᵣ)) end
         for i ∈ I pᵢ[i] = wᵢ[i]/sum(values(wᵢ)) end
         # Step 2.3: Loop over iterations within the segment
-        for _ ∈ 1:n
+        for v ∈ 1:n
             # Step 2.3.1: Randomly select a removal and an insertion operator based on operator selection probabilities, and consequently update count for the selected operators.
             r = sample(rng, 1:length(Ψᵣ), Weights(pᵣ))
             i = sample(rng, 1:length(Ψᵢ), Weights(pᵢ))
@@ -66,7 +70,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
                 πᵢ[i] += σ₂
                 push!(H, h)
             # Step 2.3.4: Else if this new solution is only better than the current solution, then set the current solution to the new solution and accordingly update scores of the selected removal and insertion operators by σ₂.
-            elseif f(s′) < f(s)
+            elseif z′ < z
                 s = s′
                 z = z′
                 h = hash(s)
@@ -90,7 +94,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
                     push!(H, h)
                 end
             end
-            T *= 𝜃
+            T = max(T * 𝜃, ω̲ * z⃰/log(τ̲))
             push!(S, s⃰)
             next!(p)
         end
@@ -98,7 +102,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
         for r ∈ R if !iszero(cᵣ[r]) wᵣ[r] = ρ * πᵣ[r] / cᵣ[r] + (1 - ρ) * wᵣ[r] end end
         for i ∈ I if !iszero(cᵢ[i]) wᵢ[i] = ρ * πᵢ[i] / cᵢ[i] + (1 - ρ) * wᵢ[i] end end
         # Step 2.5: Perform local search.
-        if iszero(j % u)
+        if iszero(k % u)
             for l ∈ L localsearch!(rng, m, s, Ψₗ[l]) end
             h = hash(s)
             z = f(s)
