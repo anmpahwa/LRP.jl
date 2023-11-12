@@ -126,20 +126,19 @@ end
 
 
 """
-    pltcnv(S::Vector{Solution}; penalty=true, backend=gr)
+    pltcnv(S::Vector{Solution}; backend=gr)
 
 Plots percentage point drop in objective function values for 
-solutions in `S` accounting for penalty by default. Uses given 
-`backend` to plot (defaults to `gr`).
+solutions in `S`. Uses given `backend` to plot (defaults to `gr`).
 """
-function pltcnv(S::Vector{Solution}; penalty=true, backend=gr)
+function pltcnv(S::Vector{Solution}; backend=gr)
     backend()
 
     Y = zeros(length(S))
     sₒ = S[1]
     for i ∈ 2:length(S) 
         s = S[i]
-        Y[i] = Y[i-1] + f(s; penalty)/f(sₒ; penalty) - 1 
+        Y[i] = Y[i-1] + f(s)/f(sₒ) - 1 
         sₒ = s
     end
 
