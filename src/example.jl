@@ -73,7 +73,7 @@ let
         println("Objective function value:")
         println("   Initial: $(f(sₒ; penalty=false))")
         println("   Optimal: $(f(s⃰ ; penalty=false))")
-    #= Fetch fixed costs
+    # Fetch fixed costs
         println("Fixed costs:")
         println("   Initial: $(f(sₒ; operational=false, penalty=false))")
         println("   Optimal: $(f(s⃰ ; operational=false, penalty=false))")
@@ -81,27 +81,24 @@ let
         println("Operational costs:")
         println("   Initial: $(f(sₒ; fixed=false, penalty=false))")
         println("   Optimal: $(f(s⃰ ; fixed=false, penalty=false))")
-    =#
     # Check if the solutions are feasible
         println("Solution feasibility:")
         println("   Initial: $(isfeasible(sₒ))")
         println("   Optimal: $(isfeasible(s⃰))")
-    #= Optimal solution characteristics
+    # Optimal solution characteristics
         println("Optimal solution characteristics:")
         println("   Number of depots: $(sum([LRP.isopt(d) for d ∈ s⃰.D]))")
         println("   Number of vehicles: $(sum([LRP.isopt(v) for d ∈ s⃰.D for v ∈ d.V]))")
         println("   Number of routes: $(sum([LRP.isopt(r) for d ∈ s⃰.D for v ∈ d.V for r ∈ v.R]))")
-    =#
     # Visualizations
         # Visualize initial solution
         display(visualize(sₒ))
         # Visualize best solution
         display(visualize(s⃰))
         # Animate ALNS solution search process from inital to best solution
-        #display(animate(S))
+        display(animate(S))
         # Show convergence plot
-        display(pltcnv(S; penalty=true))
-        display(pltcnv(S; penalty=false))
+        display(pltcnv(S))
     end
     return
 end
