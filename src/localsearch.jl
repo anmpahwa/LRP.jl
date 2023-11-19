@@ -1,8 +1,7 @@
 """
     localsearch!(rng::AbstractRNG, k̅::Int64, s::Solution, method::Symbol)
 
-Returns solution `s` after performing local seach on the solution using given `method` for `k̅` iterations 
-until improvement.
+Returns solution `s` after performing local seach on the solution using given `method` for `k̅` iterations.
 
 Available methods include,
 - Intra-Opt     : `:intraopt!`
@@ -24,7 +23,7 @@ localsearch!(k̅::Int64, s::Solution, method::Symbol) = localsearch!(Random.GLOB
 Returns solution `s` after iteratively taking 2 arcs from the same route 
 and reconfiguring them (total possible reconfigurations 2²-1 = 3) if the 
 reconfiguration results in a reduction in objective function value, repeating 
-for `k̅` iterations until improvement.
+for `k̅` iterations.
 """
 function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
@@ -33,7 +32,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     W = isopt.(R)                   # W[i]: selection weight for route R[iʳ]
-    # Step 1: Iterate for k̅ iterations until improvement
+    # Step 1: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         # Step 1.1: Iteratively take 2 arcs from the same route
         # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
@@ -74,8 +73,8 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.3: Compute change in objective function value
         z′ = f(s)
         Δ  = z′ - zᵒ 
-        # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 2, else go to step 1.5
-        if Δ < 0 return s end
+        # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
+        if Δ < 0 continue end
         # Step 1.5: Reconfigure back to the original state
         # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
         n  = n⁵
@@ -105,7 +104,7 @@ end
 Returns solution `s` after iteratively taking 2 arcs from the different 
 routes and reconfiguring them (total possible reconfigurations 2²-1 = 3) 
 if the reconfiguration results in a reduction in objective function value, 
-repeating for `k̅` iterations until improvement.
+repeating for `k̅` iterations.
 """
 function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
@@ -114,7 +113,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     W = isopt.(R)                   # W[i]: selection weight for route R[iʳ]
-    # Step 1: Iterate for k̅ iterations until improvement
+    # Step 1: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         # Step 1.1: Iteratively take 2 arcs from different routes
         # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
@@ -176,8 +175,8 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.3: Compute change in objective function value
         z′ = f(s)
         Δ  = z′ - zᵒ 
-        # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 2, else go to step 1.5
-        if Δ < 0 break end
+        # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
+        if Δ < 0 continue end
         # Step 1.5: Reconfigure back to the original state
         # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
         c² = n⁵
@@ -219,7 +218,7 @@ end
 
 Returns solution `s` after moving a randomly selected customer node 
 to its best position if the move results in a reduction in objective 
-function value, repeating for `k̅` iterations until improvement.
+function value, repeating for `k̅` iterations.
 """
 function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
@@ -233,7 +232,7 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     W = ones(Int64, I)              # W[i]: selection weight for customer node C[i]
     X = fill(Inf, J)                # x[j]: insertion cost in route R[j]
     P = fill((0, 0), J)             # p[j]: best insertion postion in route R[j]
-    # Step 2: Iterate for k̅ iterations until improvement
+    # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         # Step 2.1: Randomly select a node
         i  = sample(rng, I, OffsetWeights(W))
@@ -279,8 +278,6 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
         X .= Inf
         P .= ((0, 0), )
         W[i] = 0
-        # Step 2.6: If the move results in reduction in objective function value, then go to step 3, else return to step 2.1
-        Δ ≥ 0 ? continue : break
     end
     postlocalsearch!(s)
     # Step 3: Return solution
@@ -294,7 +291,7 @@ end
 
 Returns solution `s` after iteratively spliting routes by moving a randomly 
 selected depot node at best position if the split results in reduction in 
-objective function value, repeating for `k̅` iterations until improvement.
+objective function value, repeating for `k̅` iterations.
 """
 function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
@@ -303,7 +300,7 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     D = s.D
     C = s.C
     W = ones(Int64, eachindex(D))   # W[i]: selection weight for depot node D[i]
-    # Step 1: Iterate for k̅ iterations until improvement
+    # Step 1: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         # Step 1.1: Select a random depot node d
         i = sample(rng, eachindex(D), Weights(W))
@@ -346,8 +343,6 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.3: Revise vectors appropriately
         W[i] = 0
         Δ = z′ - zᵒ
-        # Step 1.4: If the overall change results in reduction in objective function value, then go to step 2, else return to step 1.1
-        Δ ≥ 0 ? continue : break
     end
     postlocalsearch!(s)
     # Step 2: Return solution
@@ -361,14 +356,14 @@ end
 
 Returns solution `s` after swapping two randomly selected 
 customers if the swap results in a reduction in objective 
-function value, repeating for `k̅` iterations until improvement.
+function value, repeating for `k̅` iterations.
 """
 function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
     zᵒ= f(s)
     D = s.D
     C = s.C
-    # Step 1: Iterate for k̅ iterations until improvement
+    # Step 1: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         # Step 1.1: Swap two randomly selected customer nodes
         # n¹ → n² → n³ and n⁴ → n⁵ → n⁶
@@ -397,8 +392,8 @@ function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.2: Compute change in objective function value
         z′ = f(s)
         Δ  = z′ - zᵒ 
-        # Step 1.3: If the swap results in reduction in objective function value then go to step 2, else go to step 1.4
-        if Δ < 0 break end
+        # Step 1.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
+        if Δ < 0 continue end
         # Step 1.4: Reswap the two customer nodes and go to step 1.1
         # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
         if isequal(n³, n⁵)

@@ -4,7 +4,7 @@
 Adaptive Large Neighborhood Search (ALNS)
 
 Given ALNS optimization parameters `χ` and an initial solution `sₒ`, 
-ALNS returns a vector of solutions with best found solution from every 
+ALNS returns a vector of solutions with current solution from every 
 iteration.
 
 Optionally specify a random number generator `rng` as the first argument
@@ -20,23 +20,24 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
     μ̅, C̅ = χ.μ̅, χ.C̅
     ω̅, τ̅ = χ.ω̅, χ.τ̅
     ω̲, τ̲ = χ.ω̲, χ.τ̲
-    𝜃, ρ = χ.𝜃, χ.ρ   
+    φ, θ, ρ = χ.φ, χ.θ, χ.ρ   
     R = eachindex(Ψᵣ)
     I = eachindex(Ψᵢ)
     L = eachindex(Ψₗ)
-    H = UInt64[]
-    S = Solution[]
+    H = OffsetVector{UInt64}(undef, 0:j*n)
+    S = OffsetVector{Solution}(undef, 0:j*n)
     # Step 1: Initialize
     s = deepcopy(sₒ)
-    z = f(sₒ)
     s⃰ = s
+    z = f(sₒ)
     z⃰ = z
+    h = hash(s)
+    S[0] = s
+    H[0] = h
     T = ω̅ * z⃰/log(1/τ̅)
     cᵣ, pᵣ, πᵣ, wᵣ = zeros(Int64, R), zeros(R), zeros(R), ones(R)
     cᵢ, pᵢ, πᵢ, wᵢ = zeros(Int64, I), zeros(I), zeros(I), ones(I)
     # Step 2: Loop over segments.
-    push!(S, s⃰)
-    push!(H, hash(s⃰))
     p = Progress(n * j, desc="Computing...", color=:blue, showspeed=true)
     for u ∈ 1:j
         # Step 2.1: Reset count and score for every removal and insertion operator
@@ -59,26 +60,23 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
             remove!(rng, q, s′, Ψᵣ[r])
             insert!(rng, s′, Ψᵢ[i])
             z′ = f(s′)
+            h  = hash(s′)
             # Step 2.3.3: If this new solution is better than the best solution, then set the best solution and the current solution to the new solution, and accordingly update scores of the selected removal and insertion operators by σ₁.
             if z′ < z⃰
                 s = s′
+                s⃰ = s′
                 z = z′
-                s⃰ = s
-                z⃰ = z
-                h = hash(s)
+                z⃰ = z′
                 πᵣ[r] += σ₁
                 πᵢ[i] += σ₂
-                push!(H, h)
             # Step 2.3.4: Else if this new solution is only better than the current solution, then set the current solution to the new solution and accordingly update scores of the selected removal and insertion operators by σ₂.
             elseif z′ < z
                 s = s′
                 z = z′
-                h = hash(s)
                 if h ∉ H
                     πᵣ[r] += σ₂
                     πᵢ[i] += σ₂
                 end
-                push!(H, h)
             # Step 2.3.5: Else accept the new solution with simulated annealing acceptance criterion. Further, if the new solution is also newly found then update operator scores by σ₃.
             else
                 η = rand(rng)
@@ -86,32 +84,36 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
                 if η < pr
                     s = s′
                     z = z′
-                    h = hash(s)
                     if h ∉ H
                         πᵣ[r] += σ₃
                         πᵢ[i] += σ₃
                     end
-                    push!(H, h)
                 end
             end
-            T = max(T * 𝜃, ω̲ * z⃰/log(τ̲))
-            push!(S, s⃰)
+            S[(u - 1) * n + v] = s
+            H[(u - 1) * n + v] = h
+            T = max(T * θ, ω̲ * z⃰/log(1/τ̲))
             next!(p)
         end
         # Step 2.4: Update weights for every removal and insertion operator.
         for r ∈ R if !iszero(cᵣ[r]) wᵣ[r] = ρ * πᵣ[r] / cᵣ[r] + (1 - ρ) * wᵣ[r] end end
         for i ∈ I if !iszero(cᵢ[i]) wᵢ[i] = ρ * πᵢ[i] / cᵢ[i] + (1 - ρ) * wᵢ[i] end end
-        # Step 2.5: Perform local search.
-        if iszero(k % u)
-            for l ∈ L localsearch!(rng, m, s, Ψₗ[l]) end
-            h = hash(s)
-            z = f(s)
-            if z < z⃰
-                s⃰ = s
-                z⃰ = z
-                push!(S, s⃰) 
+        # Step 2.5: Reset current solution.
+        if iszero(u % k) s, z = deepcopy(s⃰), z⃰ end
+        # Step 2.6: Perform local search.
+        if z ≤ z⃰ * (1 + φ)
+            s′ = deepcopy(s)
+            for l ∈ L localsearch!(rng, m, s′, Ψₗ[l]) end
+            z′ = f(s′)
+            if z′ < z⃰
+                s = s′
+                s⃰ = s′
+                z = z′
+                z⃰ = z′
+            elseif z′ < z
+                s = s′
+                z = z′
             end
-            push!(H, h)
         end
     end
     # Step 3: Return vector of solutions

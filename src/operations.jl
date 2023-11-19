@@ -361,6 +361,27 @@ end
 
 
 """
+    preremove!(s::Solution)
+
+Pre-removal procedures. 
+Returns solution `s`.
+"""
+function preremove!(s::Solution)
+    return s
+end
+"""
+    postremove!(s::Solution)
+
+Post-removal procedures.
+Returns solution `s`.
+"""
+function postremove!(s::Solution)
+    return s
+end
+
+
+
+"""
     preinsert!(s::Solution)
 
 Pre-insertion procedures.
@@ -412,27 +433,11 @@ function postinsert!(s::Solution)
             end
         end
     end
-    return s
-end
-
-
-
-"""
-    preremove!(s::Solution)
-
-Pre-removal procedures. 
-Returns solution `s`.
-"""
-function preremove!(s::Solution)
-    return s
-end
-"""
-    postremove!(s::Solution)
-
-Post-removal procedures.
-Returns solution `s`.
-"""
-function postremove!(s::Solution)
+    for c ∈ s.C 
+        c.iʳ = c.r.iʳ
+        c.iᵛ = c.r.iᵛ
+        c.iᵈ = c.r.iᵈ
+    end
     return s
 end
 

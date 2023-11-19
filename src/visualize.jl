@@ -105,17 +105,24 @@ end
 
 
 """
-    animate(S::Vector{Solution}; fps=10)
+    animate(S::OffsetVector{Solution}; fps=10)
 
 Iteratively plots solutions in `S` to develop a gif at given `fps`.
 """
-function animate(S::Vector{Solution}; fps=10)
-    K = 0:(length(S)-1)
-    figs = Vector(undef, length(S))
-    for (k, s) ∈ enumerate(S)
-        fig = visualize(s, backend=gr)
-        plot!(title="Iteration #$(K[k])", titlefontsize=11)
-        figs[k] = fig
+function animate(S::OffsetVector{Solution}; fps=1)
+    s⃰ = S[0]
+    z⃰ = f(s⃰)
+    figs = []
+    for k ∈ eachindex(S)
+        s = S[k]
+        z = f(s)
+        if z < 0.99z⃰ 
+            s⃰ = s
+            z⃰ = z
+            fig = visualize(s⃰, backend=gr)
+            plot!(title="Iteration #$k", titlefontsize=11)
+            push!(figs, fig)
+        end
     end
     anim = @animate for fig in figs
         plot(fig)
@@ -126,26 +133,38 @@ end
 
 
 """
-    pltcnv(S::Vector{Solution}; backend=gr)
+    pltcnv(S::OffsetVector{Solution}; backend=gr)
 
 Plots percentage point drop in objective function values for 
 solutions in `S`. Uses given `backend` to plot (defaults to `gr`).
 """
-function pltcnv(S::Vector{Solution}; backend=gr)
+function pltcnv(S::OffsetVector{Solution}; backend=gr)
     backend()
-
-    Y = zeros(length(S))
-    sₒ = S[1]
-    for i ∈ 2:length(S) 
-        s = S[i]
-        Y[i] = Y[i-1] + f(s)/f(sₒ) - 1 
-        sₒ = s
-    end
-
-    X = 0:(length(S)-1)
-
     fig = plot(legend=:none)
-    plot!(X,Y, xlabel="iterations", ylabel="objective function value")
+
+    Y₁ = zeros(eachindex(S))
+    s⃰  = S[argmin(f.(S))]
+    for i ∈ eachindex(S)
+        s = S[i]
+        Y₁[i] = f(s)/f(s⃰) - 1
+    end
+    X = eachindex(S)
+    
+
+    s⃰ = S[0]
+    z⃰ = f(s⃰)
+    Y₂ = Int64[]
+    for i ∈ eachindex(S)
+        s = S[i]
+        z = f(s)
+        if z < 0.99z⃰ 
+            s⃰ = s
+            z⃰ = z
+            push!(Y₂, i)
+        end
+    end
+    vline!(Y₂, color=:black, linewidth=0.25)
+    plot!(X, Y₁, xlabel="iterations", ylabel="deviation from the best", color=:steelblue)
 
     return fig
 end
