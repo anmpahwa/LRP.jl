@@ -275,9 +275,9 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
         nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
         # Step 2.5: Revise vectors appropriately
+        W[i] = 0
         X .= Inf
         P .= ((0, 0), )
-        W[i] = 0
     end
     postlocalsearch!(s)
     # Step 3: Return solution
