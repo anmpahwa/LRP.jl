@@ -27,7 +27,7 @@ for `k̅` iterations.
 """
 function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
-    zᵒ= f(s)
+    z = f(s)
     D = s.D
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
@@ -72,23 +72,25 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         end
         # Step 1.3: Compute change in objective function value
         z′ = f(s)
-        Δ  = z′ - zᵒ 
+        Δ  = z′ - z 
         # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
-        if Δ < 0 continue end
+        if Δ ≤ 0 z = z′
         # Step 1.5: Reconfigure back to the original state
-        # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
-        n  = n⁵
-        tᵒ = n¹
-        hᵒ = n⁴
-        tⁿ = n²
-        hⁿ = n⁶
-        while true
-            removenode!(n, tᵒ, hᵒ, r, s)
-            insertnode!(n, tⁿ, hⁿ, r, s)
-            hⁿ = n
-            n  = hᵒ
-            hᵒ = isdepot(hᵒ) ? C[r.iˢ] : (isequal(r.iᵉ, hᵒ.iⁿ) ? D[hᵒ.iʰ] : C[hᵒ.iʰ])
-            if isequal(n, n²) break end
+        else
+            # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
+            n  = n⁵
+            tᵒ = n¹
+            hᵒ = n⁴
+            tⁿ = n²
+            hⁿ = n⁶
+            while true
+                removenode!(n, tᵒ, hᵒ, r, s)
+                insertnode!(n, tⁿ, hⁿ, r, s)
+                hⁿ = n
+                n  = hᵒ
+                hᵒ = isdepot(hᵒ) ? C[r.iˢ] : (isequal(r.iᵉ, hᵒ.iⁿ) ? D[hᵒ.iʰ] : C[hᵒ.iʰ])
+                if isequal(n, n²) break end
+            end
         end
     end
     postlocalsearch!(s)
@@ -108,7 +110,7 @@ repeating for `k̅` iterations.
 """
 function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
-    zᵒ= f(s)
+    z = f(s)
     D = s.D
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
@@ -174,36 +176,38 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         end
         # Step 1.3: Compute change in objective function value
         z′ = f(s)
-        Δ  = z′ - zᵒ 
+        Δ  = z′ - z 
         # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
-        if Δ < 0 continue end
+        if Δ ≤ 0 z = z′
         # Step 1.5: Reconfigure back to the original state
-        # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
-        c² = n⁵
-        tᵒ = n¹
-        hᵒ = isequal(r².iᵉ, c².iⁿ) ? D[c².iʰ] : C[c².iʰ]
-        tⁿ = n⁴
-        hⁿ = n²
-        while true
-            removenode!(c², tᵒ, hᵒ, r², s)
-            insertnode!(c², tⁿ, hⁿ, r⁵, s)
-            if isequal(hᵒ, d²) break end
-            tⁿ = c² 
-            c² = C[hᵒ.iⁿ]
+        else
+            # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
+            c² = n⁵
+            tᵒ = n¹
             hᵒ = isequal(r².iᵉ, c².iⁿ) ? D[c².iʰ] : C[c².iʰ]
-        end
-        c⁵ = n²
-        tᵒ = c²
-        hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
-        tⁿ = n¹
-        hⁿ = d²
-        while true
-            removenode!(c⁵, tᵒ, hᵒ, r⁵, s)
-            insertnode!(c⁵, tⁿ, hⁿ, r², s)
-            if isequal(hᵒ, d⁵) break end
-            tⁿ = c⁵
-            c⁵ = C[hᵒ.iⁿ]
+            tⁿ = n⁴
+            hⁿ = n²
+            while true
+                removenode!(c², tᵒ, hᵒ, r², s)
+                insertnode!(c², tⁿ, hⁿ, r⁵, s)
+                if isequal(hᵒ, d²) break end
+                tⁿ = c² 
+                c² = C[hᵒ.iⁿ]
+                hᵒ = isequal(r².iᵉ, c².iⁿ) ? D[c².iʰ] : C[c².iʰ]
+            end
+            c⁵ = n²
+            tᵒ = c²
             hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
+            tⁿ = n¹
+            hⁿ = d²
+            while true
+                removenode!(c⁵, tᵒ, hᵒ, r⁵, s)
+                insertnode!(c⁵, tⁿ, hⁿ, r², s)
+                if isequal(hᵒ, d⁵) break end
+                tⁿ = c⁵
+                c⁵ = C[hᵒ.iⁿ]
+                hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
+            end
         end
     end
     postlocalsearch!(s)
@@ -222,7 +226,7 @@ function value, repeating for `k̅` iterations.
 """
 function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
-    zᵒ= f(s)
+    z = f(s)
     D = s.D
     C = s.C
     # Step 1: Initialize
@@ -235,8 +239,8 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
     # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         # Step 2.1: Randomly select a node
-        i  = sample(rng, I, OffsetWeights(W))
-        c  = C[i]
+        i = sample(rng, I, OffsetWeights(W))
+        c = C[i]
         # Step 2.2: Remove this node from its position between tail node nᵗ and head node nʰ
         r  = c.r
         nᵗ = isequal(r.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
@@ -255,7 +259,7 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
                 insertnode!(c, nᵗ, nʰ, r, s)
                 # Step 2.3.1.2: Compute insertion cost
                 z′ = f(s)
-                Δ  = z′ - zᵒ
+                Δ  = z′ - z
                 # Step 2.3.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                 if Δ < X[j] X[j], P[j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
                 # Step 2.3.4: Remove node from its position between tail node nᵗ and head node nʰ
@@ -274,6 +278,7 @@ function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
         nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
         nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
+        z += Δ
         # Step 2.5: Revise vectors appropriately
         W[i] = 0
         X .= Inf
@@ -295,8 +300,6 @@ objective function value, repeating for `k̅` iterations.
 """
 function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
-    zᵒ = f(s)
-    z′ = zᵒ
     D = s.D
     C = s.C
     W = ones(Int64, eachindex(D))   # W[i]: selection weight for depot node D[i]
@@ -308,6 +311,7 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.2: Iterate through every route originating from this depot node
         for v ∈ d.V
             for r ∈ v.R
+                z = f(s)
                 # Step 1.2.1: Remove depot node d from its position in route r
                 if !isopt(r) continue end
                 cˢ = C[r.iˢ]
@@ -322,8 +326,8 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
                     # Step 1.2.2.1: Insert depot node d between tail node nᵗ and head node nʰ
                     insertnode!(d, cᵗ, cʰ, r, s)
                     # Step 1.2.2.2: Compute change in objective function value
-                    z″ = f(s) 
-                    Δ  = z″ - z′
+                    z′ = f(s) 
+                    Δ  = z′ - z
                     # Step 1.2.2.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < x x, p = Δ, (cᵗ.iⁿ, cʰ.iⁿ) end
                     # Step 1.2.2.4: Remove depot node d from its position between tail node nᵗ and head node nʰ
@@ -336,13 +340,11 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
                 iᵗ, iʰ = p
                 cᵗ = C[iᵗ]
                 cʰ = C[iʰ]
-                insertnode!(d, cᵗ, cʰ, r, s)
-                z′ = f(s) 
+                insertnode!(d, cᵗ, cʰ, r, s) 
             end
         end
         # Step 1.3: Revise vectors appropriately
         W[i] = 0
-        Δ = z′ - zᵒ
     end
     postlocalsearch!(s)
     # Step 2: Return solution
@@ -360,7 +362,7 @@ function value, repeating for `k̅` iterations.
 """
 function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
-    zᵒ= f(s)
+    z = f(s)
     D = s.D
     C = s.C
     # Step 1: Iterate for k̅ iterations
@@ -391,24 +393,26 @@ function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
         end
         # Step 1.2: Compute change in objective function value
         z′ = f(s)
-        Δ  = z′ - zᵒ 
+        Δ  = z′ - z
         # Step 1.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
-        if Δ < 0 continue end
+        if Δ ≤ 0 z = z′
         # Step 1.4: Reswap the two customer nodes and go to step 1.1
-        # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
-        if isequal(n³, n⁵)
-            removenode!(n², n⁵, n⁶, r⁵, s)
-            insertnode!(n², n¹, n³, r², s)
-        # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
-        elseif isequal(n², n⁶)
-            removenode!(n², n⁴, n⁵, r⁵, s)
-            insertnode!(n², n¹, n³, r², s)
-        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
-        else 
-            removenode!(n⁵, n¹, n³, r², s)
-            removenode!(n², n⁴, n⁶, r⁵, s)
-            insertnode!(n², n¹, n³, r², s)
-            insertnode!(n⁵, n⁴, n⁶, r⁵, s)
+        else
+            # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
+            if isequal(n³, n⁵)
+                removenode!(n², n⁵, n⁶, r⁵, s)
+                insertnode!(n², n¹, n³, r², s)
+            # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
+            elseif isequal(n², n⁶)
+                removenode!(n², n⁴, n⁵, r⁵, s)
+                insertnode!(n², n¹, n³, r², s)
+            # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
+            else 
+                removenode!(n⁵, n¹, n³, r², s)
+                removenode!(n², n⁴, n⁶, r⁵, s)
+                insertnode!(n², n¹, n³, r², s)
+                insertnode!(n⁵, n⁴, n⁶, r⁵, s)
+            end
         end
     end
     postlocalsearch!(s)
