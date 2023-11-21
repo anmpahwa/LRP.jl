@@ -6,7 +6,7 @@ using DataFrames
 
 let
     # Define instances
-    instances = ["c101", "min134-8", "daskin150-10"];
+    instances = ["prins100-5-2", "min134-8", "daskin150-10"];
     # Define random number generators
     seeds = [1010, 1104, 1905, 2104, 2412, 2703, 2704, 2710, 2806, 3009]
     # Dataframes to store solution quality and run time
@@ -28,7 +28,7 @@ let
             x = max(100, lastindex(C))
             χ = ALNSparameters(
                 j   =   50                      ,
-                k   =   15                      ,
+                k   =   20                      ,
                 n   =   x                       ,
                 m   =   25x                     ,
                 Ψᵣ  =   [
@@ -53,11 +53,11 @@ let
                             :regret3!
                         ]                       ,
                 Ψₗ  =   [
-                            :intraopt!          ,
-                            :interopt!          ,
-                            :move!              ,
                             :split!             ,
-                            :swap!              
+                            :intraopt!          ,
+                            :move!              ,
+                            :swap!              ,       
+                            :interopt!          
                         ]                       ,
                 σ₁  =   15                      ,
                 σ₂  =   10                      ,
@@ -71,12 +71,11 @@ let
                 ω̲   =   0.01                    ,
                 τ̲   =   0.01                    ,
                 φ   =   0.25                    ,
-                θ   =   0.998                   ,
+                θ   =   0.9985                  ,
                 ρ   =   0.1
             );
             # Run ALNS and fetch best solution
-            t = @CPUelapsed S = ALNS(rng, χ, sₒ);
-            s⃰ = S[argmin(f.(S))];
+            t = @CPUelapsed s⃰ = ALNS(rng, χ, sₒ);
             # Fetch objective function values
             println("Objective function value:")
             println("   Initial: $(f(sₒ; penalty=false))")
@@ -102,16 +101,12 @@ let
             display(visualize(sₒ))
             # Visualize best solution
             display(visualize(s⃰))
-            # Animate ALNS solution search process from inital to best solution
-            display(animate(S))
-            # Show convergence plot
-            display(pltcnv(S))
             # Store Results
             df₁[i,j+1] = f(s⃰)
             df₂[i,j+1] = t
         end
     end
-    display(df₁)
-    display(df₂)
+    println(df₁)
+    println(df₂)
     return
 end
