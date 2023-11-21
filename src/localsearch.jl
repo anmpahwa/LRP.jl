@@ -74,7 +74,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         z′ = f(s)
         Δ  = z′ - z 
         # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
-        if Δ ≤ 0 z = z′
+        if Δ < 0 z = z′
         # Step 1.5: Reconfigure back to the original state
         else
             # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
@@ -178,7 +178,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         z′ = f(s)
         Δ  = z′ - z 
         # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
-        if Δ ≤ 0 z = z′
+        if Δ < 0 z = z′
         # Step 1.5: Reconfigure back to the original state
         else
             # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
@@ -395,7 +395,7 @@ function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
         z′ = f(s)
         Δ  = z′ - z
         # Step 1.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
-        if Δ ≤ 0 z = z′
+        if Δ < 0 z = z′
         # Step 1.4: Reswap the two customer nodes and go to step 1.1
         else
             # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
