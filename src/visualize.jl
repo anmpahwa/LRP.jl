@@ -124,7 +124,7 @@ function animate(S::OffsetVector{Solution}; fps=1)
             push!(figs, fig)
         end
     end
-    anim = @animate for fig in figs
+    anim = @animate for fig ∈ figs
         plot(fig)
     end
     gif(anim, fps=fps, show_msg=false)
@@ -133,38 +133,32 @@ end
 
 
 """
-    pltcnv(S::OffsetVector{Solution}; backend=gr)
+    pltcnv(Z::OffsetVector{Float64}; backend=gr)
 
-Plots percentage point drop in objective function values for 
-solutions in `S`. Uses given `backend` to plot (defaults to `gr`).
+Plots convergence using objective function evaluations vector `Z`. 
+Uses given `backend` to plot (defaults to `gr`).
 """
-function pltcnv(S::OffsetVector{Solution}; backend=gr)
+function pltcnv(Z::OffsetVector{Float64}; backend=gr)
     backend()
     fig = plot(legend=:none)
 
-    Y₁ = zeros(eachindex(S))
-    s⃰  = S[argmin(f.(S))]
-    for i ∈ eachindex(S)
-        s = S[i]
-        Y₁[i] = f(s)/f(s⃰) - 1
-    end
-    X = eachindex(S)
-    
-
-    s⃰ = S[0]
-    z⃰ = f(s⃰)
-    Y₂ = Int64[]
-    for i ∈ eachindex(S)
-        s = S[i]
-        z = f(s)
+    z⃰ = Z[0]
+    Y₁ = Int64[]
+    for (k, z) ∈ pairs(Z)
         if z < 0.99z⃰ 
-            s⃰ = s
             z⃰ = z
-            push!(Y₂, i)
+            push!(Y₁, k)
         end
     end
-    vline!(Y₂, color=:black, linewidth=0.25)
-    plot!(X, Y₁, xlabel="iterations", ylabel="deviation from the best", color=:steelblue)
+    vline!(Y₁, color=:black, linewidth=0.25)
+
+    Y₂ = zeros(eachindex(Z))
+    z⃰  = minimum(Z)
+    for (k, z) ∈ pairs(Z)
+        Y₂[k] = (z/z⃰ - 1) * 100 
+    end
+    X = eachindex(Z)
+    plot!(X, Y₂, xlabel="iterations", ylabel="deviation from the best (%)", color=:steelblue)
 
     return fig
 end

@@ -28,8 +28,9 @@ solution.
 function best!(rng::AbstractRNG, s::Solution)
     if all(isclose, s.C) return s end
     preinsert!(s)
-    D  = s.D
-    C  = s.C
+    z = f(s)
+    D = s.D
+    C = s.C
     # Step 1: Initialize
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
@@ -42,7 +43,6 @@ function best!(rng::AbstractRNG, s::Solution)
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
         # Step 2.1: Randomly select an open customer nodes and iterate through all possible insertion positions in each route
-        zᵒ = f(s)
         i = sample(rng, I, Weights(W))
         c = L[i]
         for (j,r) ∈ pairs(R)
@@ -56,8 +56,8 @@ function best!(rng::AbstractRNG, s::Solution)
                 # Step 2.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
                 insertnode!(c, nᵗ, nʰ, r, s)
                 # Step 2.1.2: Compute the insertion cost
-                z⁺ = f(s)
-                Δ  = z⁺ - zᵒ
+                z′ = f(s)
+                Δ  = z′ - z
                 # Step 2.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                 if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
                 # Step 2.1.4: Remove customer node c from its position between tail node nᵗ and head node nʰ
@@ -67,8 +67,9 @@ function best!(rng::AbstractRNG, s::Solution)
                 nʰ = isequal(r.iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
             end
         end
-        # Step 2.2: Insert the customer nodeat its best position
+        # Step 2.2: Insert the customer node at its best position
         j = argmin(X[i,:])
+        Δ = X[i,j]
         r = R[j]
         d = s.D[r.iᵈ]
         v = d.V[r.iᵛ]
@@ -77,6 +78,7 @@ function best!(rng::AbstractRNG, s::Solution)
         nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
         nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
+        z += Δ
         # Step 2.3: Revise vectors appropriately
         W[i] = 0
         X[i,:] .= Inf
@@ -126,9 +128,10 @@ Available modes include `:pcs` (precise estimation of insertion cost) and
 function greedy!(rng::AbstractRNG, s::Solution, mode::Symbol)
     if all(isclose, s.C) return s end
     preinsert!(s)
-    D  = s.D
-    C  = s.C
-    φ  = isequal(mode,  :ptb)
+    z = f(s)
+    D = s.D
+    C = s.C
+    φ = isequal(mode,  :ptb)
     # Step 1: Initialize
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
@@ -140,7 +143,6 @@ function greedy!(rng::AbstractRNG, s::Solution, mode::Symbol)
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
-        zᵒ = f(s)
         for (i,c) ∈ pairs(L)
             if !isopen(c) continue end
             for (j,r) ∈ pairs(R)
@@ -154,8 +156,8 @@ function greedy!(rng::AbstractRNG, s::Solution, mode::Symbol)
                     # Step 2.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
                     insertnode!(c, nᵗ, nʰ, r, s)
                     # Step 2.1.2: Compute the insertion cost
-                    z⁺ = f(s) * (1 + φ * rand(rng, Uniform(-0.2, 0.2)))
-                    Δ  = z⁺ - zᵒ
+                    z′ = f(s) * (1 + φ * rand(rng, Uniform(-0.2, 0.2)))
+                    Δ  = z′ - z
                     # Step 2.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
                     # Step 2.1.4: Remove customer node c from its position between tail node nᵗ and head node nʰ
@@ -177,6 +179,7 @@ function greedy!(rng::AbstractRNG, s::Solution, mode::Symbol)
         nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
         nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
+        z = f(s)
         # Step 2.3: Revise vectors appropriately
         X[i,:] .= Inf
         P[i,:] .= ((0, 0), )
@@ -239,8 +242,9 @@ nodes have been added to the solution.
 function regretk!(rng::AbstractRNG, s::Solution, k̅::Int64)
     if all(isclose, s.C) return s end
     preinsert!(s)
-    D  = s.D
-    C  = s.C
+    z = f(s)
+    D = s.D
+    C = s.C
     # Step 1: Initialize
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     L = [c for c ∈ C if isopen(c)]
@@ -255,7 +259,6 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int64)
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
         # Step 2.1: Iterate through all open customer nodes and every route
-        zᵒ = f(s)
         for (i,c) ∈ pairs(L)
             if !isopen(c) continue end
             for (j,r) ∈ pairs(R)
@@ -270,8 +273,8 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int64)
                     # Step 2.1.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
                     insertnode!(c, nᵗ, nʰ, r, s)
                     # Step 2.1.1.2: Compute the insertion cost
-                    z⁺ = f(s)
-                    Δ  = z⁺ - zᵒ
+                    z′ = f(s)
+                    Δ  = z′ - z
                     # Step 2.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
                     # Step 2.1.1.4: Revise N least insertion costs
@@ -299,6 +302,7 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int64)
         I̲ = findall(isequal.(Z, maximum(Z)))
         i,j = Tuple(argmin(X[I̲,:]))
         i = I̲[i]
+        Δ = X[i,j]
         c = L[i]
         r = R[j]
         d = s.D[r.iᵈ]
@@ -308,6 +312,7 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int64)
         nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
         nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
+        z += Δ
         # Step 2.3: Revise vectors appropriately
         X[i,:] .= Inf
         P[i,:] .= ((0, 0), )

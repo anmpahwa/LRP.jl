@@ -5,7 +5,8 @@ Returns solution `s` after inserting node `nᵒ` between tail node `nᵗ`
 and head node `nʰ` in route `rᵒ` in solution `s`.
 """
 function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
-    # Note: if nᵒ is a depot node to be inserted between tail node nᵗ and
+    # Note
+    # If nᵒ is a depot node to be inserted between tail node nᵗ and
     # head node nʰ in route rᵒ in solution s, then the route must belong
     # to the depot node nᵒ in the first place
     if isdepot(nᵒ) && !isequal(nᵒ.iⁿ, rᵒ.iᵈ) return s end
@@ -43,7 +44,8 @@ function insertnode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         dᵒ.q += nᵒ.q
         dᵒ.l += aᵗ.l + aʰ.l - aᵒ.l
     end
-    # Note: In the context of the above note, on removal of a depot node
+    # Note
+    # In the context of the above note, on removal of a depot node
     # the associated, routes', vehicles', and customers' hierarchical indices 
     # are not changed, and therefore on insertion of a depot node, the
     # corresponding changes are not required.
@@ -124,7 +126,8 @@ Returns solution `s` after removing node `nᵒ` from its position between
 tail node `nᵗ` and head node `nʰ` in route `rᵒ` in solution `s`.
 """
 function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution)
-    # Note: if nᵒ is a depot node to be removed from its position between
+    # Note
+    # If nᵒ is a depot node to be removed from its position between
     # tail node nᵗ and head node nʰ in route rᵒ in solution s, then the 
     # route must belong to the depot node nᵒ in the first place
     if isdepot(nᵒ) && !isequal(nᵒ.iⁿ, rᵒ.iᵈ) return s end
@@ -162,7 +165,8 @@ function removenode!(nᵒ::Node, nᵗ::Node, nʰ::Node, rᵒ::Route, s::Solution
         dᵒ.q -= nᵒ.q
         dᵒ.l -= aᵗ.l + aʰ.l - aᵒ.l
     end
-    # Note: In the context of the above note, on removal of a depot node
+    # Note
+    # In the context of the above note, on removal of a depot node
     # the associated, routes', vehicles', and customers' hierarchical indices 
     # are not changed
     if isdepot(nᵒ)
