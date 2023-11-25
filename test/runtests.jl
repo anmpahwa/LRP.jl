@@ -56,17 +56,14 @@ let
     # Vehicle Routing Problem with time-windows
     @testset "VRPTW" begin
         instances = ["r101", "c101"]
-        methods = [:cluster, :random]
         for instance ∈ instances
             visualize(instance)
-            for method ∈ methods
-                println("\n Solving $instance using ALNS metaheuristic initialized with $method method")
-                sₒ = initialize(instance)
-                s⃰  = ALNS(χ, sₒ)
-                visualize(s⃰)
-                @test isfeasible(s⃰)
-                @test f(s⃰) ≤ f(sₒ)
-            end
+            println("\n $instance")
+            sₒ = initialize(instance)
+            s⃰  = ALNS(χ, sₒ)
+            visualize(s⃰)
+            @test isfeasible(s⃰)
+            @test f(s⃰) ≤ f(sₒ)
         end
     end
 
@@ -74,17 +71,14 @@ let
     # Location Routing Problem
     @testset "LRP" begin
         instances = ["prins20-5-1", "prins50-5-1b"]
-        methods = [:cluster, :random]
         for instance ∈ instances
             visualize(instance)
-            for method ∈ methods
-                println("\n Solving $instance using ALNS metaheuristic initialized with $method method")
-                sₒ = initialize(instance)
-                s⃰  = ALNS(χ, sₒ)
-                visualize(s⃰)
-                @test isfeasible(s⃰)
-                @test f(s⃰) ≤ f(sₒ)
-            end
+            println("\n $instance")
+            sₒ = initialize(instance)
+            s⃰  = ALNS(χ, sₒ)
+            visualize(s⃰)
+            @test isfeasible(s⃰)
+            @test f(s⃰) ≤ f(sₒ)
         end
     end
     
