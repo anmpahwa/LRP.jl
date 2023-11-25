@@ -31,9 +31,7 @@ This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an
 - θ     :   Cooling rate
 - ρ     :   Reaction factor
 
-and an initial solution developed using one of the following methods,
-- K-means Clustering Intialization  : `:cluster`
-- Random Initialization             : `:random`
+and an initial solution developed using iterated clustering method,
 
 The ALNS metaheuristic iteratively removes a set of nodes using,
 - Random Customer Node Removal  : `:randomcustomer!`
@@ -57,9 +55,10 @@ and consequently inserts removed nodes using,
 - Regret-three Insertion   : `:regret3!`
 
 In every few iterations, the ALNS metaheuristic performs local search with,
-- Intra-Opt     : `:intraopt!`
-- Inter-Opt     : `:interopt!`
-- Move          : `:move!`
+- intra-Opt     : `:intraopt!`
+- inter-Opt     : `:interopt!`
+- intra-Move    : `:intramove!`
+- inter-Move    : `:intramove!`
 - split         : `:split!`
 - swap          : `:swap!`
 
