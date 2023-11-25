@@ -45,11 +45,10 @@ let
         C̲   =   4                       ,
         μ̅   =   0.4                     ,
         C̅   =   60                      ,
-        ω̅   =   0.2                     ,
+        ω̅   =   0.05                    ,
         τ̅   =   0.5                     ,
         ω̲   =   0.01                    ,
         τ̲   =   0.01                    ,
-        φ   =   0.25                    ,
         θ   =   0.9985                  ,
         ρ   =   0.1
     );
@@ -62,9 +61,8 @@ let
             visualize(instance)
             for method ∈ methods
                 println("\n Solving $instance using ALNS metaheuristic initialized with $method method")
-                G = build(instance)
-                sₒ = initialsolution(G, method)     
-                s⃰ = ALNS(χ, sₒ)
+                sₒ = initialize(instance)
+                s⃰  = ALNS(χ, sₒ)
                 visualize(s⃰)
                 @test isfeasible(s⃰)
                 @test f(s⃰) ≤ f(sₒ)
@@ -81,9 +79,8 @@ let
             visualize(instance)
             for method ∈ methods
                 println("\n Solving $instance using ALNS metaheuristic initialized with $method method")
-                G = build(instance)
-                sₒ = initialsolution(G, method)     
-                s⃰ = ALNS(χ, sₒ)
+                sₒ = initialize(instance)
+                s⃰  = ALNS(χ, sₒ)
                 visualize(s⃰)
                 @test isfeasible(s⃰)
                 @test f(s⃰) ≤ f(sₒ)
