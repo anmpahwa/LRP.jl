@@ -224,6 +224,7 @@ function cluster(rng::AbstractRNG, k::Int64, instance::String)
 end
 
 
+
 """
     initialize(rng::AbstractRNG, instance::String)
 
