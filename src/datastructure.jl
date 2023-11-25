@@ -88,13 +88,13 @@ A `Node` is a point on the graph.
 """
 abstract type Node end
 """
-    DepotNode(iⁿ::Int64, jⁿ::Int64, x::Float64, y::Float64, q::Float64, pˡ::Float64, pᵘ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Float64, l::Float64, πᵒ::Float64, πᶠ::Float64, φ::Float64, V::Vector{Vehicle})
+    DepotNode(iⁿ::Int64, jⁿ::Int64, x::Float64, y::Float64, qᵈ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int64, q::Float64, l::Float64, πᵒ::Float64, πᶠ::Float64, φ::Float64, V::Vector{Vehicle})
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ` in echelon
-`jⁿ`, capacity `q`, lower threshold `pˡ` and upper threshold `pᵘ` on share of 
-customers handled, working-hours start time `tˢ` and end tme `tᵉ`, slack time `τ`, 
-customers served `n`, demand served `q`, total route length `l`, operational cost 
-`πᵒ` per package, fixed cost `πᶠ`, depot use mandate `φ`, and fleet of vehicles `V`.
+`jⁿ`, capacity `q`, working-hours start time `tˢ` and end tme `tᵉ`, slack time `τ`, 
+total customers served `n`, demand served `q`, total route length `l`, operational 
+cost `πᵒ` per package, fixed cost `πᶠ`, depot use mandate `φ`, and fleet of vehicles 
+`V`.
 """
 mutable struct DepotNode <: Node
     iⁿ::Int64                                                                       # Depot node index
@@ -102,14 +102,12 @@ mutable struct DepotNode <: Node
     x::Float64                                                                      # Depot node location on the x-axis
     y::Float64                                                                      # Depot node location in the y-axis
     qᵈ::Float64                                                                     # Depot capacity
-    pˡ::Float64                                                                     # Lower threshold on share of customers handled
-    pᵘ::Float64                                                                     # Upper threshold on share of customers handled
     tˢ::Float64                                                                     # Depot working-hours start time
     tᵉ::Float64                                                                     # Depot working-hours end time
-    τ::Float64                                                                      # Vehicle slack time
-    n::Int64                                                                        # Vehicle total customers served
-    q::Float64                                                                      # Vehicle total demand served
-    l::Float64                                                                      # Vehicle total route length
+    τ::Float64                                                                      # Depot slack time
+    n::Int64                                                                        # Depot total customers served
+    q::Float64                                                                      # Depot total demand served
+    l::Float64                                                                      # Depot total route length
     πᵒ::Float64                                                                     # Depot operational cost
     πᶠ::Float64                                                                     # Depot fixed cost
     φ::Int64                                                                        # Depot use mandate
