@@ -121,7 +121,7 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.1: Iteratively take 2 arcs from different routes
         # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
         r² = sample(rng, R, Weights(W))
-        W′ = [relatedness(r², r⁵, s) * (!isequal(r², r⁵) * isopt(r⁵)) for r⁵ ∈ R]
+        W′ = [isequal(r², r⁵) ? 0. : relatedness(r², r⁵, s) for r⁵ ∈ R]
         r⁵ = sample(rng, R, Weights(W′))
         d² = D[r².iᵈ]
         d⁵ = D[r⁵.iᵈ]
@@ -233,9 +233,9 @@ function intramove!(rng::AbstractRNG, k̅::Int64, s::Solution)
     C = s.C
     # Step 1: Initialize
     for _ ∈ 1:k̅
-        z = f(s)
+        z  = f(s)
         # Step 1.1: Randomly select a customer node
-        c = sample(rng, C)
+        c  = sample(rng, C)
         # Step 1.2: Remove this node from its position between tail node nᵗ and head node nʰ
         r  = c.r
         nᵗ = isequal(r.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
@@ -291,7 +291,7 @@ function intermove!(rng::AbstractRNG, k̅::Int64, s::Solution)
     # Step 1: Initialize
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     for _ ∈ 1:k̅
-        z = f(s)
+        z  = f(s)
         # Step 1.1: Randomly select a customer node
         c  = sample(rng, C)
         # Step 1.2: Remove this node from its position between tail node nᵗ and head node nʰ
@@ -300,7 +300,7 @@ function intermove!(rng::AbstractRNG, k̅::Int64, s::Solution)
         nʰ = isequal(r¹.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
         removenode!(c, nᵗ, nʰ, r¹, s)
         # Step 1.3: Select a random route
-        W  = [!isequal(r¹, r²) for r² ∈ R]
+        W  = [isequal(r¹, r²) ? 0 : 1 for r² ∈ R]
         r² = sample(rng, R, Weights(W))
         # Step 1.4: Iterate through all position in the route
         x  = 0.
@@ -355,18 +355,18 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     for _ ∈ 1:k̅
         z = f(s)
         # Step 1.1: Select a random depot node d
-        i = sample(rng, eachindex(D), Weights(W))
-        d = D[i]
+        i  = sample(rng, eachindex(D), Weights(W))
+        d  = D[i]
         # Step 1.2: Select a random route originating from this depot node
-        R = [r for v ∈ d.V for r ∈ v.R]
-        r = sample(rng, R, Weights(isopt.(R)))
+        R  = [r for v ∈ d.V for r ∈ v.R]
+        r  = sample(rng, R, Weights(isopt.(R)))
         # Step 1.3: Remove depot node d from its position in route r
         cˢ = C[r.iˢ]
         cᵉ = C[r.iᵉ]
         removenode!(d, cᵉ, cˢ, r, s)
         # Step 1.4: Iterate through all possible positions in route r
-        x = 0.
-        p = (cᵉ.iⁿ, cˢ.iⁿ)
+        x  = 0.
+        p  = (cᵉ.iⁿ, cˢ.iⁿ)
         cᵗ = cˢ
         cʰ = C[cᵗ.iʰ]
         while true

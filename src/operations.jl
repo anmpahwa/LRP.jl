@@ -383,7 +383,7 @@ end
     postinsert!(s::Solution)
 
 Post-insertion procedures. 
-Retruns solution `s` after deleting routes and vehicles, and subsequently correcting vehicle and route indices.
+Returns solution `s` after deleting routes and vehicles, and subsequently correcting depot, vehicle, and route indices.
 """
 function postinsert!(s::Solution)
     for d ∈ s.D
@@ -437,8 +437,13 @@ end
     postlocalsearch!(s::Solution)
 
 Post-localsearch procedures. 
-Retruns solution `s`.
+Returns solution `s` correcting depot, vehicle, and route indices.
 """
 function postlocalsearch!(s::Solution)
+    for c ∈ s.C 
+        c.iʳ = c.r.iʳ
+        c.iᵛ = c.r.iᵛ
+        c.iᵈ = c.r.iᵈ
+    end
     return s
 end

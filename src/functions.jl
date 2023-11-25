@@ -331,8 +331,8 @@ end
 Returns a measure of similarity between routes `r¹` and `r²`.
 """
 function relatedness(r¹::Route, r²::Route, s::Solution)
-    if !isopt(r¹) || !isopt(r²) return -Inf end
     if isequal(r¹, r²) return Inf end
+    if !isopt(r¹) || !isopt(r²) return 0. end
     d¹ = s.D[r¹.iᵈ]
     d² = s.D[r².iᵈ]
     φᵈ = isequal(d¹, d²)
@@ -352,8 +352,8 @@ end
 Returns a measure of similarity between vehicles `v¹` and `v²`.
 """
 function relatedness(v¹::Vehicle, v²::Vehicle, s::Solution)
-    if !isopt(v¹) || !isopt(v²) return -Inf end
     if isequal(v¹, v²) return Inf end
+    if !isopt(v¹) || !isopt(v²) return 0. end
     d¹ = s.D[v¹.iᵈ]
     d² = s.D[v².iᵈ]
     φᵈ = isequal(d¹, d²)
@@ -374,5 +374,20 @@ function relatedness(v¹::Vehicle, v²::Vehicle, s::Solution)
     l  = sqrt((x¹ - x²)^2 + (y¹ - y²)^2)
     t  = abs(v¹.tˢ - v².tˢ) + abs(v¹.tᵉ - v².tᵉ)
     z  = (q + φ)/(l + t)
+    return z
+end
+"""
+    relatedness(d¹::DepotNode, d²::DepotNode, s::Solution)
+
+Returns a measure of similarity between depot nodes `d¹` and `d²`.
+"""
+function relatedness(d¹::DepotNode, d²::DepotNode, s::Solution)
+    if isequal(d¹, d²) return Inf end
+    if !isequal(d¹.jⁿ, d².jⁿ) return 0. end
+    q = abs(d¹.q - d².q)
+    φ = 1
+    l = s.A[(d¹.iⁿ,d².iⁿ)].l
+    t = abs(d¹.tˢ - d².tˢ) + abs(d¹.tᵉ - d².tᵉ)
+    z = (q + φ)/(l + t)
     return z
 end
