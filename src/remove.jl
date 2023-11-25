@@ -139,7 +139,7 @@ function worstcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
         for (j,r) ∈ pairs(R) 
             φʳ = isequal(r, c.r)
             φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(tⁱ, r.tⁱ) && isequal(φᵀ, true)
-            φᵈ = isequal(r.iᵈ, d.iⁿ) && !hasslack(d)
+            φᵈ = false
             φˢ = φʳ || φᵛ || φᵈ
             ϕ[j] = isequal(φˢ, false) ? 0 : 1
         end
@@ -156,8 +156,8 @@ end
     randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
 
 Returns solution `s` after iteratively selecting a random route and 
-removing customer nodes from it until at least `q` customer nodes 
-are removed.
+removing customer nodes from it until exactly `q` customer nodes are
+removed.
 """
 function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
     preremove!(s)
@@ -165,13 +165,14 @@ function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     W = isopt.(R)                   # W[iʳ] : selection weight for route R[iʳ]
-    # Step 1: Iteratively select a random route and remove customer nodes from it until at least q customer nodes are removed
+    # Step 1: Iteratively select a random route and remove customer nodes from it until exactly q customer nodes are removed
     n = 0
     while n < q
         iʳ = sample(rng, eachindex(R), Weights(W))
         r  = R[iʳ]
         d  = D[r.iᵈ]
         while true
+            if n ≥ q break end
             nᵗ = d
             c  = C[r.iˢ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -191,7 +192,7 @@ end
 """
     relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
 
-Returns solution `s` after removing at least `q` customer 
+Returns solution `s` after removing exactly `q` customer 
 nodes from the routes most related to a randomly selected 
 pivot route.
 """
@@ -206,13 +207,14 @@ function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
     iᵒ= sample(rng, eachindex(R), Weights(W))  
     # Step 2: For each route, evaluate relatedness to this pivot route
     for iʳ ∈ eachindex(R) X[iʳ] = relatedness(R[iʳ], R[iᵒ], s) end
-    # Step 3: Remove at least q customers from most related route to this pivot route
+    # Step 3: Remove exactly q customers from most related route to this pivot route
     n = 0
     while n < q
         iʳ = argmax(X)
         r  = R[iʳ]
         d  = D[r.iᵈ]
         while true
+            if n ≥ q break end
             nᵗ = d
             c  = C[r.iˢ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -233,7 +235,7 @@ end
 """
     worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
 
-Returns solution `s` after removing at least`q` customer 
+Returns solution `s` after removing exactly `q` customer 
 nodes from low-utilization routes.
 """
 function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
@@ -250,13 +252,14 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
         v = d.V[r.iᵛ]
         X[iʳ] = r.q/v.qᵛ
     end
-    # Step 2: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
+    # Step 2: Iteratively select low-utilization route and remove customer nodes from it until exactly q customer nodes are removed
     n = 0
     while n < q
         iʳ = argmin(X)
         r  = R[iʳ]
         d  = D[r.iᵈ]
         while true
+            if n ≥ q break end
             nᵗ = d
             c  = C[r.iˢ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -423,8 +426,8 @@ function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         iᵈ = sample(rng, eachindex(D), Weights(W))
         d  = D[iᵈ]
         for v ∈ d.V
+            if n ≥ q break end
             for r ∈ v.R
-                if n ≥ q break end
                 if !isopt(r) continue end
                 while true
                     nᵗ = d
@@ -500,8 +503,8 @@ function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
         iᵈ = argmin(X)
         d  = D[iᵈ]
         for v ∈ d.V
+            if n ≥ q break end
             for r ∈ v.R
-                if n ≥ q break end
                 if !isopt(r) continue end
                 while true
                     nᵗ = d
