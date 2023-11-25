@@ -20,7 +20,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
     μ̅, C̅ = χ.μ̅, χ.C̅
     ω̅, τ̅ = χ.ω̅, χ.τ̅
     ω̲, τ̲ = χ.ω̲, χ.τ̲
-    φ, θ, ρ = χ.φ, χ.θ, χ.ρ   
+    θ, ρ = χ.θ, χ.ρ   
     R = eachindex(Ψᵣ)
     I = eachindex(Ψᵢ)
     L = eachindex(Ψₗ)
@@ -101,22 +101,20 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
         # Step 2.5: Reset current solution.
         if iszero(u % k) s, z = deepcopy(s⃰), z⃰ end
         # Step 2.6: Perform local search.
-        if z ≤ z⃰ * (1 + φ)
-            s′ = deepcopy(s)
-            for l ∈ L localsearch!(rng, m, s′, Ψₗ[l]) end
-            z′ = f(s′)
-            h′ = hash(s′)
-            if z′ < z⃰
-                s = s′
-                s⃰ = s′
-                z = z′
-                z⃰ = z′
-            elseif z′ < z
-                s = s′
-                z = z′
-            end
-            h = h′
+        s′ = deepcopy(s)
+        for l ∈ L localsearch!(rng, m, s′, Ψₗ[l]) end
+        z′ = f(s′)
+        h′ = hash(s′)
+        if z′ < z⃰
+            s = s′
+            s⃰ = s′
+            z = z′
+            z⃰ = z′
+        elseif z′ < z
+            s = s′
+            z = z′
         end
+        h = h′
         Z[u * (n + 1)] = z
         H[u * (n + 1)] = h
     end

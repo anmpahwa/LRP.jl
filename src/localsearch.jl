@@ -4,9 +4,10 @@
 Returns solution `s` after performing local seach on the solution using given `method` for `k̅` iterations.
 
 Available methods include,
-- Intra-Opt     : `:intraopt!`
-- Inter-Opt     : `:interopt!`
-- Move          : `:move!`
+- intra-Opt     : `:intraopt!`
+- inter-Opt     : `:interopt!`
+- intra-Move    : `:intramove!`
+- inter-Move    : `:intramove!`
 - split         : `:split!`
 - swap          : `:swap!`
 
@@ -31,7 +32,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     D = s.D
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
-    W = isopt.(R)                   # W[i]: selection weight for route R[iʳ]
+    W = isopt.(R)                   # W[i]: selection weight for route R[i]
     # Step 1: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         # Step 1.1: Iteratively take 2 arcs from the same route
@@ -114,14 +115,16 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     D = s.D
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
-    W = isopt.(R)                   # W[i]: selection weight for route R[iʳ]
+    W = isopt.(R)                   # W[i]: selection weight for route R[i]
     # Step 1: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         # Step 1.1: Iteratively take 2 arcs from different routes
         # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
-        r², r⁵ = sample(rng, R, Weights(W), 2)
-        d², d⁵ = D[r².iᵈ], D[r⁵.iᵈ]
-        if isequal(r², r⁵) continue end
+        r² = sample(rng, R, Weights(W))
+        W′ = [relatedness(r², r⁵, s) * (!isequal(r², r⁵) * isopt(r⁵)) for r⁵ ∈ R]
+        r⁵ = sample(rng, R, Weights(W′))
+        d² = D[r².iᵈ]
+        d⁵ = D[r⁵.iᵈ]
         i  = rand(rng, 1:r².n)
         k  = 1
         c² = C[r².iˢ]
@@ -218,74 +221,119 @@ end
 
 
 """
-    move!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    intramove!(rng::AbstractRNG, k̅::Int64, s::Solution)
 
 Returns solution `s` after moving a randomly selected customer node 
-to its best position if the move results in a reduction in objective 
-function value, repeating for `k̅` iterations.
+to its best position in the same route if the move results in a reduction 
+in objective function value, repeating for `k̅` iterations.
 """
-function move!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function intramove!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
-    z = f(s)
     D = s.D
     C = s.C
     # Step 1: Initialize
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
-    I = eachindex(C)
-    J = eachindex(R)
-    W = ones(Int64, I)              # W[i]: selection weight for customer node C[i]
-    X = fill(Inf, J)                # x[j]: insertion cost in route R[j]
-    P = fill((0, 0), J)             # p[j]: best insertion postion in route R[j]
-    # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
-        # Step 2.1: Randomly select a node
-        i = sample(rng, I, OffsetWeights(W))
-        c = C[i]
-        # Step 2.2: Remove this node from its position between tail node nᵗ and head node nʰ
+        z = f(s)
+        # Step 1.1: Randomly select a customer node
+        c = sample(rng, C)
+        # Step 1.2: Remove this node from its position between tail node nᵗ and head node nʰ
         r  = c.r
         nᵗ = isequal(r.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
         nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
         removenode!(c, nᵗ, nʰ, r, s)
-        # Step 2.3: Iterate through all routes
-        for (j,r) ∈ pairs(R)
-            # Step 2.3.1: Iterate through all possible insertion positions
-            d  = s.D[r.iᵈ]
-            nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ] 
-            nᵉ = isopt(r) ? C[r.iᵉ] : D[r.iᵉ]
-            nᵗ = d
-            nʰ = nˢ
-            while true
-                # Step 2.3.1.1: Insert customer node c between tail node nᵗ and head node nʰ
-                insertnode!(c, nᵗ, nʰ, r, s)
-                # Step 2.3.1.2: Compute insertion cost
-                z′ = f(s)
-                Δ  = z′ - z
-                # Step 2.3.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
-                if Δ < X[j] X[j], P[j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
-                # Step 2.3.4: Remove node from its position between tail node nᵗ and head node nʰ
-                removenode!(c, nᵗ, nʰ, r, s)
-                if isequal(nᵗ, nᵉ) break end
-                nᵗ = nʰ
-                nʰ = isequal(r.iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
-            end
+        # Step 1.3: Iterate through all position in the route
+        x  = 0.
+        p  = (nᵗ.iⁿ, nʰ.iⁿ)
+        d  = s.D[r.iᵈ]
+        nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ] 
+        nᵉ = isopt(r) ? C[r.iᵉ] : D[r.iᵉ]
+        nᵗ = d
+        nʰ = nˢ
+        while true
+            # Step 1.3.1: Insert customer node c between tail node nᵗ and head node nʰ
+            insertnode!(c, nᵗ, nʰ, r, s)
+            # Step 1.3.2: Compute insertion cost
+            z′ = f(s)
+            Δ  = z′ - z
+            # Step 1.3.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
+            if Δ < x x, p = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
+            # Step 1.3.4: Remove node from its position between tail node nᵗ and head node nʰ
+            removenode!(c, nᵗ, nʰ, r, s)
+            if isequal(nᵗ, nᵉ) break end
+            nᵗ = nʰ
+            nʰ = isequal(r.iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
         end
-        # Step 2.4: Move the node to its best position (this could be its original position as well)
-        j = argmin(X)
-        Δ = X[j]
-        r = R[j]
-        iᵗ = P[j][1]
-        iʰ = P[j][2]
+        # Step 1.4: Move the node to its best position (this could be its original position as well)
+        iᵗ = p[1]
+        iʰ = p[2]
         nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
         nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
-        z += Δ
-        # Step 2.5: Revise vectors appropriately
-        W[i] = 0
-        X .= Inf
-        P .= ((0, 0), )
     end
     postlocalsearch!(s)
-    # Step 3: Return solution
+    # Step 2: Return solution
+    return s
+end
+
+
+
+"""
+    intermove!(rng::AbstractRNG, k̅::Int64, s::Solution)
+
+Returns solution `s` after moving a randomly selected customer node 
+to its best position in another route if the move results in a reduction 
+in objective function value, repeating for `k̅` iterations.
+"""
+function intermove!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    prelocalsearch!(s)
+    D = s.D
+    C = s.C
+    # Step 1: Initialize
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    for _ ∈ 1:k̅
+        z = f(s)
+        # Step 1.1: Randomly select a customer node
+        c  = sample(rng, C)
+        # Step 1.2: Remove this node from its position between tail node nᵗ and head node nʰ
+        r¹ = c.r
+        nᵗ = isequal(r¹.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
+        nʰ = isequal(r¹.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
+        removenode!(c, nᵗ, nʰ, r¹, s)
+        # Step 1.3: Select a random route
+        W  = [!isequal(r¹, r²) for r² ∈ R]
+        r² = sample(rng, R, Weights(W))
+        # Step 1.4: Iterate through all position in the route
+        x  = 0.
+        p  = (nᵗ.iⁿ, nʰ.iⁿ)
+        r  = r¹
+        d  = s.D[r².iᵈ]
+        nˢ = isopt(r²) ? C[r².iˢ] : D[r².iˢ] 
+        nᵉ = isopt(r²) ? C[r².iᵉ] : D[r².iᵉ]
+        nᵗ = d
+        nʰ = nˢ
+        while true
+            # Step 1.4.1: Insert customer node c between tail node nᵗ and head node nʰ
+            insertnode!(c, nᵗ, nʰ, r², s)
+            # Step 1.4.2: Compute insertion cost
+            z′ = f(s)
+            Δ  = z′ - z
+            # Step 1.4.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
+            if Δ < x x, p, r = Δ, (nᵗ.iⁿ, nʰ.iⁿ), r² end
+            # Step 1.4.4: Remove node from its position between tail node nᵗ and head node nʰ
+            removenode!(c, nᵗ, nʰ, r², s)
+            if isequal(nᵗ, nᵉ) break end
+            nᵗ = nʰ
+            nʰ = isequal(r².iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
+        end
+        # Step 1.5: Move the node to its best position (this could be its original position as well)
+        iᵗ = p[1]
+        iʰ = p[2]
+        nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
+        nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
+        insertnode!(c, nᵗ, nʰ, r, s)
+    end
+    postlocalsearch!(s)
+    # Step 2: Return solution
     return s
 end
 
@@ -302,49 +350,45 @@ function split!(rng::AbstractRNG, k̅::Int64, s::Solution)
     prelocalsearch!(s)
     D = s.D
     C = s.C
-    W = ones(Int64, eachindex(D))   # W[i]: selection weight for depot node D[i]
+    W = isopt.(D)                   # W[iᵈ]: selection weight for depot node D[iᵈ]
     # Step 1: Iterate for k̅ iterations
     for _ ∈ 1:k̅
+        z = f(s)
         # Step 1.1: Select a random depot node d
         i = sample(rng, eachindex(D), Weights(W))
         d = D[i]
-        # Step 1.2: Iterate through every route originating from this depot node
-        for v ∈ d.V
-            for r ∈ v.R
-                z = f(s)
-                # Step 1.2.1: Remove depot node d from its position in route r
-                if !isopt(r) continue end
-                cˢ = C[r.iˢ]
-                cᵉ = C[r.iᵉ]
-                x = 0.
-                p = (cᵉ.iⁿ, cˢ.iⁿ)
-                removenode!(d, cᵉ, cˢ, r, s)
-                # Step 1.2.2: Iterate through all possible positions in route r
-                cᵗ = cˢ
-                cʰ = C[cᵗ.iʰ]
-                while true
-                    # Step 1.2.2.1: Insert depot node d between tail node nᵗ and head node nʰ
-                    insertnode!(d, cᵗ, cʰ, r, s)
-                    # Step 1.2.2.2: Compute change in objective function value
-                    z′ = f(s) 
-                    Δ  = z′ - z
-                    # Step 1.2.2.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
-                    if Δ < x x, p = Δ, (cᵗ.iⁿ, cʰ.iⁿ) end
-                    # Step 1.2.2.4: Remove depot node d from its position between tail node nᵗ and head node nʰ
-                    removenode!(d, cᵗ, cʰ, r, s)
-                    if isequal(cʰ, cᵉ) break end
-                    cᵗ = cʰ
-                    cʰ = C[cᵗ.iʰ]
-                end
-                # Step 1.2.3: Move the depot node to its best position in route r (this could be its original position as well)
-                iᵗ, iʰ = p
-                cᵗ = C[iᵗ]
-                cʰ = C[iʰ]
-                insertnode!(d, cᵗ, cʰ, r, s) 
-            end
+        # Step 1.2: Select a random route originating from this depot node
+        R = [r for v ∈ d.V for r ∈ v.R]
+        r = sample(rng, R, Weights(isopt.(R)))
+        # Step 1.3: Remove depot node d from its position in route r
+        cˢ = C[r.iˢ]
+        cᵉ = C[r.iᵉ]
+        removenode!(d, cᵉ, cˢ, r, s)
+        # Step 1.4: Iterate through all possible positions in route r
+        x = 0.
+        p = (cᵉ.iⁿ, cˢ.iⁿ)
+        cᵗ = cˢ
+        cʰ = C[cᵗ.iʰ]
+        while true
+            # Step 1.4.1: Insert depot node d between tail node nᵗ and head node nʰ
+            insertnode!(d, cᵗ, cʰ, r, s)
+            # Step 1.4.2: Compute change in objective function value
+            z′ = f(s) 
+            Δ  = z′ - z
+            # Step 1.4.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
+            if Δ < x x, p = Δ, (cᵗ.iⁿ, cʰ.iⁿ) end
+            # Step 1.4.4: Remove depot node d from its position between tail node nᵗ and head node nʰ
+            removenode!(d, cᵗ, cʰ, r, s)
+            if isequal(cʰ, cᵉ) break end
+            cᵗ = cʰ
+            cʰ = C[cᵗ.iʰ]
         end
-        # Step 1.3: Revise vectors appropriately
-        W[i] = 0
+        # Step 1.5: Move the depot node to its best position in route r (this could be its original position as well)
+        iᵗ = p[1]
+        iʰ = p[2]
+        cᵗ = C[iᵗ]
+        cʰ = C[iʰ]
+        insertnode!(d, cᵗ, cʰ, r, s) 
     end
     postlocalsearch!(s)
     # Step 2: Return solution
@@ -369,8 +413,9 @@ function swap!(rng::AbstractRNG, k̅::Int64, s::Solution)
     for _ ∈ 1:k̅
         # Step 1.1: Swap two randomly selected customer nodes
         # n¹ → n² → n³ and n⁴ → n⁵ → n⁶
-        n², n⁵ = sample(rng, C), sample(rng, C)
-        if isequal(n², n⁵) continue end
+        n² = sample(rng, C)
+        W  = [isequal(n², n⁵) ? 0. : relatedness(n², n⁵, s) for n⁵ ∈ C]
+        n⁵ = sample(rng, C, OffsetWeights(W))
         r², r⁵ = n².r, n⁵.r
         n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
         n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]

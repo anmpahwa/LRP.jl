@@ -21,7 +21,6 @@ Optimization parameters for Adaptive Large Neighborhood Search (ALNS).
 - τ̅     :   Initial temperatureprobability parameter
 - ω̲     :   Final temperature deviation parameter
 - τ̲     :   Final temperature probability parameter
-- φ     :   Local search trigger
 - θ     :   Cooling rate
 - ρ     :   Reaction factor
 """
@@ -44,7 +43,6 @@ Base.@kwdef struct ALNSparameters
     τ̅::Float64
     ω̲::Float64
     τ̲::Float64
-    φ::Float64
     θ::Float64
     ρ::Float64
 end
