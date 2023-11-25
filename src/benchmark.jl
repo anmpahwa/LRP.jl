@@ -73,7 +73,7 @@ let
                 C̲   =   4                       ,
                 μ̅   =   0.4                     ,
                 C̅   =   60                      ,
-                ω̅   =   0.2                     ,
+                ω̅   =   0.05                    ,
                 τ̅   =   0.5                     ,
                 ω̲   =   0.01                    ,
                 τ̲   =   0.01                    ,
@@ -108,9 +108,9 @@ let
             # Store Results
             df₁[i,j+1] = f(s⃰)
             df₂[i,j+1] = t
+            println(df₁)
+            println(df₂)
         end
     end
-    println(df₁)
-    println(df₂)
     return
 end
