@@ -262,3 +262,4 @@ function initialize(rng::AbstractRNG, instance::String)
     # Step 3. Return solution
     return s
 end
+initialize(instance::String) = initialize(Random.GLOBAL_RNG, instance)
