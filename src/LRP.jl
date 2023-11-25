@@ -19,7 +19,6 @@ global φᵀ = false::Bool
 include("sample.jl")
 include("datastructure.jl")
 include("functions.jl")
-include("instance.jl")
 include("initialize.jl")
 include("operations.jl")
 include("remove.jl")
@@ -29,7 +28,7 @@ include("parameters.jl")
 include("ALNS.jl")
 include("visualize.jl")
 
-export  build, initialsolution, vectorize, f, isfeasible,
+export  initialize, vectorize, f, isfeasible,
         ALNSparameters, ALNS, visualize, animate, pltcnv
 
 end
