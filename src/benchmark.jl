@@ -5,10 +5,16 @@ using CPUTime
 using DataFrames
 
 let
+    # Set I
+    A = ["prins20-5-1", "gaskell36-5", "prins50-5-1b", "daskin88-8"];
+    # Set II
+    B = ["prins100-5-2", "prins100-10-2b", "christofides100-10"]
+    # Set III
+    C = ["min134-8", "daskin150-10", "prins200-10-3"] 
     # Define instances
-    instances = ["prins100-5-2", "min134-8", "daskin150-10"];
+    instances = [A..., B..., C...]
     # Define random number generators
-    seeds = [1010, 1104, 1905, 2104, 2412, 2703, 2704, 2710, 2806, 3009]
+    seeds = [1010, 1104, 1509, 1603, 1905, 2104, 2412, 2703, 2710, 2807]
     # Dataframes to store solution quality and run time
     df₁ = DataFrame([instances, [zeros(length(instances)) for _ ∈ seeds]...], [iszero(i) ? "instance" : "$(seeds[i])" for i ∈ 0:length(seeds)])
     df₂ = DataFrame([instances, [zeros(length(instances)) for _ ∈ seeds]...], [iszero(i) ? "instance" : "$(seeds[i])" for i ∈ 0:length(seeds)])
@@ -21,16 +27,16 @@ let
             println("\n instance: $instance | seed: $seed")
             rng = MersenneTwister(seed);
             # Define inital solution method and build the initial solution
-            D, C, A = build(instance)
-            G = (D, C, A)
-            sₒ= initialsolution(rng, G, :cluster);
+            sₒ = initialize(rng, instance);
+            # Visualize initial solution
+            display(visualize(sₒ))
             # Define ALNS parameters
-            x = max(100, lastindex(C))
+            x = max(100, lastindex(sₒ.C))
             χ = ALNSparameters(
                 j   =   50                      ,
-                k   =   20                      ,
+                k   =   5                       ,
                 n   =   x                       ,
-                m   =   25x                     ,
+                m   =   100x                    ,
                 Ψᵣ  =   [
                             :randomcustomer!    ,
                             :randomroute!       ,
@@ -54,9 +60,10 @@ let
                         ]                       ,
                 Ψₗ  =   [
                             :split!             ,
+                            :intramove!         ,
                             :intraopt!          ,
-                            :move!              ,
-                            :swap!              ,       
+                            :swap!              ,
+                            :intermove!         ,
                             :interopt!          
                         ]                       ,
                 σ₁  =   15                      ,
@@ -70,12 +77,13 @@ let
                 τ̅   =   0.5                     ,
                 ω̲   =   0.01                    ,
                 τ̲   =   0.01                    ,
-                φ   =   0.25                    ,
                 θ   =   0.9985                  ,
                 ρ   =   0.1
             );
             # Run ALNS and fetch best solution
             t = @CPUelapsed s⃰ = ALNS(rng, χ, sₒ);
+            # Visualize best solution
+            display(visualize(s⃰))
             # Fetch objective function values
             println("Objective function value:")
             println("   Initial: $(f(sₒ; penalty=false))")
@@ -97,10 +105,6 @@ let
             println("   Number of depots: $(sum([LRP.isopt(d) for d ∈ s⃰.D]))")
             println("   Number of vehicles: $(sum([LRP.isopt(v) for d ∈ s⃰.D for v ∈ d.V]))")
             println("   Number of routes: $(sum([LRP.isopt(r) for d ∈ s⃰.D for v ∈ d.V for r ∈ v.R]))")
-            # Visualize initial solution
-            display(visualize(sₒ))
-            # Visualize best solution
-            display(visualize(s⃰))
             # Store Results
             df₁[i,j+1] = f(s⃰)
             df₂[i,j+1] = t
