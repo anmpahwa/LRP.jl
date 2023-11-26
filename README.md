@@ -55,12 +55,12 @@ and consequently inserts removed nodes using,
 - Regret-three Insertion   : `:regret3!`
 
 In every few iterations, the ALNS metaheuristic performs local search with,
-- intra-Opt     : `:intraopt!`
-- inter-Opt     : `:interopt!`
-- intra-Move    : `:intramove!`
-- inter-Move    : `:intramove!`
-- split         : `:split!`
-- swap          : `:swap!`
+- intra-move    : `:intramove!`
+- inter-move    : `:intermove!`
+- intra-swap    : `:intraswap!`
+- inter-swap    : `:interswap!`
+- intra-opt     : `:intraopt!`
+- inter-opt     : `:interopt!`
 
 See benchmark.jl for usage
 
