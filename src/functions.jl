@@ -308,16 +308,15 @@ relatedness(d::DepotNode, c::CustomerNode, s::Solution) = relatedness(c, d, s)
 Returns a measure of similarity between customer nodes `c¹` and `c²`.
 """
 function relatedness(c¹::CustomerNode, c²::CustomerNode, s::Solution)
-    if isequal(c¹, c²) return Inf end
     r¹ = c¹.r
     r² = c².r
     φʳ = isequal(r¹, r²)
     d¹ = s.D[r¹.iᵈ]
     d² = s.D[r².iᵈ]
-    φᵈ = isequal(d¹, d²)
+    φᵈ = isequal(d¹.jⁿ, d².jⁿ) + isequal(d¹, d²)
     v¹ = d¹.V[r¹.iᵛ]
     v² = d².V[r².iᵛ]
-    φᵛ = isequal(v¹, v²)
+    φᵛ = isidentical(v¹, v²) + isequal(v¹, v²)
     q  = abs(c¹.q - c².q)
     φ  = 1 + φᵈ + φᵛ + φʳ  
     l  = s.A[(c¹.iⁿ,c².iⁿ)].l
@@ -331,14 +330,13 @@ end
 Returns a measure of similarity between routes `r¹` and `r²`.
 """
 function relatedness(r¹::Route, r²::Route, s::Solution)
-    if isequal(r¹, r²) return Inf end
     if !isopt(r¹) || !isopt(r²) return 0. end
     d¹ = s.D[r¹.iᵈ]
     d² = s.D[r².iᵈ]
-    φᵈ = isequal(d¹, d²)
+    φᵈ = isequal(d¹.jⁿ, d².jⁿ) + isequal(d¹, d²)
     v¹ = d¹.V[r¹.iᵛ]
     v² = d².V[r².iᵛ]
-    φᵛ = isequal(v¹, v²)
+    φᵛ = isidentical(v¹, v²) + isequal(v¹, v²)
     q  = abs(r¹.q - r².q)
     φ  = 1 + φᵈ + φᵛ 
     l  = sqrt((r¹.x - r².x)^2 + (r¹.y - r².y)^2)
@@ -352,11 +350,11 @@ end
 Returns a measure of similarity between vehicles `v¹` and `v²`.
 """
 function relatedness(v¹::Vehicle, v²::Vehicle, s::Solution)
-    if isequal(v¹, v²) return Inf end
     if !isopt(v¹) || !isopt(v²) return 0. end
     d¹ = s.D[v¹.iᵈ]
     d² = s.D[v².iᵈ]
-    φᵈ = isequal(d¹, d²)
+    φᵈ = isequal(d¹.jⁿ, d².jⁿ) + isequal(d¹, d²)
+    φᵛ = isidentical(v¹, v²) + isequal(v¹, v²)
     x¹ = 0.
     y¹ = 0.
     for r ∈ v¹.R 
@@ -369,8 +367,8 @@ function relatedness(v¹::Vehicle, v²::Vehicle, s::Solution)
         x² += r.n * r.x / v².n
         y² += r.n * r.y / v².n
     end
-    q  = abs(v¹.q - v².q)
-    φ  = 1 + φᵈ
+    q  = abs(v¹.qᵛ - v².qᵛ)
+    φ  = 1 + φᵈ + φᵛ
     l  = sqrt((x¹ - x²)^2 + (y¹ - y²)^2)
     t  = abs(v¹.tˢ - v².tˢ) + abs(v¹.tᵉ - v².tᵉ)
     z  = (q + φ)/(l + t)
@@ -382,10 +380,8 @@ end
 Returns a measure of similarity between depot nodes `d¹` and `d²`.
 """
 function relatedness(d¹::DepotNode, d²::DepotNode, s::Solution)
-    if isequal(d¹, d²) return Inf end
-    if !isequal(d¹.jⁿ, d².jⁿ) return 0. end
-    q = abs(d¹.q - d².q)
-    φ = 1
+    q = abs(d¹.qᵈ - d².qᵈ)
+    φ = 1 + isequal(d¹.jⁿ, d².jⁿ) + isequal(d¹, d²)
     l = s.A[(d¹.iⁿ,d².iⁿ)].l
     t = abs(d¹.tˢ - d².tˢ) + abs(d¹.tᵉ - d².tᵉ)
     z = (q + φ)/(l + t)
