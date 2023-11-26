@@ -7,9 +7,9 @@ let
     # ALNS parameters
     χ = ALNSparameters(
         j   =   50                      ,
-        k   =   20                      ,
-        n   =   20                      ,
-        m   =   500                     ,
+        k   =   5                       ,
+        n   =   10                      ,
+        m   =   1000                    ,
         Ψᵣ  =   [
                     :randomcustomer!    ,
                     :randomroute!       ,
@@ -32,10 +32,11 @@ let
                     :regret3!
                 ]                       ,
         Ψₗ  =   [
-                    :split!             ,
+                    :intramove!         ,
+                    :intraswap!         ,
                     :intraopt!          ,
-                    :move!              ,
-                    :swap!              ,
+                    :intermove!         ,
+                    :interswap!         ,
                     :interopt!          
                 ]                       ,
         σ₁  =   15                      ,
