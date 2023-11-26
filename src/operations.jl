@@ -5,6 +5,7 @@ Returns solution `s` after inserting node `n` between tail node `nᵗ`
 and head node `nʰ` in route `r` in solution `s`.
 """
 function insertnode!(n::Node, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
+    if isclose(n) return s end
     # Note
     # If n is a depot node to be inserted between tail node nᵗ and
     # head node nʰ in route r in solution s, then the route must belong
@@ -28,8 +29,8 @@ function insertnode!(n::Node, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
         n.iᵗ = nᵗ.iⁿ
         n.r  = r
 
-        r.x = (r.n * r.x + n.x)/(r.n + 1)
-        r.y = (r.n * r.y + n.y)/(r.n + 1)
+        r.x  = (r.n * r.x + n.x)/(r.n + 1)
+        r.y  = (r.n * r.y + n.y)/(r.n + 1)
         r.n += 1
         r.q += n.q
         r.l += aᵗ.l + aʰ.l - aᵒ.l
@@ -121,6 +122,7 @@ Returns solution `s` after removing node `n` from its position between
 tail node `nᵗ` and head node `nʰ` in route `r` in solution `s`.
 """
 function removenode!(n::Node, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
+    if isopen(n) return s end
     # Note
     # If n is a depot node to be removed from its position between
     # tail node nᵗ and head node nʰ in route r in solution s, then the 
@@ -142,10 +144,10 @@ function removenode!(n::Node, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
         isdepot(nʰ) ? r.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
         n.iʰ = 0
         n.iᵗ = 0
-        n.r = NullRoute
+        n.r  = NullRoute
 
-        r.x = isone(r.n) ? 0. : (r.n * r.x - n.x)/(r.n - 1)
-        r.y = isone(r.n) ? 0. : (r.n * r.y - n.y)/(r.n - 1)
+        r.x  = isone(r.n) ? 0. : (r.n * r.x - n.x)/(r.n - 1)
+        r.y  = isone(r.n) ? 0. : (r.n * r.y - n.y)/(r.n - 1)
         r.n -= 1
         r.q -= n.q
         r.l -= aᵗ.l + aʰ.l - aᵒ.l
@@ -383,7 +385,7 @@ end
     postinsert!(s::Solution)
 
 Post-insertion procedures. 
-Returns solution `s` after deleting routes and vehicles, and subsequently correcting depot, vehicle, and route indices.
+Returns solution `s` after deleting routes and vehicles, and subsequently correcting vehicle and route indices.
 """
 function postinsert!(s::Solution)
     for d ∈ s.D
@@ -414,11 +416,6 @@ function postinsert!(s::Solution)
             end
         end
     end
-    for c ∈ s.C 
-        c.iʳ = c.r.iʳ
-        c.iᵛ = c.r.iᵛ
-        c.iᵈ = c.r.iᵈ
-    end
     return s
 end
 
@@ -437,13 +434,8 @@ end
     postlocalsearch!(s::Solution)
 
 Post-localsearch procedures. 
-Returns solution `s` correcting depot, vehicle, and route indices.
+Returns solution `s` correcting vehicle and route indices.
 """
 function postlocalsearch!(s::Solution)
-    for c ∈ s.C 
-        c.iʳ = c.r.iʳ
-        c.iᵛ = c.r.iᵛ
-        c.iᵈ = c.r.iᵈ
-    end
     return s
 end
