@@ -451,30 +451,41 @@ end
 """
     relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
 
-Returns solution `s` after removing exactly `q` customer nodes 
-most related to a randomly selected pivot depot node.
+Returns solution `s` after removing at least `q` customer nodes 
+from the routes of the depots most related to a randomly selected 
+pivot depot node.
 """
 function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
-    X = fill(-Inf, eachindex(C))    # X[iᵛ]: relatedness of customer node C[iⁿ] with pivot depot node D[iᵒ]
+    X = fill(-Inf, eachindex(D))    # X[iᵛ]: relatedness of depot node D[iⁿ] with pivot depot node D[iᵒ]
     W = isclose.(D)                 # W[iᵈ] : selection weight for depot node D[iᵈ]
     # Step 1: Select a random closed depot node
     iᵒ= sample(rng, eachindex(D), Weights(W))
-    # Step 2: Evaluate relatedness of this depot node to every customer node
-    for iⁿ ∈ eachindex(C) X[iⁿ] = relatedness(C[iⁿ], D[iᵒ], s) end
-    # Step 3: Remove exactly q customer nodes most related to this pivot depot node
+    # Step 2: Evaluate relatedness of this depot node to every depot node
+    for iᵈ ∈ eachindex(D) if isopt(D[iᵈ]) X[iᵈ] = relatedness(D[iᵈ], D[iᵒ], s) end end
+    # Step 3: Remove at least q customer nodes most related to this pivot depot node
     n = 0
-    while n < q 
-        iⁿ = argmax(X)
-        c  = C[iⁿ]
-        r  = c.r
-        nᵗ = isequal(r.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
-        nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
-        removenode!(c, nᵗ, nʰ, r, s)
-        n += 1
-        X[iⁿ] = -Inf
+    while n < q
+        iᵈ = argmax(X)
+        d  = D[iᵈ]
+        for v ∈ d.V
+            if n ≥ q break end
+            for r ∈ v.R
+                if !isopt(r) continue end
+                while true
+                    nᵗ = d
+                    c  = C[r.iˢ]
+                    nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
+                    removenode!(c, nᵗ, nʰ, r, s)
+                    n += 1
+                    if isequal(nʰ, d) break end
+                end
+            end
+        end
+        X[iᵈ] = -Inf
+        W[iᵈ] = 0
     end
     postremove!(s)
     # Step 4: Return solution
