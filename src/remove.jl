@@ -215,6 +215,7 @@ function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
         d  = D[r.iᵈ]
         while true
             if n ≥ q break end
+            if !isopt(r) break end
             nᵗ = d
             c  = C[r.iˢ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -247,7 +248,6 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
     W = isopt.(R)                   # W[iʳ] : selection weight for route R[iʳ]
     # Step 1: Evaluate utilization of each route
     for (iʳ,r) ∈ pairs(R)
-        if !isopt(r) continue end
         d = s.D[r.iᵈ]
         v = d.V[r.iᵛ]
         X[iʳ] = r.q/v.qᵛ
@@ -260,6 +260,7 @@ function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
         d  = D[r.iᵈ]
         while true
             if n ≥ q break end
+            if !isopt(r) break end
             nᵗ = d
             c  = C[r.iˢ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
