@@ -64,7 +64,8 @@ let
                             :intraopt!          ,
                             :intermove!         ,
                             :interswap!         ,
-                            :interopt!          
+                            :interopt!          ,
+                            :swapdepot!
                         ]                       ,
                 σ₁  =   15                      ,
                 σ₂  =   10                      ,
