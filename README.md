@@ -61,6 +61,7 @@ In every few iterations, the ALNS metaheuristic performs local search with,
 - inter-swap    : `:interswap!`
 - intra-opt     : `:intraopt!`
 - inter-opt     : `:interopt!`
+- swapdepot     : `:swapdepot!`
 
 See benchmark.jl for usage
 
