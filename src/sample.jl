@@ -8,7 +8,7 @@ A precomputed sum may be provided as `wsum`.
 """ OffsetWeights
 
 """
-    sample([rng], a::OffsetVector, [wv::AbstractWeights])
+    sample([rng::AbstractRNG], a::OffsetVector, [wv::AbstractWeights])
 
 Select a single random element of `a`. Sampling probabilities are proportional to
 the weights given in `wv`, if provided.
@@ -20,7 +20,7 @@ StatsBase.sample(rng::AbstractRNG, a::OffsetVector) = a[rand(rng, firstindex(a):
 StatsBase.sample(a::OffsetVector) = sample(Random.GLOBAL_RNG, a)
 
 """
-    sample([rng], wv::OffsetWeights)
+    sample([rng::AbstractRNG], wv::OffsetWeights)
 
 Select a single random integer in `eachindex(wv)` with probabilities
 proportional to the weights given in `wv`.

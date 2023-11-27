@@ -25,10 +25,10 @@ Optimization parameters for Adaptive Large Neighborhood Search (ALNS).
 - ρ     :   Reaction factor
 """
 Base.@kwdef struct ALNSparameters
-    j::Int64
-    k::Int64
-    n::Int64
-    m::Int64
+    j::Int
+    k::Int
+    n::Int
+    m::Int
     Ψᵣ::Vector{Symbol}
     Ψᵢ::Vector{Symbol}
     Ψₗ::Vector{Symbol}
@@ -36,9 +36,9 @@ Base.@kwdef struct ALNSparameters
     σ₂::Float64
     σ₃::Float64
     μ̲::Float64
-    C̲::Int64
+    C̲::Int
     μ̅::Float64
-    C̅::Int64
+    C̅::Int
     ω̅::Float64
     τ̅::Float64
     ω̲::Float64

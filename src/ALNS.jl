@@ -25,7 +25,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
     I = eachindex(Ψᵢ)
     L = eachindex(Ψₗ)
     Z = OffsetVector{Float64}(undef, 0:j*(n+1))
-    H = OffsetVector{UInt64}(undef, 0:j*(n+1))
+    H = OffsetVector{UInt}(undef, 0:j*(n+1))
     # Step 1: Initialize
     s = deepcopy(sₒ)
     s⃰ = s
@@ -35,8 +35,8 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
     Z[0] = z
     H[0] = h
     t = ω̅ * z⃰/log(1/τ̅)
-    Cᵣ, Pᵣ, Πᵣ, Wᵣ = zeros(Int64, R), zeros(R), zeros(R), ones(R)
-    Cᵢ, Pᵢ, Πᵢ, Wᵢ = zeros(Int64, I), zeros(I), zeros(I), ones(I)
+    Cᵣ, Pᵣ, Πᵣ, Wᵣ = zeros(Int, R), zeros(R), zeros(R), ones(R)
+    Cᵢ, Pᵢ, Πᵢ, Wᵢ = zeros(Int, I), zeros(I), zeros(I), ones(I)
     # Step 2: Loop over segments.
     p = Progress(n * j, desc="Computing...", color=:blue, showspeed=true)
     for u ∈ 1:j
@@ -55,7 +55,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
             Cᵢ[i] += 1
             # Step 2.3.2: Using the selected removal and insertion operators destroy and repair the current solution to develop a new solution.
             η = rand(rng)
-            q = Int64(floor(((1 - η) * min(C̲, μ̲ * length(s.C)) + η * min(C̅, μ̅ * length(s.C)))))
+            q = Int(floor(((1 - η) * min(C̲, μ̲ * length(s.C)) + η * min(C̅, μ̅ * length(s.C)))))
             s′= deepcopy(s)
             remove!(rng, q, s′, Ψᵣ[r])
             insert!(rng, s′, Ψᵢ[i])

@@ -1,5 +1,5 @@
 """
-    insert!([rng], s::Solution, method::Symbol)
+    insert!([rng::AbstractRNG], s::Solution, method::Symbol)
 
 Returns solution `s` after inserting open customer nodes to the solution using the given `method`.
 
@@ -35,7 +35,7 @@ function best!(rng::AbstractRNG, s::Solution)
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
     J = eachindex(R)
-    W = ones(Int64, I)                      # W[j]  : selection weight for customer node L[i]
+    W = ones(Int, I)                        # W[j]  : selection weight for customer node L[i]
     X = ElasticMatrix(fill(Inf, (I,J)))     # X[i,j]: insertion cost of customer node L[i] at best position in route R[j]
     P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]: best insertion postion of customer node L[i] in route R[j]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
@@ -134,7 +134,7 @@ function greedy!(rng::AbstractRNG, s::Solution, mode::Symbol)
     J = eachindex(R)
     X = ElasticMatrix(fill(Inf, (I,J)))     # X[i,j]: insertion cost of customer node L[i] at best position in route R[j]
     P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]: best insertion postion of customer node L[i] in route R[j]
-    ϕ = ones(Int64, J)                      # ϕ[j]  : binary weight for route R[j]
+    ϕ = ones(Int, J)                        # ϕ[j]  : binary weight for route R[j]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
         # Step 2.1: Iterate through all open customer nodes and every possible insertion position in each route
@@ -232,13 +232,13 @@ perturb!(rng::AbstractRNG, s::Solution) = greedy!(rng, s, :ptb)
 
 
 """
-    regretk!(rng::AbstractRNG, s::Solution, k̅::Int64)
+    regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
 
 Returns solution `s` after iteratively adding customer nodes with 
 highest regret-k cost at its best position until all open customer 
 nodes have been added to the solution.
 """
-function regretk!(rng::AbstractRNG, s::Solution, k̅::Int64)
+function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
     if all(isclose, s.C) return s end
     preinsert!(s)
     D = s.D
@@ -251,8 +251,8 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int64)
     X = ElasticMatrix(fill(Inf, (I,J)))     # X[i,j]: insertion cost of customer node L[i] at best position in route R[j]
     P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]: best insertion postion of customer node L[i] in route R[j]
     Y = fill(Inf, (I,k̅))                    # Y[i,k]: insertion cost of customer node L[i] at kᵗʰ best position
-    ϕ = ones(Int64, J)                      # ϕ[j]  : binary weight for route R[j]
-    N = zeros(Int64, (I,k̅))                 # N[i,k]: route index of customer node L[j] at kᵗʰ best position
+    ϕ = ones(Int, J)                        # ϕ[j]  : binary weight for route R[j]
+    N = zeros(Int, (I,k̅))                   # N[i,k]: route index of customer node L[j] at kᵗʰ best position
     Z = fill(-Inf, I)                       # Z[i]  : regret-N cost of customer node L[i]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
@@ -369,7 +369,7 @@ Returns solution `s` after iteratively adding customer nodes with
 highest regret-2 cost at its best position until all open customer 
 nodes have been added to the solution.
 """
-regret2!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, Int64(2))
+regret2!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, Int(2))
 """
     regret3!(rng::AbstractRNG, s::Solution)
 
@@ -377,4 +377,4 @@ Returns solution `s` after iteratively adding customer nodes with
 highest regret-3 cost at its best position until all open customer 
 nodes have been added to the solution.
 """
-regret3!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, Int64(3))
+regret3!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, Int(3))

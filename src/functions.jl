@@ -176,7 +176,7 @@ Returns `Solution` as a sequence of nodes in the order of visits.
 function vectorize(s::Solution)
     D = s.D
     C = s.C
-    Z = [Int64[] for _ ∈ D]
+    Z = [Int[] for _ ∈ D]
     for d ∈ D
         iⁿ = d.iⁿ
         if !isopt(d) continue end

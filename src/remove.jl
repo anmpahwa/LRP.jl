@@ -1,5 +1,5 @@
 """
-    remove!([rng], q::Int64, s::Solution, method::Symbol)
+    remove!([rng::AbstractRNG], q::Int, s::Solution, method::Symbol)
 
 Returns solution removing `q` customer nodes from solution s using the given `method`.
 
@@ -20,17 +20,17 @@ Available methods include,
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-remove!(rng::AbstractRNG, q::Int64, s::Solution, method::Symbol)::Solution = isdefined(LRP, method) ? getfield(LRP, method)(rng, q, s) : getfield(Main, method)(rng, q, s)
-remove!(q::Int64, s::Solution, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s, method)
+remove!(rng::AbstractRNG, q::Int, s::Solution, method::Symbol)::Solution = isdefined(LRP, method) ? getfield(LRP, method)(rng, q, s) : getfield(Main, method)(rng, q, s)
+remove!(q::Int, s::Solution, method::Symbol) = remove!(Random.GLOBAL_RNG, q, s, method)
 
 # -------------------------------------------------- NODE REMOVAL --------------------------------------------------
 """
-    randomcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
+    randomcustomer!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after removing exactly `q` customer nodes
 selected randomly.
 """
-function randomcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
+function randomcustomer!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -55,12 +55,12 @@ end
 
 
 """
-    relatedcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
+    relatedcustomer!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after removing exactly `q` customer nodes
 most related to a randomly selected pivot customer node.
 """
-function relatedcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
+function relatedcustomer!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -90,18 +90,18 @@ end
 
 
 """
-    worstcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
+    worstcustomer!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after removing exactly `q` customer nodes 
 with highest removal cost (savings).
 """
-function worstcustomer!(rng::AbstractRNG, q::Int64, s::Solution)
+function worstcustomer!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     X = fill(-Inf, eachindex(C))    # X[i]: removal cost of customer node C[i]
-    ϕ = ones(Int64, eachindex(R))   # ϕ[j]: binary weight for route R[j]
+    ϕ = ones(Int, eachindex(R))   # ϕ[j]: binary weight for route R[j]
     # Step 1: Iterate until q customer nodes have been removed
     n = 0
     while n < q
@@ -153,13 +153,13 @@ end
 
 # -------------------------------------------------- ROUTE REMOVAL --------------------------------------------------
 """
-    randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
+    randomroute!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after iteratively selecting a random route and 
 removing customer nodes from it until exactly `q` customer nodes are
 removed.
 """
-function randomroute!(rng::AbstractRNG, q::Int64, s::Solution)
+function randomroute!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -190,13 +190,13 @@ end
 
 
 """
-    relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
+    relatedroute!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after removing exactly `q` customer 
 nodes from the routes most related to a randomly selected 
 pivot route.
 """
-function relatedroute!(rng::AbstractRNG, q::Int64, s::Solution)
+function relatedroute!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -234,12 +234,12 @@ end
 
 
 """
-    worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
+    worstroute!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after removing exactly `q` customer 
 nodes from low-utilization routes.
 """
-function worstroute!(rng::AbstractRNG, q::Int64, s::Solution)
+function worstroute!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -280,13 +280,13 @@ end
 
 # -------------------------------------------------- VEHICLE REMOVAL --------------------------------------------------
 """
-    randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
+    randomvehicle!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after iteratively selecting a random vehicle and 
 removing customer nodes from its routes until at least `q` customer nodes 
 are removed.
 """
-function randomvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
+function randomvehicle!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -320,13 +320,13 @@ end
 
 
 """
-    relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
+    relatedvehicle!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after removing at least `q` customer nodes
 from the routes of the vehicles most related to a randomly 
 selected pivot vehicle.
 """
-function relatedvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
+function relatedvehicle!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -366,12 +366,12 @@ end
 
 
 """
-    worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
+    worstvehicle!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after removing at least `q` customer 
 nodes from routes of low-utilization vehicles.
 """
-function worstvehicle!(rng::AbstractRNG, q::Int64, s::Solution)
+function worstvehicle!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -410,13 +410,13 @@ end
 
 # -------------------------------------------------- DEPOT REMOVAL --------------------------------------------------
 """
-    randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
+    randomdepot!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after iteratively selecting a random depot node and 
 removing customer nodes from its routes until at least `q` customer nodes 
 are removed.
 """
-function randomdepot!(rng::AbstractRNG, q::Int64, s::Solution)
+function randomdepot!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -450,13 +450,13 @@ end
 
 
 """
-    relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
+    relateddepot!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after removing at least `q` customer nodes 
 from the routes of the depots most related to a randomly selected 
 pivot depot node.
 """
-function relateddepot!(rng::AbstractRNG, q::Int64, s::Solution)
+function relateddepot!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C
@@ -496,12 +496,12 @@ end
 
 
 """
-    worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
+    worstdepot!(rng::AbstractRNG, q::Int, s::Solution)
 
 Returns solution `s` after removing at least `q` customer 
 nodes from routes of low-utilization depot nodes.
 """
-function worstdepot!(rng::AbstractRNG, q::Int64, s::Solution)
+function worstdepot!(rng::AbstractRNG, q::Int, s::Solution)
     preremove!(s)
     D = s.D
     C = s.C

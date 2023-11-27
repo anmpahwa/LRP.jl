@@ -51,7 +51,7 @@ function build(instance::String)
 
     # Arcs
     df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/arcs.csv"), header=false))
-    A  = Dict{Tuple{Int64,Int64},Arc}()
+    A  = Dict{Tuple{Int,Int},Arc}()
     N  = length(D)+length(C)
     for iᵗ ∈ 1:N
         for iʰ ∈ 1:N
@@ -102,14 +102,14 @@ end
 
 
 """
-    cluster(rng::AbstractRNG, k::Int64, instance::String)
+    cluster(rng::AbstractRNG, k::Int, instance::String)
 
 Returns `Solution` created using `k`-means clustering algorithm.
 Here, each cluster is assigned to the nearest depot node and 
 then each customer in this cluster is greedy inserted to the 
 assigned depot node.
 """
-function cluster(rng::AbstractRNG, k::Int64, instance::String)
+function cluster(rng::AbstractRNG, k::Int, instance::String)
     # Step 1: Initialize
     G = build(instance)
     s = Solution(G...)
@@ -141,7 +141,7 @@ function cluster(rng::AbstractRNG, k::Int64, instance::String)
         J = eachindex(R)
         X = ElasticMatrix(fill(Inf, (I,J)))     # X[i,j]: insertion cost of customer node L[i] at best position in route R[j]
         P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]: best insertion postion of customer node L[i] in route R[j]
-        ϕ = ones(Int64, J)                      # ϕ[j]  : binary weight for route R[j]
+        ϕ = ones(Int, J)                        # ϕ[j]  : binary weight for route R[j]
         # Step 3.1: Iterate until all open customer nodes have been inserted into the route
         for _ ∈ I
             # Step 3.1.1: Iterate through all open customer nodes and every possible insertion position in each route

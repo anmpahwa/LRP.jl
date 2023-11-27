@@ -11,7 +11,7 @@ function visualize(instance; backend=gr)
     X = zeros(Float64, K)
     Y = zeros(Float64, K)
     M₁= fill("color", K)
-    M₂= zeros(Int64, K)
+    M₂= zeros(Int, K)
     M₃= fill(:shape, K)
     # Depot nodes
     for (k,d) ∈ pairs(D)
@@ -49,7 +49,7 @@ function visualize(s::Solution; backend=gr)
         X = zeros(Float64, K)
         Y = zeros(Float64, K)
         M₁= fill("color", K)
-        M₂= zeros(Int64, K)
+        M₂= zeros(Int, K)
         M₃= fill(:shape, K)
         for k ∈ 1:K
             i = Z[k]
@@ -70,14 +70,14 @@ function visualize(s::Solution; backend=gr)
         plot!(X, Y, color="#23415a")
     end
     # Non-operational nodes: closed depot nodes and open customer nodes
-    Z = Int64[] 
+    Z = Int[] 
     for d ∈ D if !isopt(d) push!(Z, d.iⁿ) end end
     for c ∈ C if isopen(c) push!(Z, c.iⁿ) end end
     K = length(Z)
     X = zeros(Float64, K)
     Y = zeros(Float64, K)
     M₁= fill("color", K)
-    M₂= zeros(Int64, K)
+    M₂= zeros(Int, K)
     M₃= fill(:shape, K)
     for k ∈ 1:K
         i = Z[k]
@@ -98,7 +98,7 @@ function visualize(s::Solution; backend=gr)
      # Annotation
      x = min(minimum(getproperty.(C, :x)), minimum(getproperty.(D, :x)))
      y = max(maximum(getproperty.(C, :y)), maximum(getproperty.(D, :y)))
-     annotate!(x, y, text("f(s): $(Int64(round(f(s))))", :left, 10))
+     annotate!(x, y, text("f(s): $(Int(round(f(s))))", :left, 10))
     return fig
 end
 
@@ -143,7 +143,7 @@ function pltcnv(Z::OffsetVector{Float64}; backend=gr)
     fig = plot(legend=:none)
 
     z⃰ = Z[0]
-    Y₁ = Int64[]
+    Y₁ = Int[]
     for (k, z) ∈ pairs(Z)
         if z < 0.99z⃰ 
             z⃰ = z

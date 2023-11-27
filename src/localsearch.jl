@@ -1,5 +1,5 @@
 """
-    localsearch!(rng::AbstractRNG, k̅::Int64, s::Solution, method::Symbol)
+    localsearch!([rng::AbstractRNG], k̅::Int, s::Solution, method::Symbol)
 
 Returns solution `s` after performing local seach on the solution using given `method` for `k̅` iterations.
 
@@ -14,18 +14,18 @@ Available methods include,
 
 Optionally specify a random number generator `rng` as the first argument (defaults to `Random.GLOBAL_RNG`).
 """
-localsearch!(rng::AbstractRNG, k̅::Int64, s::Solution, method::Symbol)::Solution = isdefined(LRP, method) ? getfield(LRP, method)(rng, k̅, s) : getfield(Main, method)(rng, k̅, s)
-localsearch!(k̅::Int64, s::Solution, method::Symbol) = localsearch!(Random.GLOBAL_RNG, k̅, s, method)
+localsearch!(rng::AbstractRNG, k̅::Int, s::Solution, method::Symbol)::Solution = isdefined(LRP, method) ? getfield(LRP, method)(rng, k̅, s) : getfield(Main, method)(rng, k̅, s)
+localsearch!(k̅::Int, s::Solution, method::Symbol) = localsearch!(Random.GLOBAL_RNG, k̅, s, method)
 
 
 """
-    intramove!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    intramove!(rng::AbstractRNG, k̅::Int, s::Solution)
 
 Returns solution `s` after moving a randomly selected customer node 
 to its best position in the same route if the move results in a reduction 
 in objective function value, repeating for `k̅` iterations.
 """
-function intramove!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function intramove!(rng::AbstractRNG, k̅::Int, s::Solution)
     prelocalsearch!(s)
     D = s.D
     C = s.C
@@ -74,13 +74,13 @@ function intramove!(rng::AbstractRNG, k̅::Int64, s::Solution)
 end
 
 """
-    intermove!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
 
 Returns solution `s` after moving a randomly selected customer node 
 to its best position in another route if the move results in a reduction 
 in objective function value, repeating for `k̅` iterations.
 """
-function intermove!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
     prelocalsearch!(s)
     D = s.D
     C = s.C
@@ -137,14 +137,14 @@ end
 
 
 """
-    intraswap!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    intraswap!(rng::AbstractRNG, k̅::Int, s::Solution)
 
 Returns solution `s` after swapping two randomly selected 
 customers from the same route if the swap results in a 
 reduction in objective function value, repeating for `k̅` 
 iterations.
 """
-function intraswap!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function intraswap!(rng::AbstractRNG, k̅::Int, s::Solution)
     prelocalsearch!(s)
     z = f(s)
     D = s.D
@@ -207,14 +207,14 @@ function intraswap!(rng::AbstractRNG, k̅::Int64, s::Solution)
 end
 
 """
-    interswap!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
 
 Returns solution `s` after swapping two randomly selected 
 customers from different routes if the swap results in a 
 reduction in objective function value, repeating for `k̅` 
 iterations.
 """
-function interswap!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
     prelocalsearch!(s)
     z = f(s)
     D = s.D
@@ -279,14 +279,14 @@ end
 
 
 """
-    intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    intraopt!(rng::AbstractRNG, k̅::Int, s::Solution)
 
 Returns solution `s` after iteratively taking 2 arcs from the same route 
 and reconfiguring them (total possible reconfigurations 2²-1 = 3) if the 
 reconfiguration results in a reduction in objective function value, repeating 
 for `k̅` iterations.
 """
-function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function intraopt!(rng::AbstractRNG, k̅::Int, s::Solution)
     prelocalsearch!(s)
     z = f(s)
     D = s.D
@@ -360,14 +360,14 @@ function intraopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
 end
 
 """
-    interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
 
 Returns solution `s` after iteratively taking 2 arcs from the different 
 routes and reconfiguring them (total possible reconfigurations 2²-1 = 3) 
 if the reconfiguration results in a reduction in objective function value, 
 repeating for `k̅` iterations.
 """
-function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
     prelocalsearch!(s)
     z = f(s)
     D = s.D
@@ -480,13 +480,13 @@ end
 
 
 """
-    swapdepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
 
 Returns solution `s` after swapping vehicles, routes, and customer nodes
 between two randomly selected depot nodes if the swap results in a reduction 
 in objective function value, repeating for `k̅` iterations.
 """
-function swapdepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
+function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
     prelocalsearch!(s)
     z = f(s)
     D = s.D
