@@ -10,6 +10,7 @@ Available methods include,
 - inter-swap    : `:interswap!`
 - intra-opt     : `:intraopt!`
 - inter-opt     : `:interopt!`
+- swapdepot     : `:swapdepot!`
 
 Optionally specify a random number generator `rng` as the first argument (defaults to `Random.GLOBAL_RNG`).
 """
@@ -97,6 +98,7 @@ function intermove!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.3: Select a random route
         W  = [isequal(r¹, r²) ? 0 : 1 for r² ∈ R]
         r² = sample(rng, R, Weights(W))
+        if isequal(r¹, r²) continue end
         # Step 1.4: Iterate through all position in the route
         x  = 0.
         p  = (nᵗ.iⁿ, nʰ.iⁿ)
@@ -154,25 +156,26 @@ function intraswap!(rng::AbstractRNG, k̅::Int64, s::Solution)
         n² = sample(rng, C)
         W  = [isequal(n², n⁵) || !isequal(n².r, n⁵.r) ? 0. : relatedness(n², n⁵, s) for n⁵ ∈ C]
         n⁵ = sample(rng, C, OffsetWeights(W))
-        r², r⁵ = n².r, n⁵.r
-        n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
-        n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
-        n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
-        n⁶ = isequal(r⁵.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
+        if isequal(n², n⁵) || !isequal(n².r, n⁵.r) continue end
+        rᵒ = n².r
+        n¹ = isequal(rᵒ.iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
+        n³ = isequal(rᵒ.iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
+        n⁴ = isequal(rᵒ.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
+        n⁶ = isequal(rᵒ.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
         # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
         if isequal(n³, n⁵)
-            removenode!(n², n¹, n³, r², s)
-            insertnode!(n², n⁵, n⁶, r⁵, s)
+            removenode!(n², n¹, n³, rᵒ, s)
+            insertnode!(n², n⁵, n⁶, rᵒ, s)
         # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
         elseif isequal(n², n⁶)
-            removenode!(n², n¹, n³, r², s)
-            insertnode!(n², n⁴, n⁵, r⁵, s)
+            removenode!(n², n¹, n³, rᵒ, s)
+            insertnode!(n², n⁴, n⁵, rᵒ, s)
         # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
         else 
-            removenode!(n², n¹, n³, r², s)
-            removenode!(n⁵, n⁴, n⁶, r⁵, s)
-            insertnode!(n⁵, n¹, n³, r², s)
-            insertnode!(n², n⁴, n⁶, r⁵, s)
+            removenode!(n², n¹, n³, rᵒ, s)
+            removenode!(n⁵, n⁴, n⁶, rᵒ, s)
+            insertnode!(n⁵, n¹, n³, rᵒ, s)
+            insertnode!(n², n⁴, n⁶, rᵒ, s)
         end
         # Step 1.2: Compute change in objective function value
         z′ = f(s)
@@ -183,18 +186,18 @@ function intraswap!(rng::AbstractRNG, k̅::Int64, s::Solution)
         else
             # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
             if isequal(n³, n⁵)
-                removenode!(n², n⁵, n⁶, r⁵, s)
-                insertnode!(n², n¹, n³, r², s)
+                removenode!(n², n⁵, n⁶, rᵒ, s)
+                insertnode!(n², n¹, n³, rᵒ, s)
             # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
             elseif isequal(n², n⁶)
-                removenode!(n², n⁴, n⁵, r⁵, s)
-                insertnode!(n², n¹, n³, r², s)
+                removenode!(n², n⁴, n⁵, rᵒ, s)
+                insertnode!(n², n¹, n³, rᵒ, s)
             # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
             else 
-                removenode!(n⁵, n¹, n³, r², s)
-                removenode!(n², n⁴, n⁶, r⁵, s)
-                insertnode!(n², n¹, n³, r², s)
-                insertnode!(n⁵, n⁴, n⁶, r⁵, s)
+                removenode!(n⁵, n¹, n³, rᵒ, s)
+                removenode!(n², n⁴, n⁶, rᵒ, s)
+                insertnode!(n², n¹, n³, rᵒ, s)
+                insertnode!(n⁵, n⁴, n⁶, rᵒ, s)
             end
         end
     end
@@ -223,6 +226,7 @@ function interswap!(rng::AbstractRNG, k̅::Int64, s::Solution)
         n² = sample(rng, C)
         W  = [isequal(n², n⁵) || isequal(n².r, n⁵.r) ? 0. : relatedness(n², n⁵, s) for n⁵ ∈ C]
         n⁵ = sample(rng, C, OffsetWeights(W))
+        if isequal(n², n⁵) || isequal(n².r, n⁵.r) continue end
         r², r⁵ = n².r, n⁵.r
         n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
         n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
@@ -375,8 +379,9 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
         # Step 1.1: Iteratively take 2 arcs from different routes
         # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
         r² = sample(rng, R, Weights(W))
-        W′ = [isequal(r², r⁵) ? 0. : relatedness(r², r⁵, s) for r⁵ ∈ R]
+        W′ = [isequal(r², r⁵) || !isopt(r⁵) ? 0. : relatedness(r², r⁵, s) for r⁵ ∈ R]
         r⁵ = sample(rng, R, Weights(W′))
+        if isequal(r², r⁵) || !isopt(r⁵) continue end
         d² = D[r².iᵈ]
         d⁵ = D[r⁵.iᵈ]
         i  = rand(rng, 1:r².n)
@@ -469,5 +474,64 @@ function interopt!(rng::AbstractRNG, k̅::Int64, s::Solution)
     end
     postlocalsearch!(s)
     # Step 2: Return solution
+    return s
+end
+
+
+
+"""
+    swapdepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
+
+Returns solution `s` after swapping vehicles, routes, and customer nodes
+between two randomly selected depot nodes if the swap results in a reduction 
+in objective function value, repeating for `k̅` iterations.
+"""
+function swapdepot!(rng::AbstractRNG, k̅::Int64, s::Solution)
+    prelocalsearch!(s)
+    z = f(s)
+    D = s.D
+    C = s.C
+    W = isopt.(D)
+    # Step 1: Iterate for k̅ iterations
+    for _ ∈ 1:k̅
+        # Step 1.1: Select a random depot pair
+        d¹ = sample(rng, D, Weights(W))
+        W′ = [(isequal(d¹, d²) || !isequal(d¹.jⁿ, d².jⁿ)) ? 0. : relatedness(d¹, d², s) for d² ∈ D]
+        d² = sample(rng, D, Weights(W′))
+        # Step 1.2: Identify conditions when depot swap must be restricted
+        if isequal(d¹, d²) || !isequal(d¹.jⁿ, d².jⁿ) continue end
+        # Step 1.3: Swap vehicles, routes, and customer nodes
+        I¹ = eachindex(d¹.V)
+        I² = eachindex(d².V)
+        while !isempty(d¹.V)
+            v = d¹.V[1]
+            removenode!(d¹, v, s)
+            insertnode!(d², v, s)
+        end
+        for iᵛ ∈ I²
+            v = d².V[1]
+            removenode!(d², v, s)
+            insertnode!(d¹, v, s)
+        end
+        z′ = f(s)
+        Δ  = z′ - z
+        # Step 1.4: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
+        if Δ < 0 z = z′
+        # Step 1.5: Reconfigure back to the original state
+        else
+            I¹ = eachindex(d¹.V)
+            I² = eachindex(d².V)
+            while !isempty(d¹.V)
+                v = d¹.V[1]
+                removenode!(d¹, v, s)
+                insertnode!(d², v, s)
+            end
+            for iᵛ ∈ I²
+                v = d².V[1]
+                removenode!(d², v, s)
+                insertnode!(d¹, v, s)
+            end
+        end
+    end
     return s
 end
