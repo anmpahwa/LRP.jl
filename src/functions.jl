@@ -284,27 +284,6 @@ end
 
 
 """
-    relatedness(c::CustomerNode, d::DepotNode, s::Solution)
-
-Returns a measure of similarity between customer nodes `c` and depot node `d`.
-"""
-function relatedness(c::CustomerNode, d::DepotNode, s::Solution)
-    ϵ  = 1e-5
-    φᵒ = (isequal(c.iᵈ, d.iⁿ)) / 1
-    φ  = (1 + φᵒ) / 2
-    q  = 0.
-    l  = s.A[(c.iⁿ,d.iⁿ)].l
-    t  = 0.
-    z  = φ/(q + l + t + ϵ)
-    return z
-end
-"""
-    relatedness(d::DepotNode, c::CustomerNode, s::Solution)
-
-Returns a measure of similarity between depot node `d` and customer nodes `c`.
-"""
-relatedness(d::DepotNode, c::CustomerNode, s::Solution) = relatedness(c, d, s)
-"""
     relatedness(c¹::CustomerNode, c²::CustomerNode, s::Solution)
 
 Returns a measure of similarity between customer nodes `c¹` and `c²`.
@@ -317,10 +296,7 @@ function relatedness(c¹::CustomerNode, c²::CustomerNode, s::Solution)
     d² = s.D[r².iᵈ]
     v¹ = d¹.V[r¹.iᵛ]
     v² = d².V[r².iᵛ]
-    φʳ = (isequal(r¹, r²)) / 1
-    φᵈ = (isequal(d¹.jⁿ, d².jⁿ) + isequal(d¹, d²)) / 2
-    φᵛ = (isequal(v¹.jᵛ, v².jᵛ) + isequal(v¹, v²)) / 2
-    φ  = (1 + φᵈ + φᵛ + φʳ) / 4
+    φ  = (1 + isequal(r¹, r²)) / 2
     q  = abs(c¹.q - c².q)
     l  = s.A[(c¹.iⁿ,c².iⁿ)].l
     t  = abs(c¹.tᵉ - c².tᵉ) + abs(c¹.tˡ - c².tˡ)
@@ -338,10 +314,8 @@ function relatedness(r¹::Route, r²::Route, s::Solution)
     d² = s.D[r².iᵈ]
     v¹ = d¹.V[r¹.iᵛ]
     v² = d².V[r².iᵛ]
-    φᵈ = (isequal(d¹.jⁿ, d².jⁿ) + isequal(d¹, d²)) / 2
-    φᵛ = (isequal(v¹.jᵛ, v².jᵛ) + isequal(v¹, v²)) / 2
-    φ  = (1 + φᵈ + φᵛ) / 3 
-    q  = abs(r¹.q - r².q)
+    φ  = 1
+    q  = abs(v¹.qᵛ - v².qᵛ)
     l  = sqrt((r¹.x - r².x)^2 + (r¹.y - r².y)^2)
     t  = abs(r¹.tˢ - r².tˢ) + abs(r¹.tᵉ - r².tᵉ)
     z  = φ/(q + l + t + ϵ)
@@ -368,9 +342,7 @@ function relatedness(v¹::Vehicle, v²::Vehicle, s::Solution)
         x² += r.n * r.x / v².n
         y² += r.n * r.y / v².n
     end
-    φᵈ = (isequal(d¹.jⁿ, d².jⁿ) + isequal(d¹, d²)) / 2
-    φᵛ = (isequal(v¹.jᵛ, v².jᵛ) + isequal(v¹, v²)) / 2
-    φ  = (1 + φᵈ + φᵛ) / 3
+    φ  = 1
     q  = abs(v¹.qᵛ - v².qᵛ)
     l  = sqrt((x¹ - x²)^2 + (y¹ - y²)^2)
     t  = abs(v¹.tˢ - v².tˢ) + abs(v¹.tᵉ - v².tᵉ)
@@ -384,11 +356,30 @@ Returns a measure of similarity between depot nodes `d¹` and `d²`.
 """
 function relatedness(d¹::DepotNode, d²::DepotNode, s::Solution)
     ϵ  = 1e-5
-    φᵈ = (isequal(d¹.jⁿ, d².jⁿ) + isequal(d¹, d²)) / 2
-    φ  = (1 + φᵈ) / 2
+    φ  = (1 + isequal(d¹.jⁿ, d².jⁿ)) / 2
     q  = abs(d¹.qᵈ - d².qᵈ)
     l  = s.A[(d¹.iⁿ,d².iⁿ)].l
     t  = abs(d¹.tˢ - d².tˢ) + abs(d¹.tᵉ - d².tᵉ)
     z  = φ/(q + l + t + ϵ)
     return z
 end
+"""
+    relatedness(c::CustomerNode, d::DepotNode, s::Solution)
+
+Returns a measure of similarity between customer nodes `c` and depot node `d`.
+"""
+function relatedness(c::CustomerNode, d::DepotNode, s::Solution)
+    ϵ  = 1e-5
+    φ  = 1
+    q  = 0.
+    l  = s.A[(c.iⁿ,d.iⁿ)].l
+    t  = 0.
+    z  = φ/(q + l + t + ϵ)
+    return z
+end
+"""
+    relatedness(d::DepotNode, c::CustomerNode, s::Solution)
+
+Returns a measure of similarity between depot node `d` and customer nodes `c`.
+"""
+relatedness(d::DepotNode, c::CustomerNode, s::Solution) = relatedness(c, d, s)
