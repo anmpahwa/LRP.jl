@@ -534,4 +534,3 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
     # Step 2: Return solution
     return s
 end
-# TODO: Randomize depot insetion position in a route

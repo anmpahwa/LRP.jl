@@ -32,3 +32,7 @@ export  initialize, vectorize, f, isfeasible,
         ALNSparameters, ALNS, visualize, animate, pltcnv
 
 end
+
+# TODO: Randomize depot insertion position in a route.
+# TODO: Update constraint violation penalty evaluation.
+# TODO: Minimalize addroute through improved constraint violation penalty evaluation.

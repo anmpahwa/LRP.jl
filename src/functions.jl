@@ -251,7 +251,6 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
     z = φᶠ * πᶠ + φᵒ * πᵒ + φᵖ * πᵖ
     return z
 end
-# TODO: Update penalty violation accumulation
 
 
 
