@@ -362,7 +362,7 @@ Returns a measure of similarity between depot nodes `d¹` and `d²` in solution 
 """
 function relatedness(d¹::DepotNode, d²::DepotNode, s::Solution)
     ϵ  = 1e-5
-    φ  = (1 + isequal(d¹.jⁿ, d².jⁿ)) / 2
+    φ  = 1
     q  = abs(d¹.qᵈ - d².qᵈ)
     l  = s.A[(d¹.iⁿ,d².iⁿ)].l
     t  = abs(d¹.tˢ - d².tˢ) + abs(d¹.tᵉ - d².tᵉ)

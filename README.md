@@ -4,11 +4,11 @@
 [![Build Status](https://github.com/anmol1104/LRP.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/anmol1104/LRP.jl/actions/workflows/CI.yml?query=branch%3Amaster)
 [![Coverage](https://codecov.io/gh/anmol1104/LRP.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/anmol1104/LRP.jl)
 
-capacitated location routing problem with time-windows with heterogeneous fleet of multi-route delivery vehicles
+### capacitated location routing problem with time-windows and heterogeneous fleet of multi-route delivery vehicles
 
-Given, a graph `G = (D, C, A)` with set of depots `D` with capacity `d.q`, lower threshold `d.pˡ` and upper threshold `d.pᵘ` on share of customers handled, working-hours start time `d.tˢ` and end tme  `d.tᵉ`,  operational cost  `d.πᵒ` per package, fixed cost `d.πᶠ`, mandated depot use `d.φ`, and fleet of vehicles `d.V` with capacity `v.q`, range `v.l`, speed `v.s`, refueling time `v.τᶠ`, depot node service time `v.τᵈ` (per unit demand), customer node parking time `v.τᶜ`, driver working hours `v.τʷ`, maximum number of vehicle routes permitted `v.r̅`, operational cost `v.πᵈ` per unit distance and `v.πᵗ` per unit time, fixed cost `v.πᶠ`, and  for every vehicle `v ∈ d.V`, for every depot `d ∈ D`; set of customer nodes `C` with demand `c.q`, service time `c.τᶜ`, delivery time-window `[c.tᵉ,c.tˡ]` for every customer `c ∈ C`; set of arcs `A` with length `l` for every arc `(i,j) ∈ A`; the objective is to develop least cost routes from select depot nodes using select vehicles such that every customer node is visited exactly once while also accounting for depot capacity, vehicle capacity, vehicle range, driver working-hours, and customers' time-windows.
+Given, a graph `G = (D, C, A)` with set of depots `D`, set of customer nodes `C`, and set of arcs `A`, the objective is to develop least cost routes from select depot nodes using select vehicles such that every customer node is visited exactly once while accounting for customer service and time-window constraints; vehicle capacity, range, and working-hours constraints; and depot operations mandate and capacity constraints.
 
-This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an optimal solution for the Location Routing Problem given ALNS optimization parameters,
+This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an optimal solution for the location routing problem given an initial solution developed using iterated clustering method and ALNS optimization parameters,
 - j     :   Number of segments in the ALNS
 - k     :   Number of segments to reset ALNS
 - n     :   Number of iterations in an ALNS segment
@@ -30,8 +30,6 @@ This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an
 - φ     :   Local search trigger
 - θ     :   Cooling rate
 - ρ     :   Reaction factor
-
-and an initial solution developed using iterated clustering method,
 
 The ALNS metaheuristic iteratively removes a set of nodes using,
 - Random Customer Node Removal  : `:randomcustomer!`
@@ -63,6 +61,6 @@ In every few iterations, the ALNS metaheuristic performs local search with,
 - inter-opt     : `:interopt!`
 - swapdepot     : `:swapdepot!`
 
-See benchmark.jl for usage
+See benchmark.jl for usage.
 
 Additional removal, insertion, and local search methods can be defined.

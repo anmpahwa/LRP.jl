@@ -9,20 +9,19 @@ function build(instance::String)
     D  = Vector{DepotNode}(undef, nrow(df))
     for k ∈ 1:nrow(df)
         iⁿ = df[k,1]
-        jⁿ = df[k,2]
-        x  = df[k,3]
-        y  = df[k,4]
-        qᵈ = df[k,5]
-        tˢ = df[k,6]
-        tᵉ = df[k,7]
+        x  = df[k,2]
+        y  = df[k,3]
+        qᵈ = df[k,4]
+        tˢ = df[k,5]
+        tᵉ = df[k,6]
         τ  = Inf
         n  = 0
         q  = 0.
         l  = 0.
-        πᵒ = df[k,8]
-        πᶠ = df[k,9]
-        φ  = df[k,10]
-        d  = DepotNode(iⁿ, jⁿ, x, y, qᵈ, tˢ, tᵉ, τ, n, q, l, πᵒ, πᶠ, φ, Vehicle[])
+        πᵒ = df[k,7]
+        πᶠ = df[k,8]
+        φ  = df[k,9]
+        d  = DepotNode(iⁿ, x, y, qᵈ, tˢ, tᵉ, τ, n, q, l, πᵒ, πᶠ, φ, Vehicle[])
         D[iⁿ] = d
     end
 

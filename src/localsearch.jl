@@ -494,11 +494,10 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
     for _ ∈ 1:k̅
         # Step 1.1: Select a random depot pair
         d¹ = sample(rng, D, Weights(W))
-        W′ = [(isequal(d¹, d²) || !isequal(d¹.jⁿ, d².jⁿ)) ? 0. : relatedness(d¹, d², s) for d² ∈ D]
+        W′ = [isequal(d¹, d²) ? 0. : relatedness(d¹, d², s) for d² ∈ D]
         d² = sample(rng, D, Weights(W′))
-        # Step 1.2: Identify conditions when depot swap must be restricted
-        if isequal(d¹, d²) || !isequal(d¹.jⁿ, d².jⁿ) continue end
-        # Step 1.3: Swap vehicles, routes, and customer nodes
+        if isequal(d¹, d²) continue end
+        # Step 1.2: Swap vehicles, routes, and customer nodes
         I¹ = eachindex(d¹.V)
         I² = eachindex(d².V)
         while !isempty(d¹.V)
@@ -513,9 +512,9 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
         end
         z′ = f(s)
         Δ  = z′ - z
-        # Step 1.4: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
+        # Step 1.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
         if Δ < 0 z = z′
-        # Step 1.5: Reconfigure back to the original state
+        # Step 1.4: Reconfigure back to the original state
         else
             I¹ = eachindex(d¹.V)
             I² = eachindex(d².V)
@@ -531,6 +530,8 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
             end
         end
     end
+    postlocalsearch!(s)
+    # Step 2: Return solution
     return s
 end
 # TODO: Randomize depot insetion position in a route

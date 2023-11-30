@@ -87,16 +87,15 @@ A `Node` is a point on the graph.
 """
 abstract type Node end
 """
-    DepotNode(iⁿ::Int, jⁿ::Int, x::Float64, y::Float64, qᵈ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, πᵒ::Float64, πᶠ::Float64, φ::Float64, V::Vector{Vehicle})
+    DepotNode(iⁿ::Int, x::Float64, y::Float64, qᵈ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, πᵒ::Float64, πᶠ::Float64, φ::Int, V::Vector{Vehicle})
 
-A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ` in echelon
-`jⁿ`, capacity `qᵈ`, working-hours start time `tˢ` and end tme `tᵉ`, slack time `τ`, 
-total customers served `n`, demand served `q`, total route length `l`, operational 
-cost `πᵒ` per package, fixed cost `πᶠ`, operations mandate `φ`, and fleet of vehicles `V`.
+A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ`, capacity 
+`qᵈ`, working-hours start time `tˢ` and end tme `tᵉ`, slack time `τ`, total customers 
+served `n`, demand served `q`, total route length `l`, operational cost `πᵒ` per 
+package, fixed cost `πᶠ`, operations mandate `φ`, and fleet of vehicles `V`.
 """
 mutable struct DepotNode <: Node
     iⁿ::Int                                                                         # Depot node index
-    jⁿ::Int                                                                         # Depot echelon
     x::Float64                                                                      # Depot node location on the x-axis
     y::Float64                                                                      # Depot node location in the y-axis
     qᵈ::Float64                                                                     # Depot capacity
