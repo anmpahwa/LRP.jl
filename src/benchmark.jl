@@ -103,9 +103,9 @@ let
             println("   Optimal: $(isfeasible(s⃰))")
             # Optimal solution characteristics
             println("Optimal solution characteristics:")
-            println("   Number of depots: $(sum([LRP.isopt(d) for d ∈ s⃰.D]))")
-            println("   Number of vehicles: $(sum([LRP.isopt(v) for d ∈ s⃰.D for v ∈ d.V]))")
-            println("   Number of routes: $(sum([LRP.isopt(r) for d ∈ s⃰.D for v ∈ d.V for r ∈ v.R]))")
+            println("   Number of depots: $(sum([!iszero(d.n) for d ∈ s⃰.D]))")
+            println("   Number of vehicles: $(sum([!iszero(v.n) for d ∈ s⃰.D for v ∈ d.V]))")
+            println("   Number of routes: $(sum([!iszero(r.n) for d ∈ s⃰.D for v ∈ d.V for r ∈ v.R]))")
             # Store Results
             df₁[i,j+1] = f(s⃰)
             df₂[i,j+1] = t
