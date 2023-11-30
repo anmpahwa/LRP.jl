@@ -5,11 +5,11 @@ using CPUTime
 using DataFrames
 
 let
-    # Set I
+    # Set A
     A = ["prins20-5-1", "gaskell36-5", "prins50-5-1b", "daskin88-8"];
-    # Set II
+    # Set B
     B = ["prins100-5-2", "prins100-10-2b", "christofides100-10"]
-    # Set III
+    # Set C
     C = ["min134-8", "daskin150-10", "prins200-10-3"] 
     # Define instances
     instances = [A..., B..., C...]
