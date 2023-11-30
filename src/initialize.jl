@@ -24,7 +24,6 @@ function build(instance::String)
         d  = DepotNode(iⁿ, x, y, qᵈ, tˢ, tᵉ, τ, n, q, l, πᵒ, πᶠ, φ, Vehicle[])
         D[iⁿ] = d
     end
-
     # Customer nodes
     df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/customer_nodes.csv")))
     I  = (df[1,1]:df[nrow(df),1])
@@ -47,7 +46,6 @@ function build(instance::String)
         c  = CustomerNode(iⁿ, iʳ, iᵛ, iᵈ, x, y, q, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
         C[iⁿ] = c
     end
-
     # Arcs
     df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/arcs.csv"), header=false))
     A  = Dict{Tuple{Int,Int},Arc}()
@@ -59,7 +57,6 @@ function build(instance::String)
             A[(iᵗ,iʰ)] = a
         end
     end
-
     # Vehicles
     df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/vehicles.csv")))
     for k ∈ 1:nrow(df)
@@ -88,12 +85,10 @@ function build(instance::String)
         push!(d.V, v)
     end
     V  = [v for d ∈ D for v ∈ d.V]
-
     φᵈ = iszero(getproperty.(D, :tˢ)) && iszero(getproperty.(D, :tᵉ))
     φᶜ = iszero(getproperty.(C, :tᵉ)) && iszero(getproperty.(C, :tˡ))
     φᵛ = iszero(getproperty.(V, :τʷ)) && iszero(getproperty.(V, :πᵗ))
     global φᵀ = !(φᵈ && φᶜ && φᵛ)::Bool
-    
     G  = (D, C, A)
     return G
 end

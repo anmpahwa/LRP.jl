@@ -141,7 +141,6 @@ Uses given `backend` to plot (defaults to `gr`).
 function pltcnv(Z::OffsetVector{Float64}; backend=gr)
     backend()
     fig = plot(legend=:none)
-
     z⃰ = Z[0]
     Y₁ = Int[]
     for (k, z) ∈ pairs(Z)
@@ -151,7 +150,6 @@ function pltcnv(Z::OffsetVector{Float64}; backend=gr)
         end
     end
     vline!(Y₁, color=:black, linewidth=0.25)
-
     Y₂ = zeros(eachindex(Z))
     z⃰  = minimum(Z)
     for (k, z) ∈ pairs(Z)
@@ -159,6 +157,5 @@ function pltcnv(Z::OffsetVector{Float64}; backend=gr)
     end
     X = eachindex(Z)
     plot!(X, Y₂, xlabel="iterations", ylabel="deviation from the best (%)", color=:steelblue)
-
     return fig
 end

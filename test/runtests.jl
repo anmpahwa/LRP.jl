@@ -54,7 +54,6 @@ let
         θ   =   0.9985                  ,
         ρ   =   0.1
     );
-
     # Vehicle Routing Problem with time-windows
     @testset "VRPTW" begin
         instances = ["r101", "c101"]
@@ -68,8 +67,6 @@ let
             @test f(s⃰) ≤ f(sₒ)
         end
     end
-
-
     # Location Routing Problem
     @testset "LRP" begin
         instances = ["prins20-5-1", "prins50-5-1b"]
@@ -83,7 +80,6 @@ let
             @test f(s⃰) ≤ f(sₒ)
         end
     end
-    
     return
 end
         
