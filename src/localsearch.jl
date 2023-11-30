@@ -139,10 +139,9 @@ end
 """
     intraswap!(rng::AbstractRNG, k̅::Int, s::Solution)
 
-Returns solution `s` after swapping two randomly selected 
-customers from the same route if the swap results in a 
-reduction in objective function value, repeating for `k̅` 
-iterations.
+Returns solution `s` after swapping two randomly selected customers from 
+the same route if the swap results in a reduction in objective function 
+value, repeating for `k̅` iterations.
 """
 function intraswap!(rng::AbstractRNG, k̅::Int, s::Solution)
     prelocalsearch!(s)
@@ -209,10 +208,9 @@ end
 """
     interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
 
-Returns solution `s` after swapping two randomly selected 
-customers from different routes if the swap results in a 
-reduction in objective function value, repeating for `k̅` 
-iterations.
+Returns solution `s` after swapping two randomly selected customers from 
+different routes if the swap results in a reduction in objective function 
+value, repeating for `k̅` iterations.
 """
 function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
     prelocalsearch!(s)
@@ -535,3 +533,4 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
     end
     return s
 end
+# TODO: Randomize depot insetion position in a route

@@ -188,6 +188,7 @@ function insertnode!(d::DepotNode, v::Vehicle, s::Solution)
     d.τ = min(τ, d.τ)
     return s
 end
+# TODO: Randomize depot insetion position in a route
 
 
 
@@ -397,6 +398,7 @@ function addroute(r::Route, s::Solution)
     if isequal(length(v.R), v.r̅) return false end
     return true
 end
+# TODO: Test removing second condtion through improved accounting of constraint violation in the objective function evaluation
 """
     deleteroute(r::Route, s::Solution)
 
@@ -578,8 +580,8 @@ end
 """
     postlocalsearch!(s::Solution)
 
-Post-localsearch procedures. 
-Returns solution `s` correcting vehicle and route indices.
+Post-localsearch procedures.
+Returns solution `s`.
 """
 function postlocalsearch!(s::Solution)
     return s

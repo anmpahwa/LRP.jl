@@ -9,50 +9,50 @@ isopt(r::Route) = !iszero(r.n)
     isopt(v::Vehicle)
 
 Returns `true` if vehicle `v` is operational.
-A `Vehicle` is defined operational if any of its routes is operational.
+A `Vehicle` is defined operational if it serves at least one customer.
 """
 isopt(v::Vehicle) = !iszero(v.n)
 """
     isopt(d::DepotNode)
     
 Returns `true` if depot node `d` is operational.
-A `DepotNode` is defined operational if any of its vehicles is operational.
+A `DepotNode` is defined operational if it serves at least one customer.
 """
 isopt(d::DepotNode) = !iszero(d.n)
 
 
 
 """
-    isopen(d::DepotNode)
-
-Returns `true` if depot node `d` is not operational.
-A `DepotNode` is defined operational if any of its vehicles is operational.
-"""  
-isopen(d::DepotNode) = isopt(d)
-"""
     isopen(c::CustomerNode)
     
 Returns `true` if customer node `c` is open.
-A `CustomerNode` is defined open if it is not being served by any vehicle-route.
+A `CustomerNode` is defined open if it is not being serviced.
 """
 isopen(c::CustomerNode) = isequal(c.r, NullRoute)
+"""
+    isopen(d::DepotNode)
+
+Returns `true` if depot node `d` is operational.
+A `DepotNode` is defined operational if it serves at least one customer.
+"""  
+isopen(d::DepotNode) = !iszero(d.n)
 
 
 
+"""
+    isclose(c::CustomerNode)
+
+Returns `true` if customer node `c` is closed.
+A `CustomerNode` is defined closed if it is being serviced.
+"""  
+isclose(c::CustomerNode) = !isequal(c.r, NullRoute)
 """
     isclose(d::DepotNode)
 
 Returns `true` if depot node `d` is not operational.
-A `DepotNode` is defined operational if any of its vehicles is operational.
+A `DepotNode` is defined non-operational if it serves no customer.
 """  
-isclose(d::DepotNode) = !isopen(d)
-"""
-    isclose(c::CustomerNode)
-
-Returns `true` if customer node `c` is not open.
-A `CustomerNode` is defined open if it is not being served by any vehicle-route.
-"""  
-isclose(c::CustomerNode) = !isopen(c)
+isclose(d::DepotNode) = iszero(d.n)
 
 
 
@@ -93,13 +93,13 @@ Base.isequal(p::Node, q::Node) = isequal(p.iⁿ, q.iⁿ)
 """
     isdepot(n::Node)
 
-Returns `true` if node `n` is a depot.
+Returns `true` if node `n` is a `DepotNode`.
 """
 isdepot(n::Node) = isequal(typeof(n), DepotNode)
 """
     iscustomer(n::Node)
     
-Returns `true` if node `n` is a customer.
+Returns `true` if node `n` is a `CustomerNode`.
 """
 iscustomer(n::Node) = isequal(typeof(n), CustomerNode)
 
@@ -130,15 +130,20 @@ function Route(v::Vehicle, d::DepotNode)
     l  = 0.
     r  = Route(iʳ, iᵛ, iᵈ, x, y, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l)
     return r
-end            
+end
+"""
+    NullRoute
+
+A `NullRoute` is a fictitious out-of-service route.
+"""           
 const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf)
 
 
 
 """
-    Route(v::Vehicle, d::DepotNode)
+    Vehicle(v::Vehicle, d::DepotNode)
 
-    Returns a non-operational `Vehicle` cloning vehicle `v` at depot node `d`.
+Returns a non-operational `Vehicle` cloning vehicle `v` at depot node `d`.
 """
 function Vehicle(v::Vehicle, d::DepotNode)
     iᵛ = length(d.V) + 1
@@ -210,14 +215,14 @@ Base.hash(s::Solution) = hash(vectorize(s))
 """
     f(s::Solution; fixed=true, operational=true, penalty=true)
 
-Returns objective function evaluation for solution `s`. Include `fixed`, 
-`operational`, and `penalty` cost for constriant violation if `true`.
+Returns objective function evaluation for solution `s`. Includes `fixed`, 
+`operational`, and `penalty` cost for constraint violation if `true`.
 """
 function f(s::Solution; fixed=true, operational=true, penalty=true)
     πᶠ, πᵒ, πᵖ = 0., 0., 0.
     φᶠ, φᵒ, φᵖ = fixed, operational, penalty
     for d ∈ s.D
-        πᵖ += (isone(d.φ) && !isopt(d)) * d.πᶠ                              # Depot use constraint
+        πᵖ += (isone(d.φ) && !isopt(d)) * d.πᶠ                              # Depot operations mandate constraint
         if !isopt(d) continue end
         πᶠ += d.πᶠ
         for v ∈ d.V
@@ -246,19 +251,20 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
     z = φᶠ * πᶠ + φᵒ * πᵒ + φᵖ * πᵖ
     return z
 end
+# TODO: Update penalty violation accumulation
 
 
 
 """
     isfeasible(s::Solution)
 
-Returns `true` if node service and time-window constraints;
+Returns `true` if customer service and time-window constraints;
 vehicle capacity, range, and working-hours constraints; and 
-depot use and capacity constraints are not violated.
+depot operations mandate and capacity constraints are not violated.
 """
 function isfeasible(s::Solution)
     for d ∈ s.D
-        if isone(d.φ) && !isopt(d) return  false end                        # Depot use constraint
+        if isone(d.φ) && !isopt(d) return  false end                        # Depot operations mandate constraint
         if !isopt(d) continue end
         for v ∈ d.V
             if !isopt(v) continue end
@@ -286,7 +292,7 @@ end
 """
     relatedness(c¹::CustomerNode, c²::CustomerNode, s::Solution)
 
-Returns a measure of similarity between customer nodes `c¹` and `c²`.
+Returns a measure of similarity between customer nodes `c¹` and `c²` in solution `s`.
 """
 function relatedness(c¹::CustomerNode, c²::CustomerNode, s::Solution)
     ϵ  = 1e-5
@@ -306,7 +312,7 @@ end
 """
     relatedness(r¹::Route, r²::Route, s::Solution)
 
-Returns a measure of similarity between routes `r¹` and `r²`.
+Returns a measure of similarity between routes `r¹` and `r²` in solution `s`.
 """
 function relatedness(r¹::Route, r²::Route, s::Solution)
     ϵ  = 1e-5
@@ -324,7 +330,7 @@ end
 """
     relatedness(v¹::Vehicle, v²::Vehicle, s::Solution)
 
-Returns a measure of similarity between vehicles `v¹` and `v²`.
+Returns a measure of similarity between vehicles `v¹` and `v²` in solution `s`.
 """
 function relatedness(v¹::Vehicle, v²::Vehicle, s::Solution)
     ϵ  = 1e-5
@@ -352,7 +358,7 @@ end
 """
     relatedness(d¹::DepotNode, d²::DepotNode, s::Solution)
 
-Returns a measure of similarity between depot nodes `d¹` and `d²`.
+Returns a measure of similarity between depot nodes `d¹` and `d²` in solution `s`.
 """
 function relatedness(d¹::DepotNode, d²::DepotNode, s::Solution)
     ϵ  = 1e-5
@@ -366,7 +372,7 @@ end
 """
     relatedness(c::CustomerNode, d::DepotNode, s::Solution)
 
-Returns a measure of similarity between customer nodes `c` and depot node `d`.
+Returns a measure of similarity between customer nodes `c` and depot node `d` in solution `s`.
 """
 function relatedness(c::CustomerNode, d::DepotNode, s::Solution)
     ϵ  = 1e-5
@@ -380,6 +386,6 @@ end
 """
     relatedness(d::DepotNode, c::CustomerNode, s::Solution)
 
-Returns a measure of similarity between depot node `d` and customer nodes `c`.
+Returns a measure of similarity between depot node `d` and customer nodes `c` in solution `s`.
 """
 relatedness(d::DepotNode, c::CustomerNode, s::Solution) = relatedness(c, d, s)

@@ -1,5 +1,5 @@
 """
-visualize(instance; backend=gr)
+    visualize(instance; backend=gr)
 
 Plots `instance`. Uses given `backend` to plot (defaults to `gr`).
 """

@@ -65,4 +65,4 @@ In every few iterations, the ALNS metaheuristic performs local search with,
 
 See benchmark.jl for usage
 
-Additional initialization, removal, insertion, and local search methods can be defined.
+Additional removal, insertion, and local search methods can be defined.

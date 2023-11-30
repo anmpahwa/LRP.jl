@@ -1,9 +1,8 @@
 """
     Arc(iᵗ::Int, iʰ::Int, l::Float64)
 
-An `Arc` is a connection between tail   
-node with index `iᵗ` and head node with 
-index `iʰ` with length `l`.
+An `Arc` is a connection between a tail node with index `iᵗ` and a head node with 
+index `iʰ` spanning length `l`.
 """
 struct Arc
     iᵗ::Int                                                                         # Tail node index
@@ -17,10 +16,10 @@ end
     Route(iʳ::Int, iᵛ::Int, iᵈ::Int, x::Float64, y::Float64, iˢ::Int, iᵉ::Int, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64)
 
 A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`, depot
-node index `iᵈ`, centroid coordinate `x, y` , start node index `iˢ`, end node index 
-`iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition `tⁱ`, start `tˢ`, 
-and end time `tᵉ`, repsectively, slack time `τ`, customers served `n`, demand served 
-`q`, and route length `l`.
+node index `iᵈ`, centroid coordinates `x, y` , start node index `iˢ`, end node index 
+`iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition time `tⁱ`, start
+time `tˢ`, and end time `tᵉ`, repsectively, slack time `τ`, customers served `n`, 
+demand served `q`, and route length `l`.
 """
 mutable struct Route
     iʳ::Int                                                                         # Route index
@@ -50,10 +49,10 @@ end
 A `Vehicle` is a mode of delivery with index `iᵛ`, vehicle type index `jᵛ`, depot 
 node index `iᵈ`, capacity `qᵛ`, range `lᵛ`, speed `sᵛ`, refueling time `τᶠ`, 
 service time `τᵈ` at depot node (per unit demand), parking time `τᶜ` at customer 
-node, maximum number of vehicle routes permitted `r̅`, working-hours `τʷ`, initial 
-departure time `tˢ`, final arrival time `tᵉ`, slack time `τ`, customers served `n`, 
-demand served `q`, total route length `l`, operational cost `πᵈ` per unit distance 
-and `πᵗ` per unit time, fixed cost `πᶠ`, and set of routes `R`.
+node, maximum routes permitted `r̅`, working-hours `τʷ`, initial departure time `tˢ`, 
+final arrival time `tᵉ`, slack time `τ`, customers served `n`, demand served `q`, 
+total route length `l`, operational cost `πᵈ` per unit distance and `πᵗ` per unit 
+time, fixed cost `πᶠ`, and set of routes `R`.
 """
 mutable struct Vehicle
     iᵛ::Int                                                                         # Vehicle index
@@ -91,10 +90,9 @@ abstract type Node end
     DepotNode(iⁿ::Int, jⁿ::Int, x::Float64, y::Float64, qᵈ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, πᵒ::Float64, πᶠ::Float64, φ::Float64, V::Vector{Vehicle})
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ` in echelon
-`jⁿ`, capacity `q`, working-hours start time `tˢ` and end tme `tᵉ`, slack time `τ`, 
+`jⁿ`, capacity `qᵈ`, working-hours start time `tˢ` and end tme `tᵉ`, slack time `τ`, 
 total customers served `n`, demand served `q`, total route length `l`, operational 
-cost `πᵒ` per package, fixed cost `πᶠ`, depot use mandate `φ`, and fleet of vehicles 
-`V`.
+cost `πᵒ` per package, fixed cost `πᶠ`, operations mandate `φ`, and fleet of vehicles `V`.
 """
 mutable struct DepotNode <: Node
     iⁿ::Int                                                                         # Depot node index
@@ -110,7 +108,7 @@ mutable struct DepotNode <: Node
     l::Float64                                                                      # Depot total route length
     πᵒ::Float64                                                                     # Depot operational cost
     πᶠ::Float64                                                                     # Depot fixed cost
-    φ::Int                                                                          # Depot use mandate
+    φ::Int                                                                          # Depot operations mandate
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
 end
 """
@@ -119,7 +117,7 @@ end
 A `CustomerNode` is a sink point on the graph at `(x,y)` with index `iⁿ`, demand `q`, 
 customer service time `τᶜ`, earliest service time `tᵉ`, latest service time `tˡ`, 
 tail node index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, departure time `tᵈ`, 
-on route `r` with route index `iʳ`, vehicle index `iᵛ`, depot node index `iᵈ`.
+on route `r` with route index `iʳ`, vehicle index `iᵛ`, and depot node index `iᵈ`.
 """
 mutable struct CustomerNode <: Node
     iⁿ::Int                                                                         # Customer node index
@@ -142,9 +140,9 @@ end
 
 
 """
-    Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int,Int}, Arc}, V::Vector{Vehicle})
+    Solution(D::Vector{DepotNode}, C::Vector{CustomerNode}, A::Dict{Tuple{Int,Int}, Arc})
 
-A `Solution` is a graph with depot nodes `D`, customer nodes `C`, arcs `A`, and vehicles `V`.
+A `Solution` is a graph with depot nodes `D`, customer nodes `C`, and arcs `A`.
 """
 struct Solution
     D::Vector{DepotNode}                                                            # Vector of depot nodes

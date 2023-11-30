@@ -226,22 +226,25 @@ end
 
 
 """
-    initialize(rng::AbstractRNG, instance::String)
+    initialize([rng::AbstractRNG], instance::String)
 
 Returns initial LRP `Solution` developed using iterated clustering method. 
-The number of clusters are increased iteratively for atleast as many iterations 
-as the number of depot nodes and until a feasible solution is found or atmost 
-the number of customer nodes. Finally, the solution with the least objective 
+The number of clusters are increased iteratively for at least as many iterations 
+as the number of depot nodes and at most the number of customer nodes until a 
+feasible solution is found. Finally, the solution with the least objective 
 function value is returned as the initial solution.
+
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Random.GLOBAL_RNG`).
 """
 function initialize(rng::AbstractRNG, instance::String)
     # Step 1. Initialize
     s = Solution(build(instance)...)
     z = Inf
     # Step 2. Iteratively increase the number of clusters
-    # for atleast as many iterations as the number of depot 
-    # nodes and until a feasible solution is found or atmost 
-    # the number of customer nodes.
+    # for at least as many iterations as the number of depot 
+    # nodes and at most the number of customer nodes until a 
+    # feasible solution is found or 
     k = 0
     k̲ = length(s.D)
     k̅ = length(s.C)
