@@ -33,6 +33,7 @@ export  initialize, vectorize, f, isfeasible,
 
 end
 
-# TODO: Randomize depot insertion position in a route.
-# TODO: Update constraint violation penalty evaluation.
-# TODO: Minimalize addroute through improved constraint violation penalty evaluation.
+# TODO: Improve efficiency of local search methods.
+# TODO: Test updating constraint violation penalty evaluation.
+# TODO: Test minimalizing addroute through improved constraint violation penalty evaluation.
+# TODO: Test randomizing depot insertion position in a route.
