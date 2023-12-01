@@ -238,7 +238,7 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
             πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)                             # Working-hours constraint (start time)
             πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)                             # Working-hours constraint (end time)
             πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * (v.tᵉ - v.tˢ - v.τʷ)               # Working-hours constraint (duration)
-            πᵖ += (length(v.R) > v.r̅) * v.πᶠ                                # Number of routes constraint
+            πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)                 # Number of routes constraint
         end
         πᵒ += d.q * d.πᵒ
         πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)                                   # Depot capacity constraint
