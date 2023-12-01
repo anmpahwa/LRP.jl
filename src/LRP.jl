@@ -33,5 +33,6 @@ export  initialize, vectorize, f, isfeasible,
 
 end
 
-# TODO: Idenify and if possible improve level of complexity of local search methods.
+# TODO: Identify and if possible improve level of complexity of local search methods.
 # TODO: Test randomizing depot insertion position in a route. (swapdepot!(rng, k̅, s)).
+# TODO: Calibrate ALNS parameters for improved solution quality as well as run time.
