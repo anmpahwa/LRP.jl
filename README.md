@@ -8,28 +8,27 @@
 
 Given, a graph `G = (D, C, A)` with set of depots `D`, set of customer nodes `C`, and set of arcs `A`, the objective is to develop least cost routes from select depot nodes using select vehicles such that every customer node is visited exactly once while accounting for customer service and time-window constraints; vehicle capacity, range, and working-hours constraints; and depot operations mandate and capacity constraints.
 
-This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an optimal solution for the location routing problem given an initial solution developed using iterated clustering method and ALNS optimization parameters,
-- j     :   Number of segments in the ALNS
-- k     :   Number of segments to reset ALNS
-- n     :   Number of iterations in an ALNS segment
-- m     :   Number of iterations in a local search
-- Ψᵣ    :   Vector of removal operators
-- Ψᵢ    :   Vector of insertion operators
-- Ψₗ    :   Vector of local search operators
-- σ₁    :   Score for a new best solution
-- σ₂    :   Score for a new better solution
-- σ₃    :   Score for a new worse but accepted solution
-- μ̲     :   Minimum removal fraction
-- C̲     :   Minimum customer nodes removed
-- μ̅     :   Maximum removal fraction
-- C̅     :   Maximum customer nodes removed
-- ω̅     :   Initial temperature deviation parameter
-- τ̅     :   Initial temperatureprobability parameter
-- ω̲     :   Final temperature deviation parameter
-- τ̲     :   Final temperature probability parameter
-- φ     :   Local search trigger
-- θ     :   Cooling rate
-- ρ     :   Reaction factor
+This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an optimal solution for the location routing problem given an initial solution (here, developed using iterated clustering method) and ALNS optimization parameters,
+- `j`     :   Number of segments in the ALNS
+- `k`     :   Number of segments to reset ALNS
+- `n`     :   Number of iterations in an ALNS segment
+- `m`     :   Number of iterations in a local search
+- `Ψᵣ`    :   Vector of removal operators
+- `Ψᵢ`    :   Vector of insertion operators
+- `Ψₗ`    :   Vector of local search operators
+- `σ₁`    :   Score for a new best solution
+- `σ₂`    :   Score for a new better solution
+- `σ₃`    :   Score for a new worse but accepted solution
+- `μ̲`     :   Minimum removal fraction
+- `C̲`     :   Minimum customer nodes removed
+- `μ̅`     :   Maximum removal fraction
+- `C̅`     :   Maximum customer nodes removed
+- `ω̅`     :   Initial temperature deviation parameter
+- `τ̅`     :   Initial temperatureprobability parameter
+- `ω̲`     :   Final temperature deviation parameter
+- `τ̲`     :   Final temperature probability parameter
+- `θ`     :   Cooling rate
+- `ρ`     :   Reaction factor
 
 The ALNS metaheuristic iteratively removes a set of nodes using,
 - Random Customer Node Removal  : `:randomcustomer!`
