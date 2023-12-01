@@ -33,7 +33,7 @@ export  initialize, vectorize, f, isfeasible,
 
 end
 
-# TODO: Improve efficiency of local search methods.
-# TODO: Test updating constraint violation penalty evaluation.
-# TODO: Test minimalizing addroute through improved constraint violation penalty evaluation.
-# TODO: Test randomizing depot insertion position in a route.
+# TODO: Improve efficiency of local search methods to avoid enumeration of customers within a route. (move!(rng, k̅, s); opt!(rng, k̅, s))
+# TODO: Test randomizing depot insertion position in a route. (swapdepot!(rng, k̅, s))
+# TODO: Test updating constraint violation penalty evaluation. f(s)
+# TODO: Test minimalizing addroute through improved constraint violation penalty evaluation. addroute(r, s)
