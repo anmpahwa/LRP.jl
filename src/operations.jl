@@ -330,8 +330,8 @@ function removenode!(d::DepotNode, v::Vehicle, s::Solution)
     end
     # update arrival and departure time
     if isequal(φᵀ::Bool, false) return s end
-    tⁱ = NaN
-    θⁱ = NaN
+    tⁱ = Inf
+    θⁱ = Inf
     for r ∈ v.R
         if isopt(r)
             r.θⁱ = θⁱ
