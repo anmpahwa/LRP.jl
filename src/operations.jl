@@ -73,7 +73,8 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     # update start and end time
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     # update slack
-    τ = d.tᵉ - v.tᵉ
+    τ   = d.tᵉ - v.tᵉ
+    v.τ = τ
     for r ∈ reverse(v.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
@@ -87,6 +88,9 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
         r.τ = τ
     end
     v.τ = min(τ, v.τ)
+    τ   = Inf
+    d.τ = τ
+    for v ∈ d.V τ = min(τ, v.τ) end
     d.τ = min(τ, d.τ)
     return s
 end
@@ -171,7 +175,8 @@ function insertnode!(d::DepotNode, v::Vehicle, s::Solution)
     # update start and end time
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     # update slack
-    τ = d.tᵉ - v.tᵉ
+    τ   = d.tᵉ - v.tᵉ
+    v.τ = τ
     for r ∈ reverse(v.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
@@ -185,6 +190,9 @@ function insertnode!(d::DepotNode, v::Vehicle, s::Solution)
         r.τ = τ
     end
     v.τ = min(τ, v.τ)
+    τ   = Inf
+    d.τ = τ
+    for v ∈ d.V τ = min(τ, v.τ) end
     d.τ = min(τ, d.τ)
     return s
 end
@@ -267,7 +275,8 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     # update start and end time
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     # update slack
-    τ = d.tᵉ - v.tᵉ
+    τ   = d.tᵉ - v.tᵉ
+    v.τ = τ
     for r ∈ reverse(v.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
@@ -281,6 +290,9 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
         r.τ = τ
     end
     v.τ = min(τ, v.τ)
+    τ   = Inf
+    d.τ = τ
+    for v ∈ d.V τ = min(τ, v.τ) end
     d.τ = min(τ, d.τ)
     return s
 end
@@ -365,7 +377,8 @@ function removenode!(d::DepotNode, v::Vehicle, s::Solution)
     # update start and end time
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     # update slack
-    τ = d.tᵉ - v.tᵉ
+    τ   = d.tᵉ - v.tᵉ
+    v.τ = τ
     for r ∈ reverse(v.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
@@ -379,6 +392,9 @@ function removenode!(d::DepotNode, v::Vehicle, s::Solution)
         r.τ = τ
     end
     v.τ = min(τ, v.τ)
+    τ   = Inf
+    d.τ = τ
+    for v ∈ d.V τ = min(τ, v.τ) end
     d.τ = min(τ, d.τ)
     return s
 end
