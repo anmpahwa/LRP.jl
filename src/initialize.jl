@@ -1,11 +1,20 @@
 """
-    build(instance::String)
+    build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
     
 Returns a tuple of depot nodes, customer nodes, and arcs for the `instance`.
+
+Note, `dir` locates the the folder containing instance files as sub-folders.
+
+    <dir>
+    |-<instance>
+        |-arcs.csv
+        |-depot_nodes.csv
+        |-customer_nodes.csv
+        |-vehicles.csv
 """
-function build(instance::String)
+function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
     # Depot nodes
-    df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/depot_nodes.csv")))
+    df = DataFrame(CSV.File(joinpath(dir, "$instance/depot_nodes.csv")))
     D  = Vector{DepotNode}(undef, nrow(df))
     for k ∈ 1:nrow(df)
         iⁿ = df[k,1]
@@ -25,7 +34,7 @@ function build(instance::String)
         D[iⁿ] = d
     end
     # Customer nodes
-    df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/customer_nodes.csv")))
+    df = DataFrame(CSV.File(joinpath(dir, "$instance/customer_nodes.csv")))
     I  = (df[1,1]:df[nrow(df),1])
     C  = OffsetVector{CustomerNode}(undef, I)
     for k ∈ 1:nrow(df)
@@ -47,7 +56,7 @@ function build(instance::String)
         C[iⁿ] = c
     end
     # Arcs
-    df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/arcs.csv"), header=false))
+    df = DataFrame(CSV.File(joinpath(dir, "$instance/arcs.csv"), header=false))
     A  = Dict{Tuple{Int,Int},Arc}()
     N  = length(D)+length(C)
     for iᵗ ∈ 1:N
@@ -58,7 +67,7 @@ function build(instance::String)
         end
     end
     # Vehicles
-    df = DataFrame(CSV.File(joinpath(dirname(@__DIR__), "instances/$instance/vehicles.csv")))
+    df = DataFrame(CSV.File(joinpath(dir, "$instance/vehicles.csv")))
     for k ∈ 1:nrow(df)
         d  = D[df[k,3]]
         iᵛ = df[k,1]
@@ -96,16 +105,25 @@ end
 
 
 """
-    cluster(rng::AbstractRNG, k::Int, instance::String)
+    cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
 
 Returns `Solution` created using `k`-means clustering algorithm.
 Here, each cluster is assigned to the nearest depot node and 
 then each customer in this cluster is greedy inserted to the 
 assigned depot node.
+
+Note, `dir` locates the the folder containing instance files as sub-folders.
+
+    <dir>
+    |-<instance>
+        |-arcs.csv
+        |-depot_nodes.csv
+        |-customer_nodes.csv
+        |-vehicles.csv
 """
-function cluster(rng::AbstractRNG, k::Int, instance::String)
+function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
     # Step 1: Initialize
-    G = build(instance)
+    G = build(instance; dir=dir)
     s = Solution(G...)
     preinitialize!(s)
     D = s.D
@@ -220,20 +238,29 @@ end
 
 
 """
-    initialize([rng::AbstractRNG], instance::String)
+    initialize([rng::AbstractRNG], instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
 
-Returns initial LRP `Solution` developed using iterated clustering method. 
+Returns initial VRP `Solution` developed using iterated clustering method. 
 The number of clusters are increased iteratively for at least as many iterations 
 as the number of depot nodes and at most the number of customer nodes until a 
 feasible solution is found. Finally, the solution with the least objective 
 function value is returned as the initial solution.
 
+Note, `dir` locates the the folder containing instance files as sub-folders.
+
+    <dir>
+    |-<instance>
+        |-arcs.csv
+        |-depot_nodes.csv
+        |-customer_nodes.csv
+        |-vehicles.csv
+
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function initialize(rng::AbstractRNG, instance::String)
+function initialize(rng::AbstractRNG, instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
     # Step 1. Initialize
-    s = Solution(build(instance)...)
+    s = Solution(build(instance; dir=dir)...)
     z = Inf
     # Step 2. Iteratively increase the number of clusters
     # for at least as many iterations as the number of depot 
@@ -245,7 +272,7 @@ function initialize(rng::AbstractRNG, instance::String)
     ϕ = false
     while k < k̅
         k += 1
-        s′ = cluster(rng, k, instance)
+        s′ = cluster(rng, k, instance; dir=dir)
         z′ = f(s′)
         # Step 2.1. Update solution
         if z′ < z
@@ -259,4 +286,4 @@ function initialize(rng::AbstractRNG, instance::String)
     # Step 3. Return solution
     return s
 end
-initialize(instance::String) = initialize(Random.GLOBAL_RNG, instance)
+initialize(instance::String; dir=joinpath(dirname(@__DIR__), "instances")) = initialize(Random.GLOBAL_RNG, instance; dir=dir)
