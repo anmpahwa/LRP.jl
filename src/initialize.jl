@@ -109,7 +109,7 @@ end
 
 Returns `Solution` created using `k`-means clustering algorithm.
 Here, each cluster is assigned to the nearest depot node and 
-then each customer in this cluster is greedy inserted to the 
+then each customer in this cluster is best inserted to the 
 assigned depot node.
 
 Note, `dir` locates the the folder containing instance files as sub-folders.
@@ -151,42 +151,39 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
         if isempty(L) continue end
         I = eachindex(L)
         J = eachindex(R)
+        W = ones(Int, I)                        # W[j]  : selection weight for customer node L[i]
         X = ElasticMatrix(fill(Inf, (I,J)))     # X[i,j]: insertion cost of customer node L[i] at best position in route R[j]
         P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]: best insertion postion of customer node L[i] in route R[j]
-        ϕ = ones(Int, J)                        # ϕ[j]  : binary weight for route R[j]
         # Step 3.1: Iterate until all open customer nodes have been inserted into the route
         for _ ∈ I
+            if !hasslack(d) break end
             # Step 3.1.1: Iterate through all open customer nodes and every possible insertion position in each route
             z = f(s)
-            for (i,c) ∈ pairs(L)
-                if !isopen(c) continue end
-                for (j,r) ∈ pairs(R)
-                    if iszero(ϕ[j]) continue end
-                    d  = s.D[r.iᵈ]
-                    nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
-                    nᵉ = isopt(r) ? C[r.iᵉ] : D[r.iᵉ]
-                    nᵗ = d
-                    nʰ = nˢ
-                    while true
-                        # Step 3.1.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
-                        insertnode!(c, nᵗ, nʰ, r, s)
-                        # Step 3.1.1.2: Compute the insertion cost
-                        z′ = f(s)
-                        Δ  = z′ - z
-                        # Step 3.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
-                        if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
-                        # Step 3.1.1.4: Remove customer node c from its position between tail node nᵗ and head node nʰ
-                        removenode!(c, nᵗ, nʰ, r, s)
-                        if isequal(nᵗ, nᵉ) break end
-                        nᵗ = nʰ
-                        nʰ = isequal(r.iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
-                    end
+            i = sample(rng, I, Weights(W))
+            c = L[i]
+            for (j,r) ∈ pairs(R)
+                d  = s.D[r.iᵈ]
+                nˢ = isopt(r) ? C[r.iˢ] : D[r.iˢ]
+                nᵉ = isopt(r) ? C[r.iᵉ] : D[r.iᵉ]
+                nᵗ = d
+                nʰ = nˢ
+                while true
+                    # Step 3.1.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
+                    insertnode!(c, nᵗ, nʰ, r, s)
+                    # Step 3.1.1.2: Compute the insertion cost
+                    z′ = f(s)
+                    Δ  = z′ - z
+                    # Step 3.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
+                    if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
+                    # Step 3.1.1.4: Remove customer node c from its position between tail node nᵗ and head node nʰ
+                    removenode!(c, nᵗ, nʰ, r, s)
+                    if isequal(nᵗ, nᵉ) break end
+                    nᵗ = nʰ
+                    nʰ = isequal(r.iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
                 end
             end
             # Step 3.1.2: Randomly select a customer node to insert at its best position
-            i,j= Tuple(argmin(X))
-            Δ  = X[i,j]
-            c  = L[i]
+            j  = argmin(X[i,:])
             r  = R[j]
             d  = s.D[r.iᵈ]
             v  = d.V[r.iᵛ]
@@ -196,19 +193,7 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
             nʰ = iʰ ≤ length(D) ? D[iʰ] : C[iʰ]
             insertnode!(c, nᵗ, nʰ, r, s)
             # Step 3.1.3: Revise vectors appropriately
-            X[i,:] .= Inf
-            P[i,:] .= ((0, 0), )
-            ϕ .= 0
-            for (j,r) ∈ pairs(R) 
-                φʳ = isequal(r, c.r)
-                φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(φᵀ, true)
-                φᵈ = isequal(r.iᵈ, d.iⁿ) && !hasslack(d)
-                φˢ = φʳ || φᵛ || φᵈ
-                if isequal(φˢ, false) continue end
-                X[:,j] .= Inf
-                P[:,j] .= ((0, 0), )
-                ϕ[j] = 1
-            end
+            W[i] = 0
             # Step 3.1.4: Update solution appropriately     
             if addroute(r, s)
                 r = Route(v, d)
@@ -216,7 +201,6 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
                 push!(R, r)
                 append!(X, fill(Inf, (I,1)))
                 append!(P, fill((0, 0), (I,1)))
-                push!(ϕ, 1)
             end
             if addvehicle(v, s)
                 v = Vehicle(v, d)
@@ -226,10 +210,10 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
                 push!(R, r)
                 append!(X, fill(Inf, (I,1)))
                 append!(P, fill((0, 0), (I,1)))
-                push!(ϕ, 1)
             end
         end
     end
+    best!(rng, s)
     postinitialize!(s)
     # Step 4: Return initial solution
     return s
@@ -238,14 +222,11 @@ end
 
 
 """
-    initialize([rng::AbstractRNG], instance::String; method=:local, dir=joinpath(dirname(@__DIR__), "instances"))
+    initialize([rng::AbstractRNG], instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
 
 Returns initial VRP `Solution` developed using iterated clustering method. 
-If the `method` is set to `:local` search, the number of clusters are 
-increased iteratively for at most as many iterations as the number of 
-depot nodes. Else if the `method` is set to `:global` search, the number 
-of clusters are increased iteratively for at least as many iterations as 
-the number of depot nodes and at most the number of customer nodes until a 
+The number of clusters are increased iteratively for at least as many iterations 
+as the number of depot nodes and at most the number of customer nodes until a 
 feasible solution is found. Finally, the solution with the least objective 
 function value is returned as the initial solution.
 
@@ -261,7 +242,7 @@ Note, `dir` locates the the folder containing instance files as sub-folders.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function initialize(rng::AbstractRNG, instance::String; method=:global, dir=joinpath(dirname(@__DIR__), "instances"))
+function initialize(rng::AbstractRNG, instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
     # Step 1. Initialize
     s = Solution(build(instance; dir=dir)...)
     z = Inf
@@ -269,7 +250,7 @@ function initialize(rng::AbstractRNG, instance::String; method=:global, dir=join
     k = 0
     k̲ = length(s.D)
     k̅ = length(s.C)
-    ϕ = isequal(method, :local)
+    ϕ = false
     while k < k̅
         k += 1
         s′ = cluster(rng, k, instance; dir=dir)
