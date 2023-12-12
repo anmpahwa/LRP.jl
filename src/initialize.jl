@@ -246,7 +246,7 @@ Note, `dir` locates the the folder containing instance files as sub-folders.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function initialize(rng::AbstractRNG, instance::String; method=:global, dir=joinpath(dirname(@__DIR__), "instances"))
+function initialize(rng::AbstractRNG, instance::String; method=:local, dir=joinpath(dirname(@__DIR__), "instances"))
     # Step 1. Initialize
     s = Solution(build(instance; dir=dir)...)
     z = Inf
@@ -271,4 +271,4 @@ function initialize(rng::AbstractRNG, instance::String; method=:global, dir=join
     # Step 3. Return solution
     return s
 end
-initialize(instance::String; method=:global, dir=joinpath(dirname(@__DIR__), "instances")) = initialize(Random.GLOBAL_RNG, instance; method=:method, dir=dir)
+initialize(instance::String; method=:local, dir=joinpath(dirname(@__DIR__), "instances")) = initialize(Random.GLOBAL_RNG, instance; method=:method, dir=dir)
