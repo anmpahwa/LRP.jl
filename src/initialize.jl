@@ -221,12 +221,16 @@ end
 
 
 
+
 """
-    initialize([rng::AbstractRNG], instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
+    initialize([rng::AbstractRNG], instance::String; method=:local, dir=joinpath(dirname(@__DIR__), "instances"))
 
 Returns initial VRP `Solution` developed using iterated clustering method. 
-The number of clusters are increased iteratively for at least as many iterations 
-as the number of depot nodes and at most the number of customer nodes until a 
+If the `method` is set to `:local` search, the number of clusters are 
+increased iteratively for at most as many iterations as the number of 
+depot nodes. Else if the `method` is set to `:global` search, the number 
+of clusters are increased iteratively for at least as many iterations as 
+the number of depot nodes and at most the number of customer nodes until a 
 feasible solution is found. Finally, the solution with the least objective 
 function value is returned as the initial solution.
 
@@ -242,7 +246,7 @@ Note, `dir` locates the the folder containing instance files as sub-folders.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function initialize(rng::AbstractRNG, instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
+function initialize(rng::AbstractRNG, instance::String; method=:global, dir=joinpath(dirname(@__DIR__), "instances"))
     # Step 1. Initialize
     s = Solution(build(instance; dir=dir)...)
     z = Inf
@@ -250,7 +254,7 @@ function initialize(rng::AbstractRNG, instance::String; dir=joinpath(dirname(@__
     k = 0
     k̲ = length(s.D)
     k̅ = length(s.C)
-    ϕ = false
+    ϕ = isequal(method, :local)
     while k < k̅
         k += 1
         s′ = cluster(rng, k, instance; dir=dir)
@@ -267,4 +271,4 @@ function initialize(rng::AbstractRNG, instance::String; dir=joinpath(dirname(@__
     # Step 3. Return solution
     return s
 end
-initialize(instance::String; dir=joinpath(dirname(@__DIR__), "instances")) = initialize(Random.GLOBAL_RNG, instance; dir=dir)
+initialize(instance::String; method=:global, dir=joinpath(dirname(@__DIR__), "instances")) = initialize(Random.GLOBAL_RNG, instance; method=:method, dir=dir)
