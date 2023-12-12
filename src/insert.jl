@@ -77,17 +77,6 @@ function best!(rng::AbstractRNG, s::Solution)
         insertnode!(c, nᵗ, nʰ, r, s)
         # Step 2.3: Revise vectors appropriately
         W[i] = 0
-        X[i,:] .= Inf
-        P[i,:] .= ((0, 0), )
-        for (j,r) ∈ pairs(R)
-            φʳ = isequal(r, c.r)
-            φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(φᵀ, true)
-            φᵈ = isequal(r.iᵈ, d.iⁿ) && !hasslack(d)
-            φˢ = φʳ || φᵛ || φᵈ
-            if isequal(φˢ, false) continue end
-            X[:,j] .= Inf
-            P[:,j] .= ((0, 0), )
-        end
         # Step 2.4: Update solution appropriately 
         if addroute(r, s)
             r = Route(v, d)
