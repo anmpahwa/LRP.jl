@@ -60,6 +60,6 @@ In every few iterations, the ALNS metaheuristic performs local search with,
 - inter-opt     : `:interopt!`
 - swapdepot     : `:swapdepot!`
 
-See benchmark.jl for usage.
+See benchmark-lrp.jl and benchmark-vrp.jl for usage.
 
 Additional removal, insertion, and local search methods can be defined.
