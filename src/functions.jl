@@ -16,9 +16,10 @@ isopt(v::Vehicle) = !iszero(v.n)
     isopt(d::DepotNode)
     
 Returns `true` if depot node `d` is operational.
-A `DepotNode` is defined operational if it serves at least one customer.
+A `DepotNode` is defined operational if it serves at least one customer
+unless it is mandated to be operational.
 """
-isopt(d::DepotNode) = !iszero(d.n)
+isopt(d::DepotNode) = !iszero(d.n) || !iszero(d.φ)
 
 
 
@@ -33,9 +34,10 @@ isopen(c::CustomerNode) = isequal(c.r, NullRoute)
     isopen(d::DepotNode)
 
 Returns `true` if depot node `d` is operational.
-A `DepotNode` is defined operational if it serves at least one customer.
+A `DepotNode` is defined operational if it serves at least one customer
+unless it is mandated to be operational.
 """  
-isopen(d::DepotNode) = !iszero(d.n)
+isopen(d::DepotNode) = !iszero(d.n) || !iszero(d.φ)
 
 
 
@@ -50,9 +52,10 @@ isclose(c::CustomerNode) = !isequal(c.r, NullRoute)
     isclose(d::DepotNode)
 
 Returns `true` if depot node `d` is not operational.
-A `DepotNode` is defined non-operational if it serves no customer.
+A `DepotNode` is defined non-operational if it serves no customer
+given it is not mandated to be operational.
 """  
-isclose(d::DepotNode) = iszero(d.n)
+isclose(d::DepotNode) = iszero(d.n) && iszero(d.φ)
 
 
 
@@ -184,7 +187,7 @@ function vectorize(s::Solution)
     Z = [Int[] for _ ∈ D]
     for d ∈ D
         iⁿ = d.iⁿ
-        if iszero(d.φ) && !isopt(d) continue end
+        if !isopt(d) continue end
         for v ∈ d.V
             if !isopt(v) continue end
             for r ∈ v.R
@@ -222,8 +225,8 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
     πᶠ, πᵒ, πᵖ = 0., 0., 0.
     φᶠ, φᵒ, φᵖ = fixed, operational, penalty
     for d ∈ s.D
-        πᶠ += (isone(d.φ) || isopt(d)) * d.πᶠ
         if !isopt(d) continue end
+        πᶠ += d.πᶠ
         for v ∈ d.V
             if !isopt(v) continue end
             πᶠ += v.πᶠ
