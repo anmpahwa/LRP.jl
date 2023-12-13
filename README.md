@@ -20,9 +20,9 @@ This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an
 - `σ₂`    :   Score for a new better solution
 - `σ₃`    :   Score for a new worse but accepted solution
 - `μ̲`     :   Minimum removal fraction
-- `C̲`     :   Minimum customer nodes removed
+- `c̲`     :   Minimum customer nodes removed
 - `μ̅`     :   Maximum removal fraction
-- `C̅`     :   Maximum customer nodes removed
+- `c̅`     :   Maximum customer nodes removed
 - `ω̅`     :   Initial temperature deviation parameter
 - `τ̅`     :   Initial temperatureprobability parameter
 - `ω̲`     :   Final temperature deviation parameter
