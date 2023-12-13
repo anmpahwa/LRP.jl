@@ -101,17 +101,16 @@ function worstcustomer!(rng::AbstractRNG, q::Int, s::Solution)
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
     X = fill(-Inf, eachindex(C))    # X[i]: removal cost of customer node C[i]
-    ϕ = ones(Int, eachindex(R))   # ϕ[j]: binary weight for route R[j]
+    ϕ = ones(Int, eachindex(R))     # ϕ[j]: binary weight for route R[j]
     # Step 1: Iterate until q customer nodes have been removed
     n = 0
     while n < q
         # Step 1.1: For every closed customer node evaluate removal cost
         z = f(s)
         for (i,c) ∈ pairs(C)
-            if isopen(c) continue end
             r = c.r
             j = findfirst(isequal(r), R)
-            if iszero(ϕ[j]) continue end
+            if isopen(c) || iszero(ϕ[j]) continue end
             # Step 1.1.1: Remove closed customer node c between tail node nᵗ and head node nʰ in route r
             nᵗ = isequal(r.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -173,6 +172,7 @@ function randomroute!(rng::AbstractRNG, q::Int, s::Solution)
         d  = D[r.iᵈ]
         while true
             if n ≥ q break end
+            if !isopt(r) break end
             nᵗ = d
             c  = C[r.iˢ]
             nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -465,7 +465,7 @@ function relateddepot!(rng::AbstractRNG, q::Int, s::Solution)
     # Step 1: Select a random closed depot node
     iᵒ= sample(rng, eachindex(D), Weights(W))
     # Step 2: Evaluate relatedness of this depot node to every depot node
-    for iᵈ ∈ eachindex(D) if isopt(D[iᵈ]) X[iᵈ] = relatedness(D[iᵈ], D[iᵒ], s) end end
+    for iᵈ ∈ eachindex(D) X[iᵈ] = relatedness(D[iᵈ], D[iᵒ], s) end
     # Step 3: Remove at least q customer nodes most related to this pivot depot node
     n = 0
     while n < q
