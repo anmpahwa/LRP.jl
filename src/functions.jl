@@ -222,9 +222,8 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
     πᶠ, πᵒ, πᵖ = 0., 0., 0.
     φᶠ, φᵒ, φᵖ = fixed, operational, penalty
     for d ∈ s.D
-        πᵖ += (isone(d.φ) && !isopt(d)) * d.πᶠ                              # Depot operations mandate constraint
+        πᶠ += (isone(d.φ) || isopt(d)) * d.πᶠ
         if !isopt(d) continue end
-        πᶠ += d.πᶠ
         for v ∈ d.V
             if !isopt(v) continue end
             πᶠ += v.πᶠ
@@ -259,11 +258,10 @@ end
 
 Returns `true` if customer service and time-window constraints;
 vehicle capacity, range, and working-hours constraints; and 
-depot operations mandate and capacity constraints are not violated.
+depot capacity constraints are not violated.
 """
 function isfeasible(s::Solution)
     for d ∈ s.D
-        if isone(d.φ) && !isopt(d) return  false end                        # Depot operations mandate constraint
         if !isopt(d) continue end
         for v ∈ d.V
             if !isopt(v) continue end
