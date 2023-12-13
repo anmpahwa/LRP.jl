@@ -184,7 +184,7 @@ function vectorize(s::Solution)
     Z = [Int[] for _ ∈ D]
     for d ∈ D
         iⁿ = d.iⁿ
-        if !isopt(d) continue end
+        if iszero(d.φ) && !isopt(d) continue end
         for v ∈ d.V
             if !isopt(v) continue end
             for r ∈ v.R
