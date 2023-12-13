@@ -26,12 +26,11 @@ at its best position until all open nodes have been inserted to the
 solution.
 """
 function best!(rng::AbstractRNG, s::Solution)
-    if all(isclose, s.C) return s end
+    # Step 1: Initialize
     preinsert!(s)
     D = s.D
     C = s.C
-    # Step 1: Initialize
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
     J = eachindex(R)
@@ -103,21 +102,20 @@ end
 
 
 """
-    greedy!(rng::AbstractRNG, s::Solution, mode::Symbol)
+    greedy!(rng::AbstractRNG, s::Solution; mode::Symbol)
 
 Returns solution `s` after iteratively inserting customer nodes with least 
 insertion cost until all open customer nodes have been added to the solution. 
 Available modes include `:pcs` (precise estimation of insertion cost) and 
 `:ptb` (perturbed estimation of insertion cost).
 """
-function greedy!(rng::AbstractRNG, s::Solution, mode::Symbol)
-    if all(isclose, s.C) return s end
+function greedy!(rng::AbstractRNG, s::Solution; mode::Symbol)
+    # Step 1: Initialize
     preinsert!(s)
     D = s.D
     C = s.C
     φ = isequal(mode,  :ptb)
-    # Step 1: Initialize
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
     J = eachindex(R)
@@ -209,7 +207,7 @@ Returns solution `s` after iteratively inserting customer nodes with
 least insertion cost until all open customer nodes have been added 
 to the solution. Estimates insertion cost precisely.
 """
-precise!(rng::AbstractRNG, s::Solution) = greedy!(rng, s, :pcs)
+precise!(rng::AbstractRNG, s::Solution) = greedy!(rng, s; mode=:pcs)
 """
     precise!(rng::AbstractRNG, s::Solution)
 
@@ -217,7 +215,7 @@ Returns solution `s` after iteratively inserting customer nodes with
 least insertion cost until all open customer nodes have been added to 
 the solution. Estimates insertion cost with a perturbration.
 """
-perturb!(rng::AbstractRNG, s::Solution) = greedy!(rng, s, :ptb)
+perturb!(rng::AbstractRNG, s::Solution) = greedy!(rng, s; mode=:ptb)
 
 
 """
@@ -228,12 +226,11 @@ highest regret-k cost at its best position until all open customer
 nodes have been added to the solution.
 """
 function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
-    if all(isclose, s.C) return s end
+    # Step 1: Initialize
     preinsert!(s)
     D = s.D
     C = s.C
-    # Step 1: Initialize
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
     J = eachindex(R)
@@ -358,7 +355,7 @@ Returns solution `s` after iteratively adding customer nodes with
 highest regret-2 cost at its best position until all open customer 
 nodes have been added to the solution.
 """
-regret2!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, Int(2))
+regret2!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, 2)
 """
     regret3!(rng::AbstractRNG, s::Solution)
 
@@ -366,4 +363,4 @@ Returns solution `s` after iteratively adding customer nodes with
 highest regret-3 cost at its best position until all open customer 
 nodes have been added to the solution.
 """
-regret3!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, Int(3))
+regret3!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, 3)

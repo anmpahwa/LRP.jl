@@ -13,13 +13,13 @@ end
 
 
 """
-    Route(iʳ::Int, iᵛ::Int, iᵈ::Int, x::Float64, y::Float64, iˢ::Int, iᵉ::Int, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64)
+    Route(iʳ::Int, iᵛ::Int, iᵈ::Int, x::Float64, y::Float64, iˢ::Int, iᵉ::Int, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, φ::Int64)
 
 A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`, depot
 node index `iᵈ`, centroid coordinates `x, y` , start node index `iˢ`, end node index 
 `iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition time `tⁱ`, start
 time `tˢ`, and end time `tᵉ`, repsectively, slack time `τ`, customers served `n`, 
-demand served `q`, and route length `l`.
+demand served `q`, route length `l`, and route initiaition status `φ`.
 """
 mutable struct Route
     iʳ::Int                                                                         # Route index
@@ -39,6 +39,7 @@ mutable struct Route
     n::Int                                                                          # Route total customers served
     q::Float64                                                                      # Route total demand served
     l::Float64                                                                      # Route length
+    φ::Int64                                                                        # Route initialization status
 end
 
 

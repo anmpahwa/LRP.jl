@@ -5,7 +5,6 @@ Returns solution `s` after inserting customer node `c` between tail node `nᵗ`
 and head node `nʰ` in route `r`.
 """
 function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
-    if isclose(c) return s end
     d  = s.D[r.iᵈ]
     v  = d.V[r.iᵛ]
     aᵒ = s.A[(nᵗ.iⁿ, nʰ.iⁿ)]
@@ -73,8 +72,7 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     # update start and end time
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     # update slack
-    τ   = d.tᵉ - v.tᵉ
-    v.τ = τ
+    τ = d.tᵉ - v.tᵉ
     for r ∈ reverse(v.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
@@ -87,11 +85,10 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
         end
         r.τ = τ
     end
-    v.τ = min(τ, v.τ)
-    τ   = Inf
-    d.τ = τ
-    for v ∈ d.V τ = min(τ, v.τ) end
-    d.τ = min(τ, d.τ)
+    v.τ = Inf
+    for r ∈ v.R v.τ = min(r.τ, v.τ) end
+    d.τ = Inf
+    for v ∈ d.V d.τ = min(v.τ, d.τ) end
     return s
 end
 """
@@ -99,7 +96,103 @@ end
 
 Returns solution `s` after inserting depot node `d` into the routes of vehicle `v`.
 """
-function insertnode!(d::DepotNode, v::Vehicle, s::Solution)
+function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
+    d  = s.D[r.iᵈ]
+    v  = d.V[r.iᵛ]
+    aᵒ = s.A[(nᵗ.iⁿ, nʰ.iⁿ)]
+    aᵗ = s.A[(nᵗ.iⁿ, c.iⁿ)]
+    aʰ = s.A[(c.iⁿ, nʰ.iⁿ)]
+    # update associated customer nodes
+    c.iʳ = 0
+    c.iᵛ = 0
+    c.iᵈ = 0
+    isdepot(nᵗ) ? r.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
+    isdepot(nʰ) ? r.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
+    c.iʰ = 0
+    c.iᵗ = 0
+    c.r  = NullRoute
+    # update associated route
+    r.x  = isone(r.n) ? 0. : (r.n * r.x - c.x)/(r.n - 1)
+    r.y  = isone(r.n) ? 0. : (r.n * r.y - c.y)/(r.n - 1)
+    r.n -= 1
+    r.q -= c.q
+    r.l -= aᵗ.l + aʰ.l - aᵒ.l
+    # update associated vehicle
+    v.n -= 1
+    v.q -= c.q
+    v.l -= aᵗ.l + aʰ.l - aᵒ.l
+    # update associated depot
+    d.n -= 1
+    d.q -= c.q
+    d.l -= aᵗ.l + aʰ.l - aᵒ.l
+    # update arrival and departure time
+    if isequal(φᵀ::Bool, false) return s end
+    tᵒ = r.tⁱ
+    tⁱ = r.tⁱ
+    θⁱ = r.θⁱ
+    c.tᵃ, c.tᵈ = 0., 0.
+    for r ∈ v.R
+        if r.tⁱ < tᵒ continue end
+        if isopt(r)
+            r.θⁱ = θⁱ
+            r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
+            r.tⁱ = tⁱ
+            r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
+            cˢ = s.C[r.iˢ]
+            cᵉ = s.C[r.iᵉ]
+            tᵈ = r.tˢ
+            cᵒ = cˢ
+            while true
+                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
+                cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
+                if isequal(cᵒ, cᵉ) break end
+                tᵈ = cᵒ.tᵈ
+                cᵒ = s.C[cᵒ.iʰ]
+            end
+            r.θᵉ = r.θˢ - r.l/v.lᵛ
+            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
+        else
+            r.θⁱ = θⁱ
+            r.θˢ = θⁱ
+            r.θᵉ = θⁱ
+            r.tⁱ = tⁱ
+            r.tˢ = tⁱ
+            r.tᵉ = tⁱ
+        end
+        tⁱ = r.tᵉ
+        θⁱ = r.θᵉ
+    end
+    # update start and end time
+    (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
+    # update slack
+    τ = d.tᵉ - v.tᵉ
+    for r ∈ reverse(v.R)
+        if !isopt(r) continue end
+        cˢ = s.C[r.iˢ]
+        cᵉ = s.C[r.iᵉ]
+        cᵒ = cˢ
+        while true
+            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
+            if isequal(cᵒ, cᵉ) break end
+            cᵒ = s.C[cᵒ.iʰ]
+        end
+        r.τ = τ
+    end
+    v.τ = Inf
+    for r ∈ v.R v.τ = min(r.τ, v.τ) end
+    d.τ = Inf
+    for v ∈ d.V d.τ = min(v.τ, d.τ) end
+    return s
+end
+
+
+
+"""
+    insertvehicle!(v::Vehicle, d::DepotNode, s::Solution)
+
+Returns solution `s` after inserting vehicle `v` into depot node `d`.
+"""
+function insertvehicle!(v::Vehicle, d::DepotNode, s::Solution)
     push!(d.V, v)
     v.iᵈ = d.iⁿ
     for r ∈ v.R
@@ -175,8 +268,7 @@ function insertnode!(d::DepotNode, v::Vehicle, s::Solution)
     # update start and end time
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     # update slack
-    τ   = d.tᵉ - v.tᵉ
-    v.τ = τ
+    τ = d.tᵉ - v.tᵉ
     for r ∈ reverse(v.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
@@ -189,119 +281,18 @@ function insertnode!(d::DepotNode, v::Vehicle, s::Solution)
         end
         r.τ = τ
     end
-    v.τ = min(τ, v.τ)
-    τ   = Inf
-    d.τ = τ
-    for v ∈ d.V τ = min(τ, v.τ) end
-    d.τ = min(τ, d.τ)
-    return s
-end
-
-
-
-"""
-    removenode!(c::CustomerNodeNode, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
-
-Returns solution `s` after removing customer node `c` from its position between 
-tail node `nᵗ` and head node `nʰ` in route `r`.
-"""
-function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
-    if isopen(c) return s end
-    d  = s.D[r.iᵈ]
-    v  = d.V[r.iᵛ]
-    aᵒ = s.A[(nᵗ.iⁿ, nʰ.iⁿ)]
-    aᵗ = s.A[(nᵗ.iⁿ, c.iⁿ)]
-    aʰ = s.A[(c.iⁿ, nʰ.iⁿ)]
-    # update associated customer nodes
-    c.iʳ = 0
-    c.iᵛ = 0
-    c.iᵈ = 0
-    isdepot(nᵗ) ? r.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
-    isdepot(nʰ) ? r.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
-    c.iʰ = 0
-    c.iᵗ = 0
-    c.r  = NullRoute
-    # update associated route
-    r.x  = isone(r.n) ? 0. : (r.n * r.x - c.x)/(r.n - 1)
-    r.y  = isone(r.n) ? 0. : (r.n * r.y - c.y)/(r.n - 1)
-    r.n -= 1
-    r.q -= c.q
-    r.l -= aᵗ.l + aʰ.l - aᵒ.l
-    # update associated vehicle
-    v.n -= 1
-    v.q -= c.q
-    v.l -= aᵗ.l + aʰ.l - aᵒ.l
-    # update associated depot
-    d.n -= 1
-    d.q -= c.q
-    d.l -= aᵗ.l + aʰ.l - aᵒ.l
-    # update arrival and departure time
-    if isequal(φᵀ::Bool, false) return s end
-    tᵒ = r.tⁱ
-    tⁱ = r.tⁱ
-    θⁱ = r.θⁱ
-    c.tᵃ, c.tᵈ = 0., 0.
-    for r ∈ v.R
-        if r.tⁱ < tᵒ continue end
-        if isopt(r)
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
-            r.tⁱ = tⁱ
-            r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
-            cˢ = s.C[r.iˢ]
-            cᵉ = s.C[r.iᵉ]
-            tᵈ = r.tˢ
-            cᵒ = cˢ
-            while true
-                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
-                cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
-                if isequal(cᵒ, cᵉ) break end
-                tᵈ = cᵒ.tᵈ
-                cᵒ = s.C[cᵒ.iʰ]
-            end
-            r.θᵉ = r.θˢ - r.l/v.lᵛ
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
-        else
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ
-            r.θᵉ = θⁱ
-            r.tⁱ = tⁱ
-            r.tˢ = tⁱ
-            r.tᵉ = tⁱ
-        end
-        tⁱ = r.tᵉ
-        θⁱ = r.θᵉ
-    end
-    # update start and end time
-    (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
-    # update slack
-    τ   = d.tᵉ - v.tᵉ
-    v.τ = τ
-    for r ∈ reverse(v.R)
-        if !isopt(r) continue end
-        cˢ = s.C[r.iˢ]
-        cᵉ = s.C[r.iᵉ]
-        cᵒ = cˢ
-        while true
-            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
-            if isequal(cᵒ, cᵉ) break end
-            cᵒ = s.C[cᵒ.iʰ]
-        end
-        r.τ = τ
-    end
-    v.τ = min(τ, v.τ)
-    τ   = Inf
-    d.τ = τ
-    for v ∈ d.V τ = min(τ, v.τ) end
-    d.τ = min(τ, d.τ)
+    v.τ = Inf
+    for r ∈ v.R v.τ = min(r.τ, v.τ) end
+    d.τ = Inf
+    for v ∈ d.V d.τ = min(v.τ, d.τ) end
     return s
 end
 """
-    removenode!(n::DepotNode, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
+    removevehicle!(v::Vehicle, d::DepotNode, s::Solution)
 
-Returns solution `s` after removing depot node `d` in the routes of vehicle `v`.
+Returns solution `s` after removing vehicle `v` from depot node `d`.
 """
-function removenode!(d::DepotNode, v::Vehicle, s::Solution)
+function removevehicle!(v::Vehicle, d::DepotNode, s::Solution)
     deleteat!(d.V, findfirst(isequal(v), d.V))
     v.iᵈ = 0
     for r ∈ v.R
@@ -377,8 +368,7 @@ function removenode!(d::DepotNode, v::Vehicle, s::Solution)
     # update start and end time
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     # update slack
-    τ   = d.tᵉ - v.tᵉ
-    v.τ = τ
+    τ = d.tᵉ - v.tᵉ
     for r ∈ reverse(v.R)
         if !isopt(r) continue end
         cˢ = s.C[r.iˢ]
@@ -391,11 +381,10 @@ function removenode!(d::DepotNode, v::Vehicle, s::Solution)
         end
         r.τ = τ
     end
-    v.τ = min(τ, v.τ)
-    τ   = Inf
-    d.τ = τ
-    for v ∈ d.V τ = min(τ, v.τ) end
-    d.τ = min(τ, d.τ)
+    v.τ = Inf
+    for r ∈ v.R v.τ = min(r.τ, v.τ) end
+    d.τ = Inf
+    for v ∈ d.V d.τ = min(v.τ, d.τ) end
     return s
 end
 

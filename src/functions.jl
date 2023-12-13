@@ -1,4 +1,43 @@
 """
+    isdepot(n::Node)
+
+Returns `true` if node `n` is a `DepotNode`.
+"""
+isdepot(n::Node) = isequal(typeof(n), DepotNode)
+"""
+    iscustomer(n::Node)
+    
+Returns `true` if node `n` is a `CustomerNode`.
+"""
+iscustomer(n::Node) = isequal(typeof(n), CustomerNode)
+
+
+
+"""
+    isequal(p::Route, q::Route)
+
+Return `true` if route `p` equals route `q`.
+Two routes are the equal if their indices (`iᵈ`, `iᵛ`, `iʳ`) match.
+"""
+Base.isequal(p::Route, q::Route) = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ) && isequal(p.iʳ, q.iʳ)
+"""
+    isequal(p::Vehicle, q::Vehicle)
+
+Return `true` if vehicle `p` equals vehicle `q`.
+Two vehicles are equal if their indices (`iᵈ`, `iᵛ`) match.
+"""
+Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ)
+"""
+    isequal(p::Node, q::Node)
+
+Return `true` if node `p` equals node `q`.
+Two nodes are equal if their indices (`iⁿ`) match.
+"""
+Base.isequal(p::Node, q::Node) = isequal(p.iⁿ, q.iⁿ)
+
+
+
+"""
     isopt(r::Route)
 
 Returns `true` if route `r` is operational.
@@ -60,51 +99,50 @@ isclose(d::DepotNode) = iszero(d.n) && iszero(d.φ)
 
 
 """
+    isactive(r::Route)
+
+A `Route` is defined active if it has not been initialized yet.
+
+Usage in dynamic execution and simulation.
+"""
+isactive(r::Route) = isone(r.φ)
+"""
+    isactive(c::CustomerNode)
+
+A `CustomerNode` is defined active if its route has not been initialized yet.
+
+Usage in dynamic execution and simulation.
+"""
+isactive(c::CustomerNode) = isactive(c.r)
+
+
+
+"""
+    isdormant(r::Route)
+
+A `Route` is defined dormant if it has been initialized.
+
+Usage in dynamic execution and simulation.
+"""
+isdormant(r::Route) = iszero(r.φ)
+"""
+    isactive(c::CustomerNode)
+
+A `CustomerNode` is defined dormant if its route has been initialized.
+
+Usage in dynamic execution and simulation.
+"""
+isdormant(c::CustomerNode) = isdormant(c.r)
+
+
+
+"""
     hasslack(d::DepotNode)
     
 Returns `true` if depot node `d` has slack.
 A `DepotNode` is defined to have slack if it has the capacity to serve an additional customer.
 """
 hasslack(d::DepotNode) = d.q < d.qᵈ
-
-
-
-"""
-    isequal(p::Route, q::Route)
-
-Return `true` if route `p` equals route `q`.
-Two routes are the equal if their indices (`iᵈ`, `iᵛ`, `iʳ`) match.
-"""
-Base.isequal(p::Route, q::Route) = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ) && isequal(p.iʳ, q.iʳ)
-"""
-    isequal(p::Vehicle, q::Vehicle)
-
-Return `true` if vehicle `p` equals vehicle `q`.
-Two vehicles are equal if their indices (`iᵈ`, `iᵛ`) match.
-"""
-Base.isequal(p::Vehicle, q::Vehicle) = isequal(p.iᵈ, q.iᵈ) && isequal(p.iᵛ, q.iᵛ)
-"""
-    isequal(p::Node, q::Node)
-
-Return `true` if node `p` equals node `q`.
-Two nodes are equal if their indices (`iⁿ`) match.
-"""
-Base.isequal(p::Node, q::Node) = isequal(p.iⁿ, q.iⁿ)
-
-
-
-"""
-    isdepot(n::Node)
-
-Returns `true` if node `n` is a `DepotNode`.
-"""
-isdepot(n::Node) = isequal(typeof(n), DepotNode)
-"""
-    iscustomer(n::Node)
-    
-Returns `true` if node `n` is a `CustomerNode`.
-"""
-iscustomer(n::Node) = isequal(typeof(n), CustomerNode)
 
 
 
@@ -131,7 +169,8 @@ function Route(v::Vehicle, d::DepotNode)
     n  = 0 
     q  = 0.
     l  = 0.
-    r  = Route(iʳ, iᵛ, iᵈ, x, y, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l)
+    φ  = 1
+    r  = Route(iʳ, iᵛ, iᵈ, x, y, iˢ, iᵉ, θⁱ, θˢ, θᵉ, tⁱ, tˢ, tᵉ, τ, n, q, l, φ)
     return r
 end
 """
@@ -139,7 +178,7 @@ end
 
 A `NullRoute` is a fictitious out-of-service route.
 """           
-const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf)
+const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0, 0, Inf, 1)
 
 
 

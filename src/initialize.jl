@@ -213,7 +213,7 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
             end
         end
     end
-    best!(rng, s)
+    if any(isopen, C) best!(rng, s) end
     postinitialize!(s)
     # Step 4: Return initial solution
     return s

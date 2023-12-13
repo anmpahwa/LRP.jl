@@ -26,20 +26,23 @@ to its best position in the same route if the move results in a reduction
 in objective function value, repeating for `k̅` iterations.
 """
 function intramove!(rng::AbstractRNG, k̅::Int, s::Solution)
+    # Step 1: Initialize
     prelocalsearch!(s)
     D = s.D
     C = s.C
-    # Step 1: Initialize
+    W = isactive.(C)
+    # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         z  = f(s)
-        # Step 1.1: Randomly select a customer node
-        c  = sample(rng, C)
-        # Step 1.2: Remove this node from its position between tail node nᵗ and head node nʰ
+        # Step 2.1: Randomly select a customer node
+        c  = sample(rng, C, OffsetWeights(W))
+        if isdormant(c) continue end
+        # Step 2.2: Remove this node from its position between tail node nᵗ and head node nʰ
         r  = c.r
         nᵗ = isequal(r.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
         nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
         removenode!(c, nᵗ, nʰ, r, s)
-        # Step 1.3: Iterate through all position in the route
+        # Step 2.3: Iterate through all position in the route
         x  = 0.
         p  = (nᵗ.iⁿ, nʰ.iⁿ)
         d  = s.D[r.iᵈ]
@@ -48,20 +51,20 @@ function intramove!(rng::AbstractRNG, k̅::Int, s::Solution)
         nᵗ = d
         nʰ = nˢ
         while true
-            # Step 1.3.1: Insert customer node c between tail node nᵗ and head node nʰ
+            # Step 2.3.1: Insert customer node c between tail node nᵗ and head node nʰ
             insertnode!(c, nᵗ, nʰ, r, s)
-            # Step 1.3.2: Compute insertion cost
+            # Step 2.3.2: Compute insertion cost
             z′ = f(s)
             Δ  = z′ - z
-            # Step 1.3.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
+            # Step 2.3.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
             if Δ < x x, p = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
-            # Step 1.3.4: Remove node from its position between tail node nᵗ and head node nʰ
+            # Step 2.3.4: Remove node from its position between tail node nᵗ and head node nʰ
             removenode!(c, nᵗ, nʰ, r, s)
             if isequal(nᵗ, nᵉ) break end
             nᵗ = nʰ
             nʰ = isequal(r.iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
         end
-        # Step 1.4: Move the node to its best position (this could be its original position as well)
+        # Step 2.4: Move the node to its best position (this could be its original position as well)
         iᵗ = p[1]
         iʰ = p[2]
         nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
@@ -69,7 +72,7 @@ function intramove!(rng::AbstractRNG, k̅::Int, s::Solution)
         insertnode!(c, nᵗ, nʰ, r, s)
     end
     postlocalsearch!(s)
-    # Step 2: Return solution
+    # Step 3: Return solution
     return s
 end
 
@@ -81,25 +84,28 @@ to its best position in another route if the move results in a reduction
 in objective function value, repeating for `k̅` iterations.
 """
 function intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
-    prelocalsearch!(s)
-    D = s.D
-    C = s.C
     # Step 1: Initialize
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    prelocalsearch!(s)
+    D  = s.D
+    C  = s.C
+    R  = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    Wᶜ = isactive.(C)
+    # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
         z  = f(s)
-        # Step 1.1: Randomly select a customer node
-        c  = sample(rng, C)
-        # Step 1.2: Remove this node from its position between tail node nᵗ and head node nʰ
+        # Step 2.1: Select a random customer node
+        c  = sample(rng, C, OffsetWeights(Wᶜ))
         r¹ = c.r
+        if isdormant(r¹) continue end
+        # Step 2.2: Select a random route
+        Wʳ = [isdormant(r²) || isequal(r¹, r²) ? 0 : 1 for r² ∈ R]
+        r² = sample(rng, R, Weights(Wʳ))
+        if isdormant(r²) continue end
+        # Step 2.3: Remove this node from its position between tail node nᵗ and head node nʰ
         nᵗ = isequal(r¹.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
         nʰ = isequal(r¹.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
         removenode!(c, nᵗ, nʰ, r¹, s)
-        # Step 1.3: Select a random route
-        W  = [isequal(r¹, r²) ? 0 : 1 for r² ∈ R]
-        r² = sample(rng, R, Weights(W))
-        if isequal(r¹, r²) continue end
-        # Step 1.4: Iterate through all position in the route
+        # Step 2.4: Iterate through all position in the route
         x  = 0.
         p  = (nᵗ.iⁿ, nʰ.iⁿ)
         r  = r¹
@@ -109,20 +115,20 @@ function intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
         nᵗ = d
         nʰ = nˢ
         while true
-            # Step 1.4.1: Insert customer node c between tail node nᵗ and head node nʰ
+            # Step 2.4.1: Insert customer node c between tail node nᵗ and head node nʰ
             insertnode!(c, nᵗ, nʰ, r², s)
-            # Step 1.4.2: Compute insertion cost
+            # Step 2.4.2: Compute insertion cost
             z′ = f(s)
             Δ  = z′ - z
-            # Step 1.4.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
+            # Step 2.4.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
             if Δ < x x, p, r = Δ, (nᵗ.iⁿ, nʰ.iⁿ), r² end
-            # Step 1.4.4: Remove node from its position between tail node nᵗ and head node nʰ
+            # Step 2.4.4: Remove node from its position between tail node nᵗ and head node nʰ
             removenode!(c, nᵗ, nʰ, r², s)
             if isequal(nᵗ, nᵉ) break end
             nᵗ = nʰ
             nʰ = isequal(r².iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
         end
-        # Step 1.5: Move the node to its best position (this could be its original position as well)
+        # Step 2.5: Move the node to its best position (this could be its original position as well)
         iᵗ = p[1]
         iʰ = p[2]
         nᵗ = iᵗ ≤ length(D) ? D[iᵗ] : C[iᵗ]
@@ -130,7 +136,7 @@ function intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
         insertnode!(c, nᵗ, nʰ, r, s)
     end
     postlocalsearch!(s)
-    # Step 2: Return solution
+    # Step 3: Return solution
     return s
 end
 
@@ -144,92 +150,28 @@ the same route if the swap results in a reduction in objective function
 value, repeating for `k̅` iterations.
 """
 function intraswap!(rng::AbstractRNG, k̅::Int, s::Solution)
+    # Step 1: Initialize
     prelocalsearch!(s)
-    z = f(s)
-    D = s.D
-    C = s.C
-    # Step 1: Iterate for k̅ iterations
+    z  = f(s)
+    D  = s.D
+    C  = s.C
+    W² = isactive.(C)
+    # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
-        # Step 1.1: Swap two randomly selected customer nodes
+        # Step 2.1: Swap two randomly selected customer nodes
         # n¹ → n² → n³ and n⁴ → n⁵ → n⁶
-        n² = sample(rng, C)
-        W  = [isequal(n², n⁵) || !isequal(n².r, n⁵.r) ? 0. : relatedness(n², n⁵, s) for n⁵ ∈ C]
-        n⁵ = sample(rng, C, OffsetWeights(W))
-        if isequal(n², n⁵) || !isequal(n².r, n⁵.r) continue end
-        rᵒ = n².r
-        n¹ = isequal(rᵒ.iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
-        n³ = isequal(rᵒ.iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
-        n⁴ = isequal(rᵒ.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
-        n⁶ = isequal(rᵒ.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
-        # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
-        if isequal(n³, n⁵)
-            removenode!(n², n¹, n³, rᵒ, s)
-            insertnode!(n², n⁵, n⁶, rᵒ, s)
-        # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
-        elseif isequal(n², n⁶)
-            removenode!(n², n¹, n³, rᵒ, s)
-            insertnode!(n², n⁴, n⁵, rᵒ, s)
-        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
-        else 
-            removenode!(n², n¹, n³, rᵒ, s)
-            removenode!(n⁵, n⁴, n⁶, rᵒ, s)
-            insertnode!(n⁵, n¹, n³, rᵒ, s)
-            insertnode!(n², n⁴, n⁶, rᵒ, s)
-        end
-        # Step 1.2: Compute change in objective function value
-        z′ = f(s)
-        Δ  = z′ - z
-        # Step 1.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
-        if Δ < 0 z = z′
-        # Step 1.4: Reswap the two customer nodes and go to step 1.1
-        else
-            # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
-            if isequal(n³, n⁵)
-                removenode!(n², n⁵, n⁶, rᵒ, s)
-                insertnode!(n², n¹, n³, rᵒ, s)
-            # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
-            elseif isequal(n², n⁶)
-                removenode!(n², n⁴, n⁵, rᵒ, s)
-                insertnode!(n², n¹, n³, rᵒ, s)
-            # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
-            else 
-                removenode!(n⁵, n¹, n³, rᵒ, s)
-                removenode!(n², n⁴, n⁶, rᵒ, s)
-                insertnode!(n², n¹, n³, rᵒ, s)
-                insertnode!(n⁵, n⁴, n⁶, rᵒ, s)
-            end
-        end
-    end
-    postlocalsearch!(s)
-    # Step 2: Return solution
-    return s
-end
-
-"""
-    interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
-
-Returns solution `s` after swapping two randomly selected customers from 
-different routes if the swap results in a reduction in objective function 
-value, repeating for `k̅` iterations.
-"""
-function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
-    prelocalsearch!(s)
-    z = f(s)
-    D = s.D
-    C = s.C
-    # Step 1: Iterate for k̅ iterations
-    for _ ∈ 1:k̅
-        # Step 1.1: Swap two randomly selected customer nodes
-        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶
-        n² = sample(rng, C)
-        W  = [isequal(n², n⁵) || isequal(n².r, n⁵.r) ? 0. : relatedness(n², n⁵, s) for n⁵ ∈ C]
-        n⁵ = sample(rng, C, OffsetWeights(W))
-        if isequal(n², n⁵) || isequal(n².r, n⁵.r) continue end
-        r², r⁵ = n².r, n⁵.r
+        n² = sample(rng, C, OffsetWeights(W²))
+        if isdormant(n²) continue end
+        W⁵ = [isdormant(n⁵) || !isequal(n².r, n⁵.r) || isequal(n², n⁵) ? 0. : relatedness(n², n⁵, s) for n⁵ ∈ C]
+        n⁵ = sample(rng, C, OffsetWeights(W⁵))
+        if isdormant(n⁵) continue end
+        r² = n².r
+        r⁵ = n⁵.r
         n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
         n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
         n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
         n⁶ = isequal(r⁵.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
+        if isequal(n², n⁵) continue end
         # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
         if isequal(n³, n⁵)
             removenode!(n², n¹, n³, r², s)
@@ -245,12 +187,12 @@ function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
             insertnode!(n⁵, n¹, n³, r², s)
             insertnode!(n², n⁴, n⁶, r⁵, s)
         end
-        # Step 1.2: Compute change in objective function value
+        # Step 2.2: Compute change in objective function value
         z′ = f(s)
         Δ  = z′ - z
-        # Step 1.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
+        # Step 2.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
         if Δ < 0 z = z′
-        # Step 1.4: Reswap the two customer nodes and go to step 1.1
+        # Step 2.4: Reswap the two customer nodes and go to step 1.1
         else
             # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
             if isequal(n³, n⁵)
@@ -270,7 +212,81 @@ function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
         end
     end
     postlocalsearch!(s)
-    # Step 2: Return solution
+    # Step 3: Return solution
+    return s
+end
+
+"""
+    interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
+
+Returns solution `s` after swapping two randomly selected customers from 
+different routes if the swap results in a reduction in objective function 
+value, repeating for `k̅` iterations.
+"""
+function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
+    # Step 1: Initialize
+    prelocalsearch!(s)
+    z  = f(s)
+    D  = s.D
+    C  = s.C
+    W² = isactive.(C)
+    # Step 2: Iterate for k̅ iterations
+    for _ ∈ 1:k̅
+        # Step 2.1: Swap two randomly selected customer nodes
+        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶
+        n² = sample(rng, C, OffsetWeights(W²))
+        if isdormant(n²) continue end
+        W⁵ = [isdormant(n⁵) || isequal(n².r, n⁵.r) || isequal(n², n⁵) ? 0. : relatedness(n², n⁵, s) for n⁵ ∈ C]
+        n⁵ = sample(rng, C, OffsetWeights(W⁵))
+        if isdormant(n⁵) continue end
+        r² = n².r
+        r⁵ = n⁵.r
+        n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
+        n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
+        n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
+        n⁶ = isequal(r⁵.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
+        if isequal(n², n⁵) continue end
+        # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
+        if isequal(n³, n⁵)
+            removenode!(n², n¹, n³, r², s)
+            insertnode!(n², n⁵, n⁶, r⁵, s)
+        # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
+        elseif isequal(n², n⁶)
+            removenode!(n², n¹, n³, r², s)
+            insertnode!(n², n⁴, n⁵, r⁵, s)
+        # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
+        else 
+            removenode!(n², n¹, n³, r², s)
+            removenode!(n⁵, n⁴, n⁶, r⁵, s)
+            insertnode!(n⁵, n¹, n³, r², s)
+            insertnode!(n², n⁴, n⁶, r⁵, s)
+        end
+        # Step 2.2: Compute change in objective function value
+        z′ = f(s)
+        Δ  = z′ - z
+        # Step 2.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
+        if Δ < 0 z = z′
+        # Step 2.4: Reswap the two customer nodes and go to step 1.1
+        else
+            # n¹ → n² (n⁴) → n³ (n⁵) → n⁶   ⇒   n¹ → n³ (n⁵) → n² (n⁴) → n⁶
+            if isequal(n³, n⁵)
+                removenode!(n², n⁵, n⁶, r⁵, s)
+                insertnode!(n², n¹, n³, r², s)
+            # n⁴ → n⁵ (n¹) → n² (n⁶) → n³   ⇒   n⁴ → n² (n⁶) → n⁵ (n¹) → n³   
+            elseif isequal(n², n⁶)
+                removenode!(n², n⁴, n⁵, r⁵, s)
+                insertnode!(n², n¹, n³, r², s)
+            # n¹ → n² → n³ and n⁴ → n⁵ → n⁶ ⇒   n¹ → n⁵ → n³ and n⁴ → n² → n⁶
+            else 
+                removenode!(n⁵, n¹, n³, r², s)
+                removenode!(n², n⁴, n⁶, r⁵, s)
+                insertnode!(n², n¹, n³, r², s)
+                insertnode!(n⁵, n⁴, n⁶, r⁵, s)
+            end
+        end
+    end
+    postlocalsearch!(s)
+    # Step 3: Return solution
     return s
 end
 
@@ -285,17 +301,19 @@ reconfiguration results in a reduction in objective function value, repeating
 for `k̅` iterations.
 """
 function intraopt!(rng::AbstractRNG, k̅::Int, s::Solution)
+    # Step 1: Initialize
     prelocalsearch!(s)
     z = f(s)
     D = s.D
     C = s.C
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
-    W = isopt.(R)                   # W[i]: selection weight for route R[i]
-    # Step 1: Iterate for k̅ iterations
+    W = [!isopt(r) || isdormant(r) ? 0 : 1 for r ∈ R]
+    # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
-        # Step 1.1: Iteratively take 2 arcs from the same route
+        # Step 2.1: Iteratively take 2 arcs from the same route
         # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
         r = sample(rng, R, Weights(W))
+        if !isopt(r) || isdormant(r) continue end
         (i,j) = sample(rng, 1:r.n, 2)
         (i,j) = j < i ? (j,i) : (i,j)  
         k  = 1
@@ -314,7 +332,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int, s::Solution)
         n⁴ = isequal(r.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
         n⁶ = isequal(r.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ] 
         if isequal(n², n⁵) || isequal(n¹, n⁵) continue end 
-        # Step 1.2: Reconfigure
+        # Step 2.2: Reconfigure
         # d → ... → n¹ → n⁵ → n⁴ → ... → n³ → n² → n⁶ → ... → d
         n  = n²
         tᵒ = n¹
@@ -329,12 +347,12 @@ function intraopt!(rng::AbstractRNG, k̅::Int, s::Solution)
             hᵒ = isdepot(hᵒ) ? C[r.iˢ] : (isequal(r.iᵉ, hᵒ.iⁿ) ? D[hᵒ.iʰ] : C[hᵒ.iʰ])
             if isequal(n, n⁵) break end
         end
-        # Step 1.3: Compute change in objective function value
+        # Step 2.3: Compute change in objective function value
         z′ = f(s)
         Δ  = z′ - z 
-        # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
+        # Step 2.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
         if Δ < 0 z = z′
-        # Step 1.5: Reconfigure back to the original state
+        # Step 2.5: Reconfigure back to the original state
         else
             # d → ... → n¹ → n² → n³ → ... → n⁴ → n⁵ → n⁶ → ... → d
             n  = n⁵
@@ -353,7 +371,7 @@ function intraopt!(rng::AbstractRNG, k̅::Int, s::Solution)
         end
     end
     postlocalsearch!(s)
-    # Step 2: Return solution
+    # Step 3: Return solution
     return s
 end
 
@@ -366,20 +384,23 @@ if the reconfiguration results in a reduction in objective function value,
 repeating for `k̅` iterations.
 """
 function interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
+    # Step 1: Initialize
     prelocalsearch!(s)
-    z = f(s)
-    D = s.D
-    C = s.C
-    R = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
-    W = isopt.(R)                   # W[i]: selection weight for route R[i]
-    # Step 1: Iterate for k̅ iterations
+    z  = f(s)
+    D  = s.D
+    C  = s.C
+    R  = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    W² = [!isopt(r²) || isdormant(r²) ? 0 : 1 for r² ∈ R]
+    # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
-        # Step 1.1: Iteratively take 2 arcs from different routes
+        # Step 2.1: Iteratively take 2 arcs from different routes
         # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
-        r² = sample(rng, R, Weights(W))
-        W′ = [isequal(r², r⁵) || !isopt(r⁵) ? 0. : relatedness(r², r⁵, s) for r⁵ ∈ R]
-        r⁵ = sample(rng, R, Weights(W′))
-        if isequal(r², r⁵) || !isopt(r⁵) continue end
+        r² = sample(rng, R, Weights(W²))
+        if !isopt(r²) || isdormant(r²) continue end
+        W⁵ = [!isopt(r⁵) || isdormant(r⁵) || isequal(r², r⁵)  ? 0. : relatedness(r², r⁵, s) for r⁵ ∈ R]
+        r⁵ = sample(rng, R, Weights(W⁵))
+        if !isopt(r⁵) || isdormant(r⁵) continue end
+        if isequal(r², r⁵) continue end
         d² = D[r².iᵈ]
         d⁵ = D[r⁵.iᵈ]
         i  = rand(rng, 1:r².n)
@@ -406,7 +427,7 @@ function interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
         end
         n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
         n⁶ = isequal(r⁵.iᵉ, n⁵.iⁿ) ? D[n⁵.iʰ] : C[n⁵.iʰ]
-        # Step 1.2: Reconfigure
+        # Step 2.2: Reconfigure
         # d² → ... → n¹ → n⁵ → n⁶ → ...  → d² and d⁵ → ... → n⁴ → n² → n³ → ... → d⁵
         c² = n²
         tᵒ = n¹
@@ -434,12 +455,12 @@ function interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
             c⁵ = C[hᵒ.iⁿ]
             hᵒ = isequal(r⁵.iᵉ, c⁵.iⁿ) ? D[c⁵.iʰ] : C[c⁵.iʰ]
         end
-        # Step 1.3: Compute change in objective function value
+        # Step 2.3: Compute change in objective function value
         z′ = f(s)
         Δ  = z′ - z 
-        # Step 1.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
+        # Step 2.4: If the reconfiguration results in reduction in objective function value then go to step 1, else go to step 1.5
         if Δ < 0 z = z′
-        # Step 1.5: Reconfigure back to the original state
+        # Step 2.5: Reconfigure back to the original state
         else
             # d² → ... → n¹ → n² → n³ → ... → d² and d⁵ → ... → n⁴ → n⁵ → n⁶ → ... → d⁵
             c² = n⁵
@@ -471,7 +492,7 @@ function interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
         end
     end
     postlocalsearch!(s)
-    # Step 2: Return solution
+    # Step 3: Return solution
     return s
 end
 
@@ -485,52 +506,57 @@ between two randomly selected depot nodes if the swap results in a reduction
 in objective function value, repeating for `k̅` iterations.
 """
 function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
+    # Step 1: Initialize
     prelocalsearch!(s)
-    z = f(s)
-    D = s.D
-    C = s.C
-    W = isopt.(D)
-    # Step 1: Iterate for k̅ iterations
+    z  = f(s)
+    D  = s.D
+    C  = s.C
+    W¹ = isopt.(D)
+    # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
-        # Step 1.1: Select a random depot pair
-        d¹ = sample(rng, D, Weights(W))
-        W′ = [isequal(d¹, d²) ? 0. : relatedness(d¹, d², s) for d² ∈ D]
-        d² = sample(rng, D, Weights(W′))
+        # Step 2.1: Select a random depot pair
+        d¹ = sample(rng, D, Weights(W¹))
+        R¹ = [r¹ for v¹ ∈ d¹.V for r¹ ∈ v¹.R]
+        if !isopt(d¹) || any(isdormant, R¹) continue end
+        W² = [isequal(d¹, d²) ? 0. : relatedness(d¹, d², s) for d² ∈ D]
+        d² = sample(rng, D, Weights(W²))
+        R² = [r² for v² ∈ d².V for r² ∈ v².R]
+        if !isopt(d²) || any(isdormant, R²) continue end
         if isequal(d¹, d²) continue end
-        # Step 1.2: Swap vehicles, routes, and customer nodes
+        # Step 2.2: Swap vehicles, routes, and customer nodes
         I¹ = eachindex(d¹.V)
         I² = eachindex(d².V)
         while !isempty(d¹.V)
             v = d¹.V[1]
-            removenode!(d¹, v, s)
-            insertnode!(d², v, s)
+            removevehicle!(v, d¹, s)
+            insertvehicle!(v, d², s)
         end
         for iᵛ ∈ I²
             v = d².V[1]
-            removenode!(d², v, s)
-            insertnode!(d¹, v, s)
+            removevehicle!(v, d², s)
+            insertvehicle!(v, d¹, s)
         end
         z′ = f(s)
         Δ  = z′ - z
-        # Step 1.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
+        # Step 2.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
         if Δ < 0 z = z′
-        # Step 1.4: Reconfigure back to the original state
+        # Step 2.4: Reconfigure back to the original state
         else
             I¹ = eachindex(d¹.V)
             I² = eachindex(d².V)
             while !isempty(d¹.V)
                 v = d¹.V[1]
-                removenode!(d¹, v, s)
-                insertnode!(d², v, s)
+                removevehicle!(v, d¹, s)
+                insertvehicle!(v, d², s)
             end
             for iᵛ ∈ I²
                 v = d².V[1]
-                removenode!(d², v, s)
-                insertnode!(d¹, v, s)
+                removevehicle!(v, d², s)
+                insertvehicle!(v, d¹, s)
             end
         end
     end
     postlocalsearch!(s)
-    # Step 2: Return solution
+    # Step 3: Return solution
     return s
 end
