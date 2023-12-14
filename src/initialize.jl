@@ -58,9 +58,9 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
     # Arcs
     df = DataFrame(CSV.File(joinpath(dir, "$instance/arcs.csv"), header=false))
     A  = Dict{Tuple{Int,Int},Arc}()
-    N  = length(D)+length(C)
-    for iᵗ ∈ 1:N
-        for iʰ ∈ 1:N
+    n  = lastindex(C)
+    for iᵗ ∈ 1:n
+        for iʰ ∈ 1:n
             l = df[iᵗ,iʰ] 
             a = Arc(iᵗ, iʰ, l)
             A[(iᵗ,iʰ)] = a
