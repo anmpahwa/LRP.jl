@@ -101,6 +101,7 @@ function intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
         Wʳ = [isdormant(r²) || isequal(r¹, r²) ? 0 : 1 for r² ∈ R]
         r² = sample(rng, R, Weights(Wʳ))
         if isdormant(r²) continue end
+        if isequal(r¹, r²) continue end
         # Step 2.3: Remove this node from its position between tail node nᵗ and head node nʰ
         nᵗ = isequal(r¹.iˢ, c.iⁿ) ? D[c.iᵗ] : C[c.iᵗ]
         nʰ = isequal(r¹.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
@@ -241,6 +242,7 @@ function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
         if isdormant(n⁵) continue end
         r² = n².r
         r⁵ = n⁵.r
+        if isequal(r², r⁵) continue end
         n¹ = isequal(r².iˢ, n².iⁿ) ? D[n².iᵗ] : C[n².iᵗ]
         n³ = isequal(r².iᵉ, n².iⁿ) ? D[n².iʰ] : C[n².iʰ]
         n⁴ = isequal(r⁵.iˢ, n⁵.iⁿ) ? D[n⁵.iᵗ] : C[n⁵.iᵗ]
@@ -517,11 +519,11 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
         # Step 2.1: Select a random depot pair
         d¹ = sample(rng, D, Weights(W¹))
         R¹ = [r¹ for v¹ ∈ d¹.V for r¹ ∈ v¹.R]
-        if !isopt(d¹) || any(isdormant, R¹) continue end
+        if any(isdormant, R¹) continue end
         W² = [isequal(d¹, d²) ? 0. : relatedness(d¹, d², s) for d² ∈ D]
         d² = sample(rng, D, Weights(W²))
         R² = [r² for v² ∈ d².V for r² ∈ v².R]
-        if !isopt(d²) || any(isdormant, R²) continue end
+        if any(isdormant, R²) continue end
         if isequal(d¹, d²) continue end
         # Step 2.2: Swap vehicles, routes, and customer nodes
         I¹ = eachindex(d¹.V)
