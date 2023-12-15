@@ -488,6 +488,7 @@ function postinitialize!(s::Solution)
             end
         end
     end
+    for c ∈ s.C c.iᵛ, c.iʳ = c.r.iᵛ, c.r.iʳ end
     return s
 end
 
@@ -566,6 +567,7 @@ function postinsert!(s::Solution)
             end
         end
     end
+    for c ∈ s.C c.iᵛ, c.iʳ = c.r.iᵛ, c.r.iʳ end
     return s
 end
 
