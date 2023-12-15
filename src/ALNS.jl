@@ -1,5 +1,5 @@
 """
-    ALNS([rng::AbstractRNG], χ::ALNSparameters, sₒ::Solution)
+    ALNS([rng::AbstractRNG], χ::ALNSparameters, sₒ::Solution; mute=false))
 
 Adaptive Large Neighborhood Search (ALNS)
 
@@ -7,10 +7,12 @@ Given ALNS optimization parameters `χ` and an initial solution `sₒ`,
 ALNS adaptively searches large neighborhoods in the solution domain and
 returns the best found solution. Additionally, displays a convergence plot.
 
+Takes `mute` as argument. If `true` mutes progressbar and pltcnv output.
+
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
+function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution; mute=false)
     # Step 0: Pre-initialize
     j, k = χ.j, χ.k
     n, m = χ.n, χ.m
@@ -38,7 +40,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
     Cᵣ, Pᵣ, Πᵣ, Wᵣ = zeros(Int, R), zeros(R), zeros(R), ones(R)
     Cᵢ, Pᵢ, Πᵢ, Wᵢ = zeros(Int, I), zeros(I), zeros(I), ones(I)
     # Step 2: Loop over segments.
-    p = Progress(n * j, desc="Computing...", color=:blue, showspeed=true)
+    if !mute p = Progress(n * j, desc="Computing...", color=:blue, showspeed=true) end
     for u ∈ 1:j
         # Step 2.1: Reset count and score for every removal and insertion operator
         for r ∈ R Cᵣ[r], Πᵣ[r] = 0, 0. end
@@ -94,7 +96,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
             Z[(u - 1) * (n + 1) + v] = z
             H[(u - 1) * (n + 1) + v] = h
             t = max(t * θ, ω̲ * z⃰/log(1/τ̲))
-            next!(p)
+            if !mute next!(p) end
         end
         # Step 2.4: Update weights for every removal and insertion operator.
         for r ∈ R if !iszero(Cᵣ[r]) Wᵣ[r] = ρ * Πᵣ[r] / Cᵣ[r] + (1 - ρ) * Wᵣ[r] end end
@@ -120,7 +122,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution)
         H[u * (n + 1)] = h
     end
     # Step 3: Display the convergence plot and return the best solution
-    display(pltcnv(Z))
+    if !mute display(pltcnv(Z)) end
     return s⃰
 end
-ALNS(χ::ALNSparameters, s::Solution) = ALNS(Random.GLOBAL_RNG, χ, s)
+ALNS(χ::ALNSparameters, s::Solution; mute=false) = ALNS(Random.GLOBAL_RNG, χ, s; mute=mute)
