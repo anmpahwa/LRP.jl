@@ -231,13 +231,14 @@ function vectorize(s::Solution)
             if !isopt(v) continue end
             for r ∈ v.R
                 if !isopt(r) continue end
-                cˢ, cᵉ = C[r.iˢ], C[r.iᵉ] 
+                cˢ = C[r.iˢ]
+                cᵉ = C[r.iᵉ] 
                 push!(Z[iⁿ], d.iⁿ)
-                c = cˢ
+                cᵒ = cˢ
                 while true
-                    push!(Z[iⁿ], c.iⁿ)
-                    if isequal(c, cᵉ) break end
-                    c = C[c.iʰ]
+                    push!(Z[iⁿ], cᵒ.iⁿ)
+                    if isequal(cᵒ, cᵉ) break end
+                    cᵒ = C[c.iʰ]
                 end
             end
         end
@@ -337,10 +338,6 @@ function relatedness(c¹::CustomerNode, c²::CustomerNode, s::Solution)
     ϵ  = 1e-5
     r¹ = c¹.r
     r² = c².r
-    d¹ = s.D[r¹.iᵈ]
-    d² = s.D[r².iᵈ]
-    v¹ = d¹.V[r¹.iᵛ]
-    v² = d².V[r².iᵛ]
     φ  = (1 + isequal(r¹, r²)) / 2
     q  = abs(c¹.q - c².q)
     l  = s.A[(c¹.iⁿ,c².iⁿ)].l
@@ -373,8 +370,6 @@ Returns a measure of similarity between vehicles `v¹` and `v²` in solution `s`
 """
 function relatedness(v¹::Vehicle, v²::Vehicle, s::Solution)
     ϵ  = 1e-5
-    d¹ = s.D[v¹.iᵈ]
-    d² = s.D[v².iᵈ]
     x¹ = 0.
     y¹ = 0.
     for r ∈ v¹.R 
