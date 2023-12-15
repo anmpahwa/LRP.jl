@@ -238,7 +238,7 @@ function vectorize(s::Solution)
                 while true
                     push!(Z[iⁿ], cᵒ.iⁿ)
                     if isequal(cᵒ, cᵉ) break end
-                    cᵒ = C[c.iʰ]
+                    cᵒ = C[cᵒ.iʰ]
                 end
             end
         end
