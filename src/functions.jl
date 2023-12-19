@@ -267,22 +267,23 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
     for d ∈ s.D
         if !isopt(d) continue end
         πᶠ += d.πᶠ
+        πᵒ += d.q * d.πᵒ
         for v ∈ d.V
             if !isopt(v) continue end
             πᶠ += v.πᶠ
+            πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
             for r ∈ v.R 
                 if !isopt(r) continue end
+                πᶠ += 0.
                 πᵒ += r.l * v.πᵈ
                 πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)                           # Vehicle capacity constraint
                 πᵖ += (r.l > v.lᵛ) * (r.l - v.lᵛ)                           # Vehicle range constraint
             end
-            πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
             πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)                             # Working-hours constraint (start time)
             πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)                             # Working-hours constraint (end time)
             πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * (v.tᵉ - v.tˢ - v.τʷ)               # Working-hours constraint (duration)
             πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)                 # Number of routes constraint
         end
-        πᵒ += d.q * d.πᵒ
         πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)                                   # Depot capacity constraint
     end
     for c ∈ s.C 
@@ -300,10 +301,14 @@ end
     isfeasible(s::Solution)
 
 Returns `true` if customer service and time-window constraints;
-vehicle capacity, range, and working-hours constraints; and 
+vehicle capacity, range, working-hours, and operations constraints; and 
 depot capacity constraints are not violated.
 """
 function isfeasible(s::Solution)
+    for c ∈ s.C 
+        if isopen(c) return false end                                       # Service constraint
+        if (c.tᵃ > c.tˡ) return false end                                   # Time-window constraint
+    end
     for d ∈ s.D
         if !isopt(d) continue end
         for v ∈ d.V
@@ -319,10 +324,6 @@ function isfeasible(s::Solution)
             if length(v.R) > v.r̅ return false end                           # Number of routes constraint
         end
         if d.q > d.qᵈ return false end                                      # Depot capacity constraint
-    end
-    for c ∈ s.C 
-        if isopen(c) return false end                                       # Service constraint
-        if (c.tᵃ > c.tˡ) return false end                                   # Time-window constraint
     end
     return true
 end
