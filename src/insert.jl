@@ -218,6 +218,7 @@ the solution. Estimates insertion cost with a perturbration.
 perturb!(rng::AbstractRNG, s::Solution) = greedy!(rng, s; mode=:ptb)
 
 
+
 """
     regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
 
