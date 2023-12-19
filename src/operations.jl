@@ -92,9 +92,10 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     return s
 end
 """
-    insertnode!(d::DepotNode, v::Vehicle, s::Solution)
+    removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
 
-Returns solution `s` after inserting depot node `d` into the routes of vehicle `v`.
+Returns solution `s` after removing customer node `c` between tail node `nᵗ` 
+and head node `nʰ` in route `r`.
 """
 function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Solution)
     d  = s.D[r.iᵈ]
