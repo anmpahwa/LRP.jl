@@ -50,8 +50,8 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         tˡ = df[k,7]
         iᵗ = 0
         iʰ = 0
-        tᵃ = 0.
-        tᵈ = 0.
+        tᵃ = tᵉ
+        tᵈ = tᵉ + τᶜ
         c  = CustomerNode(iⁿ, iʳ, iᵛ, iᵈ, x, y, q, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
         C[iⁿ] = c
     end

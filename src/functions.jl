@@ -286,9 +286,10 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
         end
         πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)                                   # Depot capacity constraint
     end
-    for c ∈ s.C 
-        πᵖ += isopen(c) * c.q                                               # Service constraint
-        πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)                                 # Time-window constraint
+    for c ∈ s.C
+        if isopen(c) πᵖ += c.q                                              # Service constraint
+        else πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)                            # Time-window constraint
+        end
     end
     πᵖ *= 10 ^ ceil(log10(πᶠ + πᵒ))
     z = φᶠ * πᶠ + φᵒ * πᵒ + φᵖ * πᵖ
@@ -306,15 +307,13 @@ depot capacity constraints are not violated.
 """
 function isfeasible(s::Solution)
     for c ∈ s.C 
-        if isopen(c) return false end                                       # Service constraint
-        if (c.tᵃ > c.tˡ) return false end                                   # Time-window constraint
+        if isopen(c) return false                                           # Service constraint
+        elseif c.tᵃ > c.tˡ return false                                     # Time-window constraint
+        end
     end
     for d ∈ s.D
-        if !isopt(d) continue end
         for v ∈ d.V
-            if !isopt(v) continue end
             for r ∈ v.R
-                if !isopt(r) continue end
                 if r.q > v.qᵛ return false end                              # Vehicle capacity constraint
                 if r.l > v.lᵛ return false end                              # Vehicle range constraint
             end

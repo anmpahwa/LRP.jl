@@ -130,7 +130,7 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     tᵒ = r.tⁱ
     tⁱ = r.tⁱ
     θⁱ = r.θⁱ
-    c.tᵃ, c.tᵈ = 0., 0.
+    c.tᵃ, c.tᵈ = Inf, Inf
     for r ∈ v.R
         if r.tⁱ < tᵒ continue end
         if isopt(r)
