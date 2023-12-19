@@ -18,6 +18,7 @@ localsearch!(rng::AbstractRNG, k̅::Int, s::Solution, method::Symbol)::Solution 
 localsearch!(k̅::Int, s::Solution, method::Symbol) = localsearch!(Random.GLOBAL_RNG, k̅, s, method)
 
 
+
 """
     intramove!(rng::AbstractRNG, k̅::Int, s::Solution)
 
@@ -75,7 +76,6 @@ function intramove!(rng::AbstractRNG, k̅::Int, s::Solution)
     # Step 3: Return solution
     return s
 end
-
 """
     intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
 
@@ -215,7 +215,6 @@ function intraswap!(rng::AbstractRNG, k̅::Int, s::Solution)
     # Step 3: Return solution
     return s
 end
-
 """
     interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
 
@@ -374,7 +373,6 @@ function intraopt!(rng::AbstractRNG, k̅::Int, s::Solution)
     # Step 3: Return solution
     return s
 end
-
 """
     interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
 
