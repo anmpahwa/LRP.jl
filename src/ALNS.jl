@@ -60,6 +60,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution; mute=false)
             c = sum(isactive.(s.C))
             q = Int(floor(((1 - η) * min(c̲, μ̲ * c) + η * min(c̅, μ̅ * c))))
             s′= deepcopy(s)
+            println()
             println(Ψᵣ[r])
             println(Ψᵢ[i])
             remove!(rng, q, s′, Ψᵣ[r])
@@ -107,7 +108,10 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution; mute=false)
         if iszero(u % k) s, z = deepcopy(s⃰), z⃰ end
         # Step 2.6: Perform local search.
         s′ = deepcopy(s)
-        for l ∈ L localsearch!(rng, m, s′, Ψₗ[l]) end
+        for l ∈ L
+            println(Ψₗ[l]) 
+            localsearch!(rng, m, s′, Ψₗ[l]) 
+        end
         z′ = f(s′)
         h′ = hash(s′)
         if z′ < z⃰
