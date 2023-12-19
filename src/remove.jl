@@ -311,7 +311,7 @@ function randomvehicle!(rng::AbstractRNG, q::Int, s::Solution)
         d  = D[v.iᵈ]
         for r ∈ v.R
             if n ≥ q break end
-            if !isopt(r) || isdormant(r) break end
+            if !isopt(r) || isdormant(r) continue end
             while true
                 nᵗ = d
                 c  = C[r.iˢ]
@@ -357,7 +357,7 @@ function relatedvehicle!(rng::AbstractRNG, q::Int, s::Solution)
         d  = D[v.iᵈ] 
         for r ∈ v.R
             if n ≥ q break end
-            if !isopt(r) || isdormant(r) break end
+            if !isopt(r) || isdormant(r) continue end
             while true
                 nᵗ = d
                 c  = C[r.iˢ]
@@ -400,7 +400,7 @@ function worstvehicle!(rng::AbstractRNG, q::Int, s::Solution)
         d  = D[v.iᵈ]
         for r ∈ v.R
             if n ≥ q break end
-            if !isopt(r) || isdormant(r) break end
+            if !isopt(r) || isdormant(r) continue end
             while true
                 nᵗ = d
                 c  = C[r.iˢ]
@@ -441,7 +441,7 @@ function randomdepot!(rng::AbstractRNG, q::Int, s::Solution)
         for v ∈ d.V
             if n ≥ q break end
             for r ∈ v.R
-                if !isopt(r) || isdormant(r) break end
+                if !isopt(r) || isdormant(r) continue end
                 while true
                     nᵗ = d
                     c  = C[r.iˢ]
@@ -486,7 +486,7 @@ function relateddepot!(rng::AbstractRNG, q::Int, s::Solution)
         for v ∈ d.V
             if n ≥ q break end
             for r ∈ v.R
-                if !isopt(r) || isdormant(r) break end
+                if !isopt(r) || isdormant(r) continue end
                 while true
                     nᵗ = d
                     c  = C[r.iˢ]
@@ -529,7 +529,7 @@ function worstdepot!(rng::AbstractRNG, q::Int, s::Solution)
         for v ∈ d.V
             if n ≥ q break end
             for r ∈ v.R
-                if !isopt(r) || isdormant(r) break end
+                if !isopt(r) || isdormant(r) continue end
                 while true
                     nᵗ = d
                     c  = C[r.iˢ]
