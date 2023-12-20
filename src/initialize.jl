@@ -44,7 +44,7 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         iᵈ = 0
         x  = df[k,2]
         y  = df[k,3]
-        q  = df[k,4]
+        qᶜ = df[k,4]
         τᶜ = df[k,5]
         tᵉ = df[k,6]
         tˡ = df[k,7]
@@ -52,7 +52,7 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         iʰ = 0
         tᵃ = tᵉ
         tᵈ = tᵉ + τᶜ
-        c  = CustomerNode(iⁿ, iʳ, iᵛ, iᵈ, x, y, q, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
+        c  = CustomerNode(iⁿ, iʳ, iᵛ, iᵈ, x, y, qᶜ, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
         C[iⁿ] = c
     end
     # Arcs
@@ -97,7 +97,7 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
     φᵈ = iszero(getproperty.(D, :tˢ)) && iszero(getproperty.(D, :tᵉ))
     φᶜ = iszero(getproperty.(C, :tᵉ)) && iszero(getproperty.(C, :tˡ))
     φᵛ = iszero(getproperty.(V, :τʷ)) && iszero(getproperty.(V, :πᵗ))
-    global φᵀ = !(φᵈ && φᶜ && φᵛ)::Bool
+    global φᵉ = !(φᵈ && φᶜ && φᵛ)::Bool
     G  = (D, C, A)
     return G
 end
@@ -218,7 +218,6 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
     # Step 4: Return initial solution
     return s
 end
-
 
 
 

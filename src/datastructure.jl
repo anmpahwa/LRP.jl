@@ -112,12 +112,13 @@ mutable struct DepotNode <: Node
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
 end
 """
-    CustomerNode(iⁿ::Int, iʳ::Int, iᵛ::Int, iᵈ::Int, x::Float64, y::Float64, q::Float64, τᶜ::Float64, tᵉ::Float64, tˡ::Float64, iᵗ::Int, iʰ::Int, tᵃ::Float64, tᵈ::Float64, r::Route)
+    CustomerNode(iⁿ::Int, iʳ::Int, iᵛ::Int, iᵈ::Int, x::Float64, y::Float64, qᶜ::Float64, τᶜ::Float64, tᵉ::Float64, tˡ::Float64, iᵗ::Int, iʰ::Int, tᵃ::Float64, tᵈ::Float64, r::Route)
 
-A `CustomerNode` is a sink point on the graph at `(x,y)` with index `iⁿ`, demand `q`, 
-customer service time `τᶜ`, earliest service time `tᵉ`, latest service time `tˡ`, 
-tail node index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, departure time `tᵈ`, 
-on route `r` with route index `iʳ`, vehicle index `iᵛ`, and depot node index `iᵈ`.
+A `CustomerNode` is a sink point on the graph at `(x,y)` with index `iⁿ`, demand 
+`qᶜ`, customer service time `τᶜ`, earliest service time `tᵉ`, latest service time 
+`tˡ`, tail node index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, departure time 
+`tᵈ`, on route `r` with route index `iʳ`, vehicle index `iᵛ`, and depot node index 
+`iᵈ`.
 """
 mutable struct CustomerNode <: Node
     iⁿ::Int                                                                         # Customer node index
@@ -126,7 +127,7 @@ mutable struct CustomerNode <: Node
     iᵈ::Int                                                                         # Depot node index
     x::Float64                                                                      # Customer node location on the x-axis
     y::Float64                                                                      # Customer node location in the y-axis
-    q::Float64                                                                      # Customer demand
+    qᶜ::Float64                                                                     # Customer demand
     τᶜ::Float64                                                                     # Customer service time
     tᵉ::Float64                                                                     # Customer node earliest service time
     tˡ::Float64                                                                     # Customer node latest service time
