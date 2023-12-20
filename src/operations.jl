@@ -23,72 +23,54 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     r.x  = (r.n * r.x + c.x)/(r.n + 1)
     r.y  = (r.n * r.y + c.y)/(r.n + 1)
     r.n += 1
-    r.q += c.q
+    r.q += c.qᶜ
     r.l += aᵗ.l + aʰ.l - aᵒ.l
     # update associated vehicle
     v.n += 1
-    v.q += c.q
+    v.q += c.qᶜ
     v.l += aᵗ.l + aʰ.l - aᵒ.l
     # update associated depot
     d.n += 1
-    d.q += c.q
+    d.q += c.qᶜ
     d.l += aᵗ.l + aʰ.l - aᵒ.l
-    # update arrival and departure time
-    if isequal(φᵀ::Bool, false) return s end
-    tᵒ = r.tⁱ
-    tⁱ = r.tⁱ
-    θⁱ = r.θⁱ
-    for r ∈ v.R
-        if r.tⁱ < tᵒ continue end
-        if isopt(r)
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
-            r.tⁱ = tⁱ
-            r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
-            cˢ = s.C[r.iˢ]
-            cᵉ = s.C[r.iᵉ]
-            tᵈ = r.tˢ
-            cᵒ = cˢ
-            while true
-                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
-                cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
-                if isequal(cᵒ, cᵉ) break end
-                tᵈ = cᵒ.tᵈ
-                cᵒ = s.C[cᵒ.iʰ]
+    # update en-route parameters
+    if isequal(φᵉ::Bool, true)
+        tᵒ = r.tⁱ
+        tⁱ = r.tⁱ
+        θⁱ = r.θⁱ
+        for r ∈ v.R
+            if r.tⁱ < tᵒ continue end
+            if isopt(r)
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
+                r.tⁱ = tⁱ
+                r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ]
+                tᵈ = r.tˢ
+                cᵒ = cˢ
+                while true
+                    cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
+                    cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
+                    if isequal(cᵒ, cᵉ) break end
+                    tᵈ = cᵒ.tᵈ
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
+                r.θᵉ = r.θˢ - r.l/v.lᵛ
+                r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
+            else
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ
+                r.θᵉ = θⁱ
+                r.tⁱ = tⁱ
+                r.tˢ = tⁱ
+                r.tᵉ = tⁱ
             end
-            r.θᵉ = r.θˢ - r.l/v.lᵛ
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
-        else
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ
-            r.θᵉ = θⁱ
-            r.tⁱ = tⁱ
-            r.tˢ = tⁱ
-            r.tᵉ = tⁱ
+            tⁱ = r.tᵉ
+            θⁱ = r.θᵉ
         end
-        tⁱ = r.tᵉ
-        θⁱ = r.θᵉ
+        (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     end
-    # update start and end time
-    (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
-    # update slack
-    τ = d.tᵉ - v.tᵉ
-    for r ∈ reverse(v.R)
-        if !isopt(r) continue end
-        cˢ = s.C[r.iˢ]
-        cᵉ = s.C[r.iᵉ]
-        cᵒ = cˢ
-        while true
-            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
-            if isequal(cᵒ, cᵉ) break end
-            cᵒ = s.C[cᵒ.iʰ]
-        end
-        r.τ = τ
-    end
-    v.τ = Inf
-    for r ∈ v.R v.τ = min(r.τ, v.τ) end
-    d.τ = Inf
-    for v ∈ d.V d.τ = min(v.τ, d.τ) end
     return s
 end
 """
@@ -116,184 +98,70 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     r.x  = isone(r.n) ? 0. : (r.n * r.x - c.x)/(r.n - 1)
     r.y  = isone(r.n) ? 0. : (r.n * r.y - c.y)/(r.n - 1)
     r.n -= 1
-    r.q -= c.q
+    r.q -= c.qᶜ
     r.l -= aᵗ.l + aʰ.l - aᵒ.l
     # update associated vehicle
     v.n -= 1
-    v.q -= c.q
+    v.q -= c.qᶜ
     v.l -= aᵗ.l + aʰ.l - aᵒ.l
     # update associated depot
     d.n -= 1
-    d.q -= c.q
+    d.q -= c.qᶜ
     d.l -= aᵗ.l + aʰ.l - aᵒ.l
-    # update arrival and departure time
-    if isequal(φᵀ::Bool, false) return s end
-    tᵒ = r.tⁱ
-    tⁱ = r.tⁱ
-    θⁱ = r.θⁱ
-    c.tᵃ, c.tᵈ = Inf, Inf
-    for r ∈ v.R
-        if r.tⁱ < tᵒ continue end
-        if isopt(r)
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
-            r.tⁱ = tⁱ
-            r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
-            cˢ = s.C[r.iˢ]
-            cᵉ = s.C[r.iᵉ]
-            tᵈ = r.tˢ
-            cᵒ = cˢ
-            while true
-                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
-                cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
-                if isequal(cᵒ, cᵉ) break end
-                tᵈ = cᵒ.tᵈ
-                cᵒ = s.C[cᵒ.iʰ]
+    # update en-route variables
+    if isequal(φᵉ::Bool, true)
+        tᵒ = r.tⁱ
+        tⁱ = r.tⁱ
+        θⁱ = r.θⁱ
+        c.tᵃ = Inf
+        c.tᵈ = Inf
+        for r ∈ v.R
+            if r.tⁱ < tᵒ continue end
+            if isopt(r)
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
+                r.tⁱ = tⁱ
+                r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ]
+                tᵈ = r.tˢ
+                cᵒ = cˢ
+                while true
+                    cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
+                    cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
+                    if isequal(cᵒ, cᵉ) break end
+                    tᵈ = cᵒ.tᵈ
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
+                r.θᵉ = r.θˢ - r.l/v.lᵛ
+                r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
+            else
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ
+                r.θᵉ = θⁱ
+                r.tⁱ = tⁱ
+                r.tˢ = tⁱ
+                r.tᵉ = tⁱ
             end
-            r.θᵉ = r.θˢ - r.l/v.lᵛ
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
-        else
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ
-            r.θᵉ = θⁱ
-            r.tⁱ = tⁱ
-            r.tˢ = tⁱ
-            r.tᵉ = tⁱ
+            tⁱ = r.tᵉ
+            θⁱ = r.θᵉ
         end
-        tⁱ = r.tᵉ
-        θⁱ = r.θᵉ
+        (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     end
-    # update start and end time
-    (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
-    # update slack
-    τ = d.tᵉ - v.tᵉ
-    for r ∈ reverse(v.R)
-        if !isopt(r) continue end
-        cˢ = s.C[r.iˢ]
-        cᵉ = s.C[r.iᵉ]
-        cᵒ = cˢ
-        while true
-            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
-            if isequal(cᵒ, cᵉ) break end
-            cᵒ = s.C[cᵒ.iʰ]
-        end
-        r.τ = τ
-    end
-    v.τ = Inf
-    for r ∈ v.R v.τ = min(r.τ, v.τ) end
-    d.τ = Inf
-    for v ∈ d.V d.τ = min(v.τ, d.τ) end
     return s
 end
 
 
 
 """
-    insertvehicle!(v::Vehicle, d::DepotNode, s::Solution)
+    movevehicle!(v::Vehicle, d::DepotNode, s::Solution)
 
-Returns solution `s` after inserting vehicle `v` into depot node `d`.
+Returns solution `s` after moving vehicle `v` from fleet of `d¹` into fleet 
+of depot node `d²`.
 """
-function insertvehicle!(v::Vehicle, d::DepotNode, s::Solution)
-    push!(d.V, v)
-    v.iᵈ = d.iⁿ
-    for r ∈ v.R
-        if isopt(r)
-            nᵗ = s.C[r.iᵉ]
-            nʰ = s.C[r.iˢ]
-            aᵒ = s.A[(nᵗ.iⁿ, nʰ.iⁿ)]
-            aᵗ = s.A[(nᵗ.iⁿ, d.iⁿ)]
-            aʰ = s.A[(d.iⁿ, nʰ.iⁿ)]
-            # update associated customer nodes
-            nᵗ.iʰ = d.iⁿ
-            nʰ.iᵗ = d.iⁿ
-            cˢ = nʰ
-            cᵉ = nᵗ
-            cᵒ = cˢ
-            while true
-                cᵒ.iᵈ = d.iⁿ
-                if isequal(cᵒ, cᵉ) break end
-                cᵒ = s.C[cᵒ.iʰ]
-            end
-            # update associated route
-            r.iᵈ = d.iⁿ
-            r.iˢ = nʰ.iⁿ
-            r.iᵉ = nᵗ.iⁿ
-            r.l += aᵗ.l + aʰ.l - aᵒ.l
-            # update associated vehicle
-            v.l += aᵗ.l + aʰ.l - aᵒ.l
-            # update associated depot
-            d.n += r.n
-            d.q += r.q
-            d.l += aᵗ.l + aʰ.l - aᵒ.l
-        else
-            # update associated route
-            r.iᵈ = d.iⁿ
-            r.iˢ = d.iⁿ
-            r.iᵉ = d.iⁿ
-        end
-    end
-    # update arrival and departure time
-    if isequal(φᵀ::Bool, false) return s end
-    tⁱ = d.tˢ
-    θⁱ = 1.
-    for r ∈ v.R
-        if isopt(r)
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
-            r.tⁱ = tⁱ
-            r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
-            cˢ = s.C[r.iˢ]
-            cᵉ = s.C[r.iᵉ]
-            tᵈ = r.tˢ
-            cᵒ = cˢ
-            while true
-                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
-                cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
-                if isequal(cᵒ, cᵉ) break end
-                tᵈ = cᵒ.tᵈ
-                cᵒ = s.C[cᵒ.iʰ]
-            end
-            r.θᵉ = r.θˢ - r.l/v.lᵛ
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
-        else
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ
-            r.θᵉ = θⁱ
-            r.tⁱ = tⁱ
-            r.tˢ = tⁱ
-            r.tᵉ = tⁱ
-        end
-        tⁱ = r.tᵉ
-        θⁱ = r.θᵉ
-    end
-    # update start and end time
-    (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
-    # update slack
-    τ = d.tᵉ - v.tᵉ
-    for r ∈ reverse(v.R)
-        if !isopt(r) continue end
-        cˢ = s.C[r.iˢ]
-        cᵉ = s.C[r.iᵉ]
-        cᵒ = cˢ
-        while true
-            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
-            if isequal(cᵒ, cᵉ) break end
-            cᵒ = s.C[cᵒ.iʰ]
-        end
-        r.τ = τ
-    end
-    v.τ = Inf
-    for r ∈ v.R v.τ = min(r.τ, v.τ) end
-    d.τ = Inf
-    for v ∈ d.V d.τ = min(v.τ, d.τ) end
-    return s
-end
-"""
-    removevehicle!(v::Vehicle, d::DepotNode, s::Solution)
-
-Returns solution `s` after removing vehicle `v` from depot node `d`.
-"""
-function removevehicle!(v::Vehicle, d::DepotNode, s::Solution)
+function movevehicle!(v::Vehicle, d¹::DepotNode, d²::DepotNode, s::Solution)
+    # remove vehicle from d¹
+    d = d¹
     deleteat!(d.V, findfirst(isequal(v), d.V))
     v.iᵈ = 0
     for r ∈ v.R
@@ -332,60 +200,82 @@ function removevehicle!(v::Vehicle, d::DepotNode, s::Solution)
             r.iᵉ = 0
         end
     end
-    # update arrival and departure time
-    if isequal(φᵀ::Bool, false) return s end
-    tⁱ = Inf
-    θⁱ = Inf
+    # add vehicle to d²
+    d = d²
+    push!(d.V, v)
+    v.iᵈ = d.iⁿ
     for r ∈ v.R
         if isopt(r)
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
-            r.tⁱ = tⁱ
-            r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
-            cˢ = s.C[r.iˢ]
-            cᵉ = s.C[r.iᵉ]
-            tᵈ = r.tˢ
+            nᵗ = s.C[r.iᵉ]
+            nʰ = s.C[r.iˢ]
+            aᵒ = s.A[(nᵗ.iⁿ, nʰ.iⁿ)]
+            aᵗ = s.A[(nᵗ.iⁿ, d.iⁿ)]
+            aʰ = s.A[(d.iⁿ, nʰ.iⁿ)]
+            # update associated customer nodes
+            nᵗ.iʰ = d.iⁿ
+            nʰ.iᵗ = d.iⁿ
+            cˢ = nʰ
+            cᵉ = nᵗ
             cᵒ = cˢ
             while true
-                cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
-                cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
+                cᵒ.iᵈ = d.iⁿ
                 if isequal(cᵒ, cᵉ) break end
-                tᵈ = cᵒ.tᵈ
                 cᵒ = s.C[cᵒ.iʰ]
             end
-            r.θᵉ = r.θˢ - r.l/v.lᵛ
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
+            # update associated route
+            r.iᵈ = d.iⁿ
+            r.iˢ = nʰ.iⁿ
+            r.iᵉ = nᵗ.iⁿ
+            r.l += aᵗ.l + aʰ.l - aᵒ.l
+            # update associated vehicle
+            v.l += aᵗ.l + aʰ.l - aᵒ.l
+            # update associated depot
+            d.n += r.n
+            d.q += r.q
+            d.l += aᵗ.l + aʰ.l - aᵒ.l
         else
-            r.θⁱ = θⁱ
-            r.θˢ = θⁱ
-            r.θᵉ = θⁱ
-            r.tⁱ = tⁱ
-            r.tˢ = tⁱ
-            r.tᵉ = tⁱ
+            # update associated route
+            r.iᵈ = d.iⁿ
+            r.iˢ = d.iⁿ
+            r.iᵉ = d.iⁿ
         end
-        tⁱ = r.tᵉ
-        θⁱ = r.θᵉ
     end
-    # update start and end time
-    (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
-    # update slack
-    τ = d.tᵉ - v.tᵉ
-    for r ∈ reverse(v.R)
-        if !isopt(r) continue end
-        cˢ = s.C[r.iˢ]
-        cᵉ = s.C[r.iᵉ]
-        cᵒ = cˢ
-        while true
-            τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
-            if isequal(cᵒ, cᵉ) break end
-            cᵒ = s.C[cᵒ.iʰ]
+    # update en-route variables
+    if isequal(φᵉ::Bool, true)
+        tⁱ = d.tˢ
+        θⁱ = 1.
+        for r ∈ v.R
+            if isopt(r)
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
+                r.tⁱ = tⁱ
+                r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ]
+                tᵈ = r.tˢ
+                cᵒ = cˢ
+                while true
+                    cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
+                    cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
+                    if isequal(cᵒ, cᵉ) break end
+                    tᵈ = cᵒ.tᵈ
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
+                r.θᵉ = r.θˢ - r.l/v.lᵛ
+                r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
+            else
+                r.θⁱ = θⁱ
+                r.θˢ = θⁱ
+                r.θᵉ = θⁱ
+                r.tⁱ = tⁱ
+                r.tˢ = tⁱ
+                r.tᵉ = tⁱ
+            end
+            tⁱ = r.tᵉ
+            θⁱ = r.θᵉ
         end
-        r.τ = τ
+        (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     end
-    v.τ = Inf
-    for r ∈ v.R v.τ = min(r.τ, v.τ) end
-    d.τ = Inf
-    for v ∈ d.V d.τ = min(v.τ, d.τ) end
     return s
 end
 
@@ -442,8 +332,8 @@ end
 """
     preinitialize!(s::Solution)
 
-Pre-intialization procedures.
-Returns solution `s` after adding new routes into the solution.
+Returns solution `s` after performing pre-intialization procedures.
+Adds new routes and vehicles into the solution.
 """
 function preinitialize!(s::Solution)
     for d ∈ s.D
@@ -457,89 +347,12 @@ end
 """
     postnitialize!(s::Solution)
 
-Post-intialization procedures.
-Returns solution `s`.
+Returns solution `s` after performing post-intialization procedures. 
+Deletes routes and vehicles if possible, and subsequently updates indices.
+Additionally, updates route, vehicle, and depot slack time.
 """
 function postinitialize!(s::Solution)
-    for d ∈ s.D
-        k = 1
-        while true
-            v = d.V[k]
-            if deletevehicle(v, s) 
-                deleteat!(d.V, k)
-            else
-                v.iᵛ = k
-                for r ∈ v.R r.iᵛ = k end
-                k += 1
-            end
-            if k > length(d.V) break end
-        end
-        for v ∈ d.V
-            if isempty(v.R) continue end
-            k = 1
-            while true
-                r = v.R[k]
-                if deleteroute(r, s) 
-                    deleteat!(v.R, k)
-                else
-                    r.iʳ = k
-                    k += 1
-                end
-                if k > length(v.R) break end
-            end
-        end
-    end
-    for c ∈ s.C c.iᵛ, c.iʳ = c.r.iᵛ, c.r.iʳ end
-    return s
-end
-
-
-
-"""
-    preremove!(s::Solution)
-
-Pre-removal procedures. 
-Returns solution `s`.
-"""
-function preremove!(s::Solution)
-    return s
-end
-"""
-    postremove!(s::Solution)
-
-Post-removal procedures.
-Returns solution `s`.
-"""
-function postremove!(s::Solution)
-    return s
-end
-
-
-
-"""
-    preinsert!(s::Solution)
-
-Pre-insertion procedures.
-Returns solution `s` after adding new vehicles and routes into the solution.
-"""
-function preinsert!(s::Solution)
-    for d ∈ s.D
-        for v ∈ d.V
-            r = Route(v, d)
-            if addroute(r, s) push!(v.R, r) end
-            v = Vehicle(v, d)
-            if addvehicle(v, s) push!(d.V, v) end
-        end
-    end
-    return s
-end
-"""
-    postinsert!(s::Solution)
-
-Post-insertion procedures. 
-Returns solution `s` after deleting routes and vehicles, and subsequently correcting vehicle and route indices.
-"""
-function postinsert!(s::Solution)
+    # update indices
     for d ∈ s.D
         k = 1
         while true
@@ -569,6 +382,151 @@ function postinsert!(s::Solution)
         end
     end
     for c ∈ s.C c.iᵛ, c.iʳ = c.r.iᵛ, c.r.iʳ end
+    # update slack
+    if isequal(φᵉ::Bool, false) return s end
+    for d ∈ s.D
+        τ = Inf
+        for v ∈ d.V
+            τ = d.tᵉ - v.tᵉ
+            for r ∈ reverse(v.R)
+                if !isopt(r) continue end
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ]
+                cᵒ = cˢ
+                while true
+                    τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
+                    if isequal(cᵒ, cᵉ) break end
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
+                r.τ = τ
+            end
+            v.τ = τ
+        end
+        d.τ = τ
+    end
+    return s
+end
+
+
+
+"""
+    preremove!(s::Solution)
+
+Returns solution `s` after performing pre-removal procedures. 
+"""
+function preremove!(s::Solution)
+    return s
+end
+"""
+    postremove!(s::Solution)
+
+Returns solution `s` after performing post-removal procedures.
+Updates route, vehicle, and depot slack time.
+"""
+function postremove!(s::Solution)
+    if isequal(φᵉ::Bool, false) return s end
+    for d ∈ s.D
+        τ = Inf
+        for v ∈ d.V
+            τ = d.tᵉ - v.tᵉ
+            for r ∈ reverse(v.R)
+                if !isopt(r) continue end
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ]
+                cᵒ = cˢ
+                while true
+                    τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
+                    if isequal(cᵒ, cᵉ) break end
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
+                r.τ = τ
+            end
+            v.τ = τ
+        end
+        d.τ = τ
+    end
+    return s
+end
+
+
+
+"""
+    preinsert!(s::Solution)
+
+Returns solution `s` after performing pre-insertion procedures.
+Adds new routes and vehicles into the solution.
+"""
+function preinsert!(s::Solution)
+    for d ∈ s.D
+        for v ∈ d.V
+            r = Route(v, d)
+            if addroute(r, s) push!(v.R, r) end
+            v = Vehicle(v, d)
+            if addvehicle(v, s) push!(d.V, v) end
+        end
+    end
+    return s
+end
+"""
+    postinsert!(s::Solution)
+
+Returns solution `s` after performing post-insertion procedures. 
+Deletes routes and vehicles if possible, and subsequently updates indices.
+Additionally, updates route, vehicle, and depot slack time.
+"""
+function postinsert!(s::Solution)
+    # update indices
+    for d ∈ s.D
+        k = 1
+        while true
+            v = d.V[k]
+            if deletevehicle(v, s)
+                deleteat!(d.V, k)
+            else
+                v.iᵛ = k
+                for r ∈ v.R r.iᵛ = k end
+                k += 1
+            end
+            if k > length(d.V) break end
+        end
+        for v ∈ d.V
+            if isempty(v.R) continue end
+            k = 1
+            while true
+                r = v.R[k]
+                if deleteroute(r, s) 
+                    deleteat!(v.R, k)
+                else
+                    r.iʳ = k
+                    k += 1
+                end
+                if k > length(v.R) break end
+            end
+        end
+    end
+    for c ∈ s.C c.iᵛ, c.iʳ = c.r.iᵛ, c.r.iʳ end
+    # update slack
+    if isequal(φᵉ::Bool, false) return s end
+    for d ∈ s.D
+        τ = Inf
+        for v ∈ d.V
+            τ = d.tᵉ - v.tᵉ
+            for r ∈ reverse(v.R)
+                if !isopt(r) continue end
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ]
+                cᵒ = cˢ
+                while true
+                    τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
+                    if isequal(cᵒ, cᵉ) break end
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
+                r.τ = τ
+            end
+            v.τ = τ
+        end
+        d.τ = τ
+    end
     return s
 end
 
@@ -577,8 +535,7 @@ end
 """
     prelocalsearch!(s::Solution)
 
-Pre-localsearch procedures. 
-Returns solution `s`.
+Returns solution `s` after performing pre-localsearch procedures. 
 """
 function prelocalsearch!(s::Solution)
     return s
@@ -586,9 +543,30 @@ end
 """
     postlocalsearch!(s::Solution)
 
-Post-localsearch procedures.
-Returns solution `s`.
+Returns solution `s` after performing post-localsearch procedures.
+Updates route, vehicle, and depot slack time.
 """
 function postlocalsearch!(s::Solution)
+    if isequal(φᵉ::Bool, false) return s end
+    for d ∈ s.D
+        τ = Inf
+        for v ∈ d.V
+            τ = d.tᵉ - v.tᵉ
+            for r ∈ reverse(v.R)
+                if !isopt(r) continue end
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ]
+                cᵒ = cˢ
+                while true
+                    τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
+                    if isequal(cᵒ, cᵉ) break end
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
+                r.τ = τ
+            end
+            v.τ = τ
+        end
+        d.τ = τ
+    end
     return s
 end

@@ -264,6 +264,11 @@ Returns objective function evaluation for solution `s`. Includes `fixed`,
 function f(s::Solution; fixed=true, operational=true, penalty=true)
     πᶠ, πᵒ, πᵖ = 0., 0., 0.
     φᶠ, φᵒ, φᵖ = fixed, operational, penalty
+    for c ∈ s.C
+        if isopen(c) πᵖ += c.qᶜ                                             # Service constraint
+        else πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)                            # Time-window constraint
+        end
+    end
     for d ∈ s.D
         if !isopt(d) continue end
         πᶠ += d.πᶠ
@@ -285,11 +290,6 @@ function f(s::Solution; fixed=true, operational=true, penalty=true)
             πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)                 # Number of routes constraint
         end
         πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)                                   # Depot capacity constraint
-    end
-    for c ∈ s.C
-        if isopen(c) πᵖ += c.q                                              # Service constraint
-        else πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)                            # Time-window constraint
-        end
     end
     πᵖ *= 10 ^ ceil(log10(πᶠ + πᵒ))
     z = φᶠ * πᶠ + φᵒ * πᵒ + φᵖ * πᵖ
@@ -339,7 +339,7 @@ function relatedness(c¹::CustomerNode, c²::CustomerNode, s::Solution)
     r¹ = c¹.r
     r² = c².r
     φ  = (1 + isequal(r¹, r²)) / 2
-    q  = abs(c¹.q - c².q)
+    q  = abs(c¹.qᶜ - c².qᶜ)
     l  = s.A[(c¹.iⁿ,c².iⁿ)].l
     t  = abs(c¹.tᵉ - c².tᵉ) + abs(c¹.tˡ - c².tˡ)
     z  = φ/(q + l + t + ϵ)

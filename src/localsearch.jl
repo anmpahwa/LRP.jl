@@ -526,13 +526,11 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
         I² = eachindex(d².V)
         while !isempty(d¹.V)
             v = d¹.V[1]
-            removevehicle!(v, d¹, s)
-            insertvehicle!(v, d², s)
+            movevehicle!(v, d¹, d², s)
         end
         for iᵛ ∈ I²
             v = d².V[1]
-            removevehicle!(v, d², s)
-            insertvehicle!(v, d¹, s)
+            movevehicle!(v, d², d¹, s)
         end
         z′ = f(s)
         Δ  = z′ - z
@@ -544,13 +542,11 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
             I² = eachindex(d².V)
             while !isempty(d¹.V)
                 v = d¹.V[1]
-                removevehicle!(v, d¹, s)
-                insertvehicle!(v, d², s)
+                movevehicle!(v, d¹, d², s)
             end
             for iᵛ ∈ I²
                 v = d².V[1]
-                removevehicle!(v, d², s)
-                insertvehicle!(v, d¹, s)
+                movevehicle!(v, d², d¹, s)
             end
         end
     end
