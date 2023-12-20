@@ -6,7 +6,7 @@
 
 ### capacitated location routing problem with time-windows and heterogeneous fleet of multi-route delivery vehicles
 
-Given, a graph `G = (D, C, A)` with set of depots `D`, set of customer nodes `C`, and set of arcs `A`, the objective is to develop least cost routes from select depot nodes using select vehicles such that every customer node is visited exactly once while accounting for customer service and time-window constraints; vehicle capacity, range, and working-hours constraints; and depot operations mandate and capacity constraints.
+Given, a graph `G = (D, C, A)` with set of potenital depots `D`, set of customer nodes `C`, and set of arcs `A`, the objective is to develop least cost routes from select depot nodes using select vehicles such that every customer node is visited exactly once while accounting for customer service and time-window constraints; vehicle capacity, range, and working-hours constraints; and depot operations mandate and capacity constraints.
 
 This package uses Adaptive Large Neighborhood Search (ALNS) algorithm to find an optimal solution for the location routing problem given an initial solution (here, developed using iterated clustering method) and ALNS optimization parameters,
 - `j`     :   Number of segments in the ALNS
@@ -60,6 +60,6 @@ In every few iterations, the ALNS metaheuristic performs local search with,
 - inter-opt     : `:interopt!`
 - swapdepot     : `:swapdepot!`
 
-See benchmark-lrp.jl and benchmark-vrp.jl for usage.
+See benchmark.jl for usage.
 
 Additional removal, insertion, and local search methods can be defined.
