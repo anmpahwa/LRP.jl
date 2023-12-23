@@ -60,11 +60,11 @@ let
         for instance ∈ instances
             visualize(instance)
             println(instance)
-            sₒ = initialize(instance)
-            s⃰  = ALNS(χ, sₒ)
-            visualize(s⃰)
-            @test isfeasible(s⃰)
-            @test f(s⃰) ≤ f(sₒ)
+            s₁ = initialize(instance)
+            s₂ = ALNS(χ, s₁)
+            visualize(s₂)
+            @test isfeasible(s₂)
+            @test f(s₂) ≤ f(s₁)
         end
     end
     # Vehicle Routing Problem with time-windows
@@ -73,11 +73,11 @@ let
         for instance ∈ instances
             visualize(instance)
             println(instance)
-            sₒ = initialize(instance)
-            s⃰  = ALNS(χ, sₒ)
-            visualize(s⃰)
-            @test isfeasible(s⃰)
-            @test f(s⃰) ≤ f(sₒ)
+            s₁ = initialize(instance)
+            s₂ = ALNS(χ, s₁)
+            visualize(s₂)
+            @test isfeasible(s₂)
+            @test f(s₂) ≤ f(s₁)
         end
     end
     # Location Routing Problem
@@ -86,11 +86,11 @@ let
         for instance ∈ instances
             visualize(instance)
             println("\n $instance")
-            sₒ = initialize(instance)
-            s⃰  = ALNS(χ, sₒ)
-            visualize(s⃰)
-            @test isfeasible(s⃰)
-            @test f(s⃰) ≤ f(sₒ)
+            s₁ = initialize(instance)
+            s₂ = ALNS(χ, s₁)
+            visualize(s₂)
+            @test isfeasible(s₂)
+            @test f(s₂) ≤ f(s₁)
         end
     end
     return
