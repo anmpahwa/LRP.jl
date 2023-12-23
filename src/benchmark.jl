@@ -95,8 +95,8 @@ let
             println("   Optimal: $(round(s₂.πᶠ + s₂.πᵒ, digits=3))")
             # Check if the solutions are feasible
             println("Solution feasibility:")
-            println("   Initial: $(isfeasible(s₁))")
-            println("   Optimal: $(isfeasible(s₂))")
+            println("   Initial: $(isfeasible(s₁)) | $(round(s₁.πᵖ, digits=3))")
+            println("   Optimal: $(isfeasible(s₂)) | $(round(s₂.πᵖ, digits=3))")
             # Optimal solution characteristics
             println("Optimal solution characteristics:")
             nᵈ, nᵛ, nʳ = 0, 0, 0
