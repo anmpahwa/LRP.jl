@@ -16,7 +16,7 @@ let
     # Set E
     E = ["min134-8", "daskin150-10", "prins200-10-3"] 
     # Define instances
-    instances = [C..., D..., E...]
+    instances = [A..., B..., C..., D..., E...]
     # Define random number generators
     seeds = [1010, 1106, 1509, 1604, 1905, 2104, 2412, 2703, 2710, 2807]
     # Dataframes to store solution quality and run time
