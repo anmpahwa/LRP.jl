@@ -212,29 +212,43 @@ end
 
 
 """
+    Solution(D::Vector{DepotNode}, C::OffsetVector{CustomerNode}, A::Dict{Tuple{Int,Int}, Arc})
+
+Returns `Solution` on graph `G = (D, C, A)`.
+"""
+function Solution(D::Vector{DepotNode}, C::OffsetVector{CustomerNode}, A::Dict{Tuple{Int,Int}, Arc})
+    πᶠ = 0.
+    πᵒ = 0.
+    πᵖ = 0.
+    for d ∈ D πᶠ += d.φ * d.πᶠ end
+    for c ∈ C πᵖ += c.qᶜ end
+    return Solution(D, C, A, πᶠ, πᵒ, πᵖ)
+end
+
+
+
+"""
     vectorize(s::Solution)
 
 Returns `Solution` as a sequence of nodes in the order of visits.
 """
 function vectorize(s::Solution)
-    D = s.D
-    C = s.C
-    Z = [Int[] for _ ∈ D]
-    for d ∈ D
+    Z = [Int[] for _ ∈ s.D]
+    for d ∈ s.D
         iⁿ = d.iⁿ
         if !isopt(d) continue end
         for v ∈ d.V
             if !isopt(v) continue end
             for r ∈ v.R
                 if !isopt(r) continue end
-                cˢ = C[r.iˢ]
-                cᵉ = C[r.iᵉ] 
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ] 
                 push!(Z[iⁿ], d.iⁿ)
                 cᵒ = cˢ
                 while true
                     push!(Z[iⁿ], cᵒ.iⁿ)
                     if isequal(cᵒ, cᵉ) break end
-                    cᵒ = C[cᵒ.iʰ]
+                    cᵒ = s.C[cᵒ.iʰ]
                 end
             end
         end
