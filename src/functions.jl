@@ -267,14 +267,21 @@ vehicle capacity, range, working-hours, and operations constraints; and
 depot capacity constraints are not violated.
 """
 function isfeasible(s::Solution)
-    for c ∈ s.C 
-        if isopen(c) return false                                           # Service constraint
-        elseif c.tᵃ > c.tˡ return false                                     # Time-window constraint
-        end
-    end
+    if any(isopen, s.C) return false end                                    # Service constraint
     for d ∈ s.D
+        if !isopt(d) continue end
         for v ∈ d.V
+            if !isopt(v) continue end
             for r ∈ v.R
+                if !isopt(r) continue end
+                cˢ = s.C[r.iˢ]
+                cᵉ = s.C[r.iᵉ] 
+                cᵒ = cˢ
+                while true
+                    if cᵒ.tᵃ > cᵒ.tˡ return false end                       # Time-window constraint
+                    if isequal(cᵒ, cᵉ) break end
+                    cᵒ = s.C[cᵒ.iʰ]
+                end
                 if r.q > v.qᵛ return false end                              # Vehicle capacity constraint
                 if r.l > v.lᵛ return false end                              # Vehicle range constraint
             end
