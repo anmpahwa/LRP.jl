@@ -244,11 +244,11 @@ function vectorize(s::Solution)
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ] 
                 push!(Z[iⁿ], d.iⁿ)
-                cᵒ = cˢ
+                c  = cˢ
                 while true
-                    push!(Z[iⁿ], cᵒ.iⁿ)
-                    if isequal(cᵒ, cᵉ) break end
-                    cᵒ = s.C[cᵒ.iʰ]
+                    push!(Z[iⁿ], c.iⁿ)
+                    if isequal(c, cᵉ) break end
+                    c = s.C[c.iʰ]
                 end
             end
         end
@@ -290,11 +290,11 @@ function isfeasible(s::Solution)
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ] 
-                cᵒ = cˢ
+                c  = cˢ
                 while true
-                    if cᵒ.tᵃ > cᵒ.tˡ return false end                       # Time-window constraint
-                    if isequal(cᵒ, cᵉ) break end
-                    cᵒ = s.C[cᵒ.iʰ]
+                    if c.tᵃ > c.tˡ return false end                         # Time-window constraint
+                    if isequal(c, cᵉ) break end
+                    c = s.C[c.iʰ]
                 end
                 if r.q > v.qᵛ return false end                              # Vehicle capacity constraint
                 if r.l > v.lᵛ return false end                              # Vehicle range constraint
