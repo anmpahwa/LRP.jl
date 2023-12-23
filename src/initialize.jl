@@ -51,8 +51,8 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         tˡ = df[k,7]
         iᵗ = 0
         iʰ = 0
-        tᵃ = tᵉ
-        tᵈ = tᵉ + τᶜ
+        tᵃ = 0.
+        tᵈ = 0.
         c  = CustomerNode(iⁿ, iʳ, iᵛ, iᵈ, x, y, qᶜ, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
         C[iⁿ] = c
     end
@@ -250,7 +250,8 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function initialize(rng::AbstractRNG, instance::String; method=:local, dir=joinpath(dirname(@__DIR__), "instances"))
     # Step 1. Initialize
-    s = Solution(build(instance; dir=dir)...)
+    G = build(instance; dir=dir)
+    s = Solution(G...)
     z = Inf
     # Step 2. Iteratively increase the number of clusters
     k = 0
