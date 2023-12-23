@@ -6,13 +6,17 @@ using DataFrames
 
 let
     # Set A
-    A = ["prins20-5-1", "gaskell36-5", "prins50-5-1b", "daskin88-8"];
+    A = ["m-n101-k10", "tai150a", "cmt10", "x-n251-k28", "x-n303-k21"]
     # Set B
-    B = ["prins100-5-2", "prins100-10-2b", "christofides100-10"]
+    B = ["r101", "r201", "c101", "c201", "rc101", "rc201"]
     # Set C
-    C = ["min134-8", "daskin150-10", "prins200-10-3"] 
+    C = ["prins20-5-1", "gaskell36-5", "prins50-5-1b", "daskin88-8"];
+    # Set D
+    D = ["prins100-5-2", "prins100-10-2b", "christofides100-10"]
+    # Set E
+    E = ["min134-8", "daskin150-10", "prins200-10-3"] 
     # Define instances
-    instances = [A..., B..., C...]
+    instances = [C..., D..., E...]
     # Define random number generators
     seeds = [1010, 1106, 1509, 1604, 1905, 2104, 2412, 2703, 2710, 2807]
     # Dataframes to store solution quality and run time
@@ -27,11 +31,11 @@ let
             println("\n instance: $instance | seed: $seed")
             rng = MersenneTwister(seed);
             # Define inital solution method and build the initial solution
-            sₒ = initialize(rng, instance; method=:global);
+            s₁ = initialize(rng, instance; method=:global);
             # Visualize initial solution
-            display(visualize(sₒ))
+            display(visualize(s₁))
             # Define ALNS parameters
-            x = max(100, lastindex(sₒ.C))
+            x = max(100, lastindex(s₁.C))
             χ = ALNSparameters(
                 j   =   50                      ,
                 k   =   5                       ,
@@ -82,32 +86,28 @@ let
                 ρ   =   0.1
             );
             # Run ALNS and fetch best solution
-            t = @CPUelapsed s⃰ = ALNS(rng, χ, sₒ);
+            t = @CPUelapsed s₂ = ALNS(rng, χ, s₁);
             # Visualize best solution
-            display(visualize(s⃰))
+            display(visualize(s₂))
             # Fetch objective function values
             println("Objective function value:")
-            println("   Initial: $(f(sₒ; penalty=false))")
-            println("   Optimal: $(f(s⃰ ; penalty=false))")
-            # Fetch fixed costs
-            println("Fixed costs:")
-            println("   Initial: $(f(sₒ; operational=false, penalty=false))")
-            println("   Optimal: $(f(s⃰ ; operational=false, penalty=false))")
-            # Fetch operational costs
-            println("Operational costs:")
-            println("   Initial: $(f(sₒ; fixed=false, penalty=false))")
-            println("   Optimal: $(f(s⃰ ; fixed=false, penalty=false))")
+            println("   Initial: $(round(s₁.πᶠ + s₁.πᵒ, digits=3))")
+            println("   Optimal: $(round(s₂.πᶠ + s₂.πᵒ, digits=3))")
             # Check if the solutions are feasible
             println("Solution feasibility:")
-            println("   Initial: $(isfeasible(sₒ))")
-            println("   Optimal: $(isfeasible(s⃰))")
+            println("   Initial: $(isfeasible(s₁))")
+            println("   Optimal: $(isfeasible(s₂))")
             # Optimal solution characteristics
             println("Optimal solution characteristics:")
-            println("   Number of depots: $(sum([!iszero(d.n) for d ∈ s⃰.D]))")
-            println("   Number of vehicles: $(sum([!iszero(v.n) for d ∈ s⃰.D for v ∈ d.V]))")
-            println("   Number of routes: $(sum([!iszero(r.n) for d ∈ s⃰.D for v ∈ d.V for r ∈ v.R]))")
+            nᵈ, nᵛ, nʳ = 0, 0, 0
+            for d ∈ s₂.D nᵈ += LRP.isopt(d) end
+            for d ∈ s₂.D for v ∈ d.V nᵛ += LRP.isopt(v) end end
+            for d ∈ s₂.D for v ∈ d.V for r ∈ v.R nʳ += LRP.isopt(r) end end end
+            println("   Number of depots: $nᵈ")
+            println("   Number of vehicles: $nᵛ")
+            println("   Number of routes: $nʳ")
             # Store Results
-            df₁[i,j+1] = f(s⃰)
+            df₁[i,j+1] = f(s₂)
             df₂[i,j+1] = t
             println(df₁)
             println(df₂)
