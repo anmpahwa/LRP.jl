@@ -148,7 +148,7 @@ hasslack(d::DepotNode) = d.q < d.qᵈ
 Returns a non-operational `Route` traversed by vehicle `v` from depot node `d`.
 """
 function Route(v::Vehicle, d::DepotNode)
-    iʳ = length(v.R) + 1
+    iʳ = lastindex(v.R) + 1
     iᵛ = v.iᵛ
     iᵈ = d.iⁿ
     x  = 0.
@@ -184,7 +184,7 @@ const NullRoute = Route(0, 0, 0, 0., 0., 0, 0, 0., 0., 0., Inf, Inf, Inf, 0., 0,
 Returns a non-operational `Vehicle` cloning vehicle `v` at depot node `d`.
 """
 function Vehicle(v::Vehicle, d::DepotNode)
-    iᵛ = length(d.V) + 1
+    iᵛ = lastindex(d.V) + 1
     jᵛ = v.jᵛ
     iᵈ = v.iᵈ
     qᵛ = v.qᵛ

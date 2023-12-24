@@ -7,7 +7,7 @@ function visualize(instance; backend=gr)
     backend()
     D, C, _ = build(instance)
     fig = plot(legend=:none)
-    K = length(D)+length(C)
+    K = lastindex(C)
     X = zeros(Float64, K)
     Y = zeros(Float64, K)
     M₁= fill("color", K)
@@ -53,7 +53,7 @@ function visualize(s::Solution; backend=gr)
         M₃= fill(:shape, K)
         for k ∈ 1:K
             i = Z[k]
-            n = i ≤ length(D) ? D[i] : C[i]
+            n = i ≤ lastindex(D) ? D[i] : C[i]
             X[k] = n.x
             Y[k] = n.y
             if isdepot(n) 
@@ -81,7 +81,7 @@ function visualize(s::Solution; backend=gr)
     M₃= fill(:shape, K)
     for k ∈ 1:K
         i = Z[k]
-        n = i ≤ length(D) ? D[i] : C[i]
+        n = i ≤ lastindex(D) ? D[i] : C[i]
         X[k] = n.x
         Y[k] = n.y
         if isdepot(n) 
