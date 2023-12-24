@@ -11,14 +11,19 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     aᵗ = s.A[(nᵗ.iⁿ, c.iⁿ)]
     aʰ = s.A[(c.iⁿ, nʰ.iⁿ)]
     # update associated customer nodes
-    c.iʳ = r.iʳ
-    c.iᵛ = r.iᵛ
-    c.iᵈ = r.iᵈ
+    s.πᶠ -= 0.
+    s.πᵒ -= 0.
+    s.πᵖ -= c.qᶜ
+    c.iʳ  = r.iʳ
+    c.iᵛ  = r.iᵛ
+    c.iᵈ  = r.iᵈ
     isdepot(nᵗ) ? r.iˢ = c.iⁿ : nᵗ.iʰ = c.iⁿ
     isdepot(nʰ) ? r.iᵉ = c.iⁿ : nʰ.iᵗ = c.iⁿ
-    c.iʰ = nʰ.iⁿ
-    c.iᵗ = nᵗ.iⁿ
-    c.r  = r
+    c.iʰ  = nʰ.iⁿ
+    c.iᵗ  = nᵗ.iⁿ
+    c.r   = r
+    s.πᶠ += 0.
+    s.πᵒ += 0.
     # update associated route
     s.πᶠ -= 0.
     s.πᵒ -= r.l * v.πᵈ
@@ -70,15 +75,15 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
                 tᵈ = r.tˢ
-                cᵒ = cˢ
+                c  = cˢ
                 while true
-                    s.πᵖ -= (cᵒ.tᵃ > cᵒ.tˡ) * (cᵒ.tᵃ - cᵒ.tˡ)
-                    cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
-                    s.πᵖ += (cᵒ.tᵃ > cᵒ.tˡ) * (cᵒ.tᵃ - cᵒ.tˡ)
-                    cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
-                    if isequal(cᵒ, cᵉ) break end
-                    tᵈ = cᵒ.tᵈ
-                    cᵒ = s.C[cᵒ.iʰ]
+                    s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
+                    c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
+                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
+                    c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                    if isequal(c, cᵉ) break end
+                    tᵈ = c.tᵈ
+                    c  = s.C[c.iʰ]
                 end
                 r.θᵉ = r.θˢ - r.l/v.lᵛ
                 r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
@@ -99,7 +104,6 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
         s.πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
         s.πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     end
-    s.πᵖ -= c.qᶜ
     return s
 end
 """
@@ -115,14 +119,19 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     aᵗ = s.A[(nᵗ.iⁿ, c.iⁿ)]
     aʰ = s.A[(c.iⁿ, nʰ.iⁿ)]
     # update associated customer nodes
-    c.iʳ = 0
-    c.iᵛ = 0
-    c.iᵈ = 0
+    s.πᶠ -= 0.
+    s.πᵒ -= 0.
+    c.iʳ  = 0
+    c.iᵛ  = 0
+    c.iᵈ  = 0
     isdepot(nᵗ) ? r.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
     isdepot(nʰ) ? r.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
-    c.iʰ = 0
-    c.iᵗ = 0
-    c.r  = NullRoute
+    c.iʰ  = 0
+    c.iᵗ  = 0
+    c.r   = NullRoute
+    s.πᶠ += 0.
+    s.πᵒ += 0.
+    s.πᵖ += c.qᶜ
     # update associated route
     s.πᶠ -= 0.
     s.πᵒ -= r.l * v.πᵈ
@@ -178,15 +187,15 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
                 tᵈ = r.tˢ
-                cᵒ = cˢ
+                c  = cˢ
                 while true
-                    s.πᵖ -= (cᵒ.tᵃ > cᵒ.tˡ) * (cᵒ.tᵃ - cᵒ.tˡ)
-                    cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
-                    s.πᵖ += (cᵒ.tᵃ > cᵒ.tˡ) * (cᵒ.tᵃ - cᵒ.tˡ)
-                    cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
-                    if isequal(cᵒ, cᵉ) break end
-                    tᵈ = cᵒ.tᵈ
-                    cᵒ = s.C[cᵒ.iʰ]
+                    s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
+                    c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
+                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
+                    c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                    if isequal(c, cᵉ) break end
+                    tᵈ = c.tᵈ
+                    c  = s.C[c.iʰ]
                 end
                 r.θᵉ = r.θˢ - r.l/v.lᵛ
                 r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
@@ -207,7 +216,6 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
         s.πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
         s.πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     end
-    s.πᵖ += c.qᶜ
     return s
 end
 
@@ -236,11 +244,11 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             nʰ.iᵗ = nᵗ.iⁿ
             cˢ = nʰ
             cᵉ = nᵗ
-            cᵒ = cˢ
+            c  = cˢ
             while true
-                cᵒ.iᵈ = 0
-                if isequal(cᵒ, cᵉ) break end
-                cᵒ = s.C[cᵒ.iʰ]
+                c.iᵈ = 0
+                if isequal(c, cᵉ) break end
+                c = s.C[c.iʰ]
             end
             # update associated route
             s.πᶠ -= 0.
@@ -302,11 +310,11 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             nʰ.iᵗ = d.iⁿ
             cˢ = nʰ
             cᵉ = nᵗ
-            cᵒ = cˢ
+            c  = cˢ
             while true
-                cᵒ.iᵈ = d.iⁿ
-                if isequal(cᵒ, cᵉ) break end
-                cᵒ = s.C[cᵒ.iʰ]
+                c.iᵈ = d.iⁿ
+                if isequal(c, cᵉ) break end
+                c = s.C[c.iʰ]
             end
             # update associated route
             s.πᶠ -= 0.
@@ -369,15 +377,15 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
                 tᵈ = r.tˢ
-                cᵒ = cˢ
+                c  = cˢ
                 while true
-                    s.πᵖ -= (cᵒ.tᵃ > cᵒ.tˡ) * (cᵒ.tᵃ - cᵒ.tˡ)
-                    cᵒ.tᵃ = tᵈ + s.A[(cᵒ.iᵗ, cᵒ.iⁿ)].l/v.sᵛ
-                    s.πᵖ += (cᵒ.tᵃ > cᵒ.tˡ) * (cᵒ.tᵃ - cᵒ.tˡ)
-                    cᵒ.tᵈ = cᵒ.tᵃ + v.τᶜ + max(0., cᵒ.tᵉ - cᵒ.tᵃ - v.τᶜ) + cᵒ.τᶜ
-                    if isequal(cᵒ, cᵉ) break end
-                    tᵈ = cᵒ.tᵈ
-                    cᵒ = s.C[cᵒ.iʰ]
+                    s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
+                    c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
+                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
+                    c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                    if isequal(c, cᵉ) break end
+                    tᵈ = c.tᵈ
+                    c  = s.C[c.iʰ]
                 end
                 r.θᵉ = r.θˢ - r.l/v.lᵛ
                 r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
@@ -514,11 +522,11 @@ function postinitialize!(s::Solution)
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
-                cᵒ = cˢ
+                c  = cˢ
                 while true
-                    τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
-                    if isequal(cᵒ, cᵉ) break end
-                    cᵒ = s.C[cᵒ.iʰ]
+                    τ = min(τ, c.tˡ - c.tᵃ - v.τᶜ)
+                    if isequal(c, cᵉ) break end
+                    c = s.C[c.iʰ]
                 end
                 r.τ = τ
             end
@@ -555,11 +563,11 @@ function postremove!(s::Solution)
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
-                cᵒ = cˢ
+                c  = cˢ
                 while true
-                    τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
-                    if isequal(cᵒ, cᵉ) break end
-                    cᵒ = s.C[cᵒ.iʰ]
+                    τ = min(τ, c.tˡ - c.tᵃ - v.τᶜ)
+                    if isequal(c, cᵉ) break end
+                    c = s.C[c.iʰ]
                 end
                 r.τ = τ
             end
@@ -637,11 +645,11 @@ function postinsert!(s::Solution)
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
-                cᵒ = cˢ
+                c  = cˢ
                 while true
-                    τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
-                    if isequal(cᵒ, cᵉ) break end
-                    cᵒ = s.C[cᵒ.iʰ]
+                    τ = min(τ, c.tˡ - c.tᵃ - v.τᶜ)
+                    if isequal(c, cᵉ) break end
+                    c = s.C[c.iʰ]
                 end
                 r.τ = τ
             end
@@ -678,11 +686,11 @@ function postlocalsearch!(s::Solution)
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ]
-                cᵒ = cˢ
+                c  = cˢ
                 while true
-                    τ  = min(τ, cᵒ.tˡ - cᵒ.tᵃ - v.τᶜ)
-                    if isequal(cᵒ, cᵉ) break end
-                    cᵒ = s.C[cᵒ.iʰ]
+                    τ = min(τ, c.tˡ - c.tᵃ - v.τᶜ)
+                    if isequal(c, cᵉ) break end
+                    c = s.C[c.iʰ]
                 end
                 r.τ = τ
             end
