@@ -109,9 +109,11 @@ end
     cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
 
 Returns `Solution` created using `k`-means clustering algorithm.
-Here, each cluster is assigned to the nearest depot node and 
-then each customer in this cluster is best inserted to the 
-assigned depot node.
+Here, each cluster is assigned to the nearest depot node. Each 
+customer in a cluster is then best inserted into the assigned 
+depot node until this depot is capacitated. Any remaining customer 
+nodes are finally inserted using best insertion method over the 
+entire solution.
 
 Note, `dir` locates the the folder containing instance files as sub-folders,
 as follows,
@@ -136,18 +138,23 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
     K = kmeans(N.parent, k; rng=rng)
     A = OffsetVector(K.assignments, eachindex(C))
     M = K.centers
-    # Step 3: Add customers from each cluster to the assigned depot
+    # Step 3: Assignment
+    Y = zeros(Int, nclusters(K))  
     for k ∈ 1:nclusters(K)
-        Y = fill(Inf, length(D))  
-        for j ∈ eachindex(Y)
-            d  = D[j]
-            xᵒ = M[1,k]
-            yᵒ = M[2,k]
-            xᵈ = d.x
-            yᵈ = d.y
-            Y[j] = sqrt((xᵒ-xᵈ)^2 + (yᵒ-yᵈ)^2)
+        xᵏ = M[1,k]
+        yᵏ = M[2,k]
+        lᵏ = Inf
+        for j ∈ eachindex(D)
+            xʲ = D[j].x
+            yʲ = D[j].y
+            lᵏʲ  = sqrt((xᵏ-xʲ)^2 + (yᵏ-yʲ)^2)
+            Y[k] = lᵏʲ < lᵏ ? j : Y[k] 
+            lᵏ   = lᵏʲ < lᵏ ? lᵏʲ : lᵏ
         end
-        d = D[argmin(Y)]
+    end
+    # Step 4: Add customers from each cluster to the assigned depot
+    for k ∈ 1:nclusters(K)
+        d = D[Y[k]]
         R = [r for v ∈ d.V for r ∈ v.R]
         L = filter(c -> isequal(A[c.iⁿ], k), C)
         if isempty(L) continue end
@@ -156,10 +163,10 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
         W = ones(Int, I)                        # W[j]  : selection weight for customer node L[i]
         X = ElasticMatrix(fill(Inf, (I,J)))     # X[i,j]: insertion cost of customer node L[i] at best position in route R[j]
         P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]: best insertion postion of customer node L[i] in route R[j]
-        # Step 3.1: Iterate until all open customer nodes have been inserted into the route
+        # Step 4.1: Iterate through all open customer nodes until the depot is capacitated
         for _ ∈ I
             if !hasslack(d) break end
-            # Step 3.1.1: Iterate through all open customer nodes and every possible insertion position in each route
+            # Step 4.1.1: Randomly select an open customer nodes and iterate through all possible insertion positions in each route
             z = f(s)
             i = sample(rng, I, Weights(W))
             c = L[i]
@@ -170,21 +177,21 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
                 nᵗ = d
                 nʰ = nˢ
                 while true
-                    # Step 3.1.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
+                    # Step 4.1.1.1: Insert customer node c between tail node nᵗ and head node nʰ in route r
                     insertnode!(c, nᵗ, nʰ, r, s)
-                    # Step 3.1.1.2: Compute the insertion cost
+                    # Step 4.1.1.2: Compute the insertion cost
                     z′ = f(s)
                     Δ  = z′ - z
-                    # Step 3.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
+                    # Step 4.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
-                    # Step 3.1.1.4: Remove customer node c from its position between tail node nᵗ and head node nʰ
+                    # Step 4.1.1.4: Remove customer node c from its position between tail node nᵗ and head node nʰ
                     removenode!(c, nᵗ, nʰ, r, s)
                     if isequal(nᵗ, nᵉ) break end
                     nᵗ = nʰ
                     nʰ = isequal(r.iᵉ, nᵗ.iⁿ) ? D[nᵗ.iʰ] : C[nᵗ.iʰ]
                 end
             end
-            # Step 3.1.2: Randomly select a customer node to insert at its best position
+            # Step 4.1.2: Randomly select a customer node to insert at its best position
             j  = argmin(X[i,:])
             r  = R[j]
             d  = s.D[r.iᵈ]
@@ -194,9 +201,9 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
             nᵗ = iᵗ ≤ lastindex(D) ? D[iᵗ] : C[iᵗ]
             nʰ = iʰ ≤ lastindex(D) ? D[iʰ] : C[iʰ]
             insertnode!(c, nᵗ, nʰ, r, s)
-            # Step 3.1.3: Revise vectors appropriately
+            # Step 4.1.3: Revise vectors appropriately
             W[i] = 0
-            # Step 3.1.4: Update solution appropriately     
+            # Step 4.1.4: Update solution appropriately     
             if addroute(r, s)
                 r = Route(v, d)
                 push!(v.R, r)
@@ -215,9 +222,10 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
             end
         end
     end
+    # Step 5: Insert any remaining open customer nodes 
     if any(isopen, C) best!(rng, s) end
     postinitialize!(s)
-    # Step 4: Return initial solution
+    # Step 6: Return initial solution
     return s
 end
 
