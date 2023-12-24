@@ -79,8 +79,8 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
                 while true
                     s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                     c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
-                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                     c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                     if isequal(c, cᵉ) break end
                     tᵈ = c.tᵈ
                     c  = s.C[c.iʰ]
@@ -191,8 +191,8 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
                 while true
                     s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                     c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
-                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                     c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                     if isequal(c, cᵉ) break end
                     tᵈ = c.tᵈ
                     c  = s.C[c.iʰ]
@@ -381,8 +381,8 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
                 while true
                     s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                     c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
-                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                     c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                     if isequal(c, cᵉ) break end
                     tᵈ = c.tᵈ
                     c  = s.C[c.iʰ]
