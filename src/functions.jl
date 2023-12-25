@@ -143,14 +143,14 @@ hasslack(d::DepotNode) = d.q < d.qᵈ
 
 
 """
-    Route(r::Route, v::Vehicle, d::DepotNode)
+    Route(v::Vehicle, d::DepotNode)
 
-Returns a non-operational `Route` cloning route `r` for vehicle `v` at depot node `d`.
+Returns a non-operational `Route` traversed by vehicle `v` from depot node `d`.
 """
-function Route(r::Route, v::Vehicle, d::DepotNode)
+function Route(v::Vehicle, d::DepotNode)
     iʳ = lastindex(v.R) + 1
-    iᵛ = r.iᵛ
-    iᵈ = r.iᵈ
+    iᵛ = v.iᵛ
+    iᵈ = d.iⁿ
     x  = 0.
     y  = 0. 
     iˢ = iᵈ

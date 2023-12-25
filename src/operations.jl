@@ -468,7 +468,7 @@ Adds new routes and vehicles into the solution.
 function preinitialize!(s::Solution)
     for d ∈ s.D
         for v ∈ d.V
-            r = Route(r, v, d)
+            r = Route(v, d)
             if addroute(r, s) push!(v.R, r) end
         end
     end
@@ -589,7 +589,7 @@ Adds new routes and vehicles into the solution.
 function preinsert!(s::Solution)
     for d ∈ s.D
         for v ∈ d.V
-            r = Route(r, v, d)
+            r = Route(v, d)
             if addroute(r, s) push!(v.R, r) end
             v = Vehicle(v, d)
             if addvehicle(v, s) push!(d.V, v) end
