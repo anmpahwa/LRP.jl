@@ -143,6 +143,103 @@ hasslack(d::DepotNode) = d.q < d.qᵈ
 
 
 """
+    relatedness(c₁::CustomerNode, c₂::CustomerNode, s::Solution)
+
+Returns a measure of similarity between customer nodes `c₁` and `c₂` in solution `s`.
+"""
+function relatedness(c₁::CustomerNode, c₂::CustomerNode, s::Solution)
+    ϵ  = 1e-5
+    r₁ = c₁.r
+    r₂ = c₂.r
+    φ  = (1 + isequal(r₁, r₂)) / 2
+    q  = abs(c₁.qᶜ - c₂.qᶜ)
+    l  = s.A[(c₁.iⁿ,c₂.iⁿ)].l
+    t  = abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ)
+    z  = φ/(q + l + t + ϵ)
+    return z
+end
+"""
+    relatedness(r₁::Route, r₂::Route, s::Solution)
+
+Returns a measure of similarity between routes `r₁` and `r₂` in solution `s`.
+"""
+function relatedness(r₁::Route, r₂::Route, s::Solution)
+    ϵ  = 1e-5
+    d₁ = s.D[r₁.iᵈ]
+    d₂ = s.D[r₂.iᵈ]
+    v₁ = d₁.V[r₁.iᵛ]
+    v₂ = d₂.V[r₂.iᵛ]
+    φ  = 1
+    q  = abs(v₁.qᵛ - v₂.qᵛ)
+    l  = sqrt((r₁.x - r₂.x)^2 + (r₁.y - r₂.y)^2)
+    t  = abs(r₁.tˢ - r₂.tˢ) + abs(r₁.tᵉ - r₂.tᵉ)
+    z  = φ/(q + l + t + ϵ)
+    return z
+end
+"""
+    relatedness(v₁::Vehicle, v₂::Vehicle, s::Solution)
+
+Returns a measure of similarity between vehicles `v₁` and `v₂` in solution `s`.
+"""
+function relatedness(v₁::Vehicle, v₂::Vehicle, s::Solution)
+    ϵ  = 1e-5
+    x₁ = 0.
+    y₁ = 0.
+    for r ∈ v₁.R 
+        x₁ += r.n * r.x / v₁.n
+        y₁ += r.n * r.y / v₁.n 
+    end
+    x₂ = 0.
+    y₂ = 0.
+    for r ∈ v₂.R 
+        x₂ += r.n * r.x / v₂.n
+        y₂ += r.n * r.y / v₂.n
+    end
+    φ  = 1
+    q  = abs(v₁.qᵛ - v₂.qᵛ)
+    l  = sqrt((x₁ - x₂)^2 + (y₁ - y₂)^2)
+    t  = abs(v₁.tˢ - v₂.tˢ) + abs(v₁.tᵉ - v₂.tᵉ)
+    z  = φ/(q + l + t + ϵ)
+    return z
+end
+"""
+    relatedness(d₁::DepotNode, d₂::DepotNode, s::Solution)
+
+Returns a measure of similarity between depot nodes `d₁` and `d₂` in solution `s`.
+"""
+function relatedness(d₁::DepotNode, d₂::DepotNode, s::Solution)
+    ϵ  = 1e-5
+    φ  = 1
+    q  = abs(d₁.qᵈ - d₂.qᵈ)
+    l  = s.A[(d₁.iⁿ, d₂.iⁿ)].l
+    t  = abs(d₁.tˢ - d₂.tˢ) + abs(d₁.tᵉ - d₂.tᵉ)
+    z  = φ/(q + l + t + ϵ)
+    return z
+end
+"""
+    relatedness(c::CustomerNode, d::DepotNode, s::Solution)
+
+Returns a measure of similarity between customer nodes `c` and depot node `d` in solution `s`.
+"""
+function relatedness(c::CustomerNode, d::DepotNode, s::Solution)
+    ϵ  = 1e-5
+    φ  = 1
+    q  = 0.
+    l  = s.A[(c.iⁿ,d.iⁿ)].l
+    t  = 0.
+    z  = φ/(q + l + t + ϵ)
+    return z
+end
+"""
+    relatedness(d::DepotNode, c::CustomerNode, s::Solution)
+
+Returns a measure of similarity between depot node `d` and customer nodes `c` in solution `s`.
+"""
+relatedness(d::DepotNode, c::CustomerNode, s::Solution) = relatedness(c, d, s)
+
+
+
+"""
     Route(v::Vehicle, d::DepotNode)
 
 Returns a non-operational `Route` traversed by vehicle `v` from depot node `d`.
@@ -266,14 +363,6 @@ Base.hash(s::Solution) = hash(vectorize(s))
 
 
 """
-    f(s::Solution)
-
-Returns objective function evaluation for solution `s`
-"""
-f(s::Solution) = s.πᶠ + s.πᵒ + s.πᵖ * 10 ^ ceil(log10(s.πᶠ + s.πᵒ))
-
-
-"""
     isfeasible(s::Solution)
 
 Returns `true` if customer service and time-window constraints;
@@ -312,96 +401,8 @@ end
 
 
 """
-    relatedness(c₁::CustomerNode, c₂::CustomerNode, s::Solution)
+    f(s::Solution)
 
-Returns a measure of similarity between customer nodes `c₁` and `c₂` in solution `s`.
+Returns objective function evaluation for solution `s`
 """
-function relatedness(c₁::CustomerNode, c₂::CustomerNode, s::Solution)
-    ϵ  = 1e-5
-    r₁ = c₁.r
-    r₂ = c₂.r
-    φ  = (1 + isequal(r₁, r₂)) / 2
-    q  = abs(c₁.qᶜ - c₂.qᶜ)
-    l  = s.A[(c₁.iⁿ,c₂.iⁿ)].l
-    t  = abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ)
-    z  = φ/(q + l + t + ϵ)
-    return z
-end
-"""
-    relatedness(r₁::Route, r₂::Route, s::Solution)
-
-Returns a measure of similarity between routes `r₁` and `r₂` in solution `s`.
-"""
-function relatedness(r₁::Route, r₂::Route, s::Solution)
-    ϵ  = 1e-5
-    d₁ = s.D[r₁.iᵈ]
-    d₂ = s.D[r₂.iᵈ]
-    v₁ = d₁.V[r₁.iᵛ]
-    v₂ = d₂.V[r₂.iᵛ]
-    φ  = 1
-    q  = abs(v₁.qᵛ - v₂.qᵛ)
-    l  = sqrt((r₁.x - r₂.x)^2 + (r₁.y - r₂.y)^2)
-    t  = abs(r₁.tˢ - r₂.tˢ) + abs(r₁.tᵉ - r₂.tᵉ)
-    z  = φ/(q + l + t + ϵ)
-    return z
-end
-"""
-    relatedness(v₁::Vehicle, v₂::Vehicle, s::Solution)
-
-Returns a measure of similarity between vehicles `v₁` and `v₂` in solution `s`.
-"""
-function relatedness(v₁::Vehicle, v₂::Vehicle, s::Solution)
-    ϵ  = 1e-5
-    x₁ = 0.
-    y₁ = 0.
-    for r ∈ v₁.R 
-        x₁ += r.n * r.x / v₁.n
-        y₁ += r.n * r.y / v₁.n 
-    end
-    x₂ = 0.
-    y₂ = 0.
-    for r ∈ v₂.R 
-        x₂ += r.n * r.x / v₂.n
-        y₂ += r.n * r.y / v₂.n
-    end
-    φ  = 1
-    q  = abs(v₁.qᵛ - v₂.qᵛ)
-    l  = sqrt((x₁ - x₂)^2 + (y₁ - y₂)^2)
-    t  = abs(v₁.tˢ - v₂.tˢ) + abs(v₁.tᵉ - v₂.tᵉ)
-    z  = φ/(q + l + t + ϵ)
-    return z
-end
-"""
-    relatedness(d₁::DepotNode, d₂::DepotNode, s::Solution)
-
-Returns a measure of similarity between depot nodes `d₁` and `d₂` in solution `s`.
-"""
-function relatedness(d₁::DepotNode, d₂::DepotNode, s::Solution)
-    ϵ  = 1e-5
-    φ  = 1
-    q  = abs(d₁.qᵈ - d₂.qᵈ)
-    l  = s.A[(d₁.iⁿ, d₂.iⁿ)].l
-    t  = abs(d₁.tˢ - d₂.tˢ) + abs(d₁.tᵉ - d₂.tᵉ)
-    z  = φ/(q + l + t + ϵ)
-    return z
-end
-"""
-    relatedness(c::CustomerNode, d::DepotNode, s::Solution)
-
-Returns a measure of similarity between customer nodes `c` and depot node `d` in solution `s`.
-"""
-function relatedness(c::CustomerNode, d::DepotNode, s::Solution)
-    ϵ  = 1e-5
-    φ  = 1
-    q  = 0.
-    l  = s.A[(c.iⁿ,d.iⁿ)].l
-    t  = 0.
-    z  = φ/(q + l + t + ϵ)
-    return z
-end
-"""
-    relatedness(d::DepotNode, c::CustomerNode, s::Solution)
-
-Returns a measure of similarity between depot node `d` and customer nodes `c` in solution `s`.
-"""
-relatedness(d::DepotNode, c::CustomerNode, s::Solution) = relatedness(c, d, s)
+f(s::Solution) = s.πᶠ + s.πᵒ + s.πᵖ * 10 ^ ceil(log10(s.πᶠ + s.πᵒ))
