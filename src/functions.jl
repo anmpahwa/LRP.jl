@@ -72,8 +72,8 @@ isopen(c::CustomerNode) = isequal(c.r, NullRoute)
 """
     isopen(d::DepotNode)
 
-Returns `true` if depot node `d` is operational.
-A `DepotNode` is defined operational if it serves at least one customer
+Returns `true` if depot node `d` is open.
+A `DepotNode` is defined open if it serves at least one customer
 unless it is mandated to be operational.
 """  
 isopen(d::DepotNode) = !iszero(d.n) || !iszero(d.φ)
@@ -90,8 +90,8 @@ isclose(c::CustomerNode) = !isequal(c.r, NullRoute)
 """
     isclose(d::DepotNode)
 
-Returns `true` if depot node `d` is not operational.
-A `DepotNode` is defined non-operational if it serves no customer
+Returns `true` if depot node `d` is closed.
+A `DepotNode` is defined closed if it serves no customer
 given it is not mandated to be operational.
 """  
 isclose(d::DepotNode) = iszero(d.n) && iszero(d.φ)
@@ -136,7 +136,7 @@ isdormant(c::CustomerNode) = isdormant(c.r)
     hasslack(d::DepotNode)
     
 Returns `true` if depot node `d` has slack.
-A `DepotNode` is defined to have slack if it has the capacity to serve an additional customer.
+A `DepotNode` is defined to have slack if it has spare capacity.
 """
 hasslack(d::DepotNode) = d.q < d.qᵈ
 
@@ -149,11 +149,10 @@ Returns a measure of similarity between customer nodes `c₁` and `c₂` based o
 """
 function relatedness(m::Symbol, c₁::CustomerNode, c₂::CustomerNode, s::Solution)
     ϵ  = 1e-5
-    φ  = 1
     q  = isequal(m, :q) * (abs(c₁.qᶜ - c₂.qᶜ))
     l  = isequal(m, :l) * (s.A[(c₁.iⁿ,c₂.iⁿ)].l)
     t  = isequal(m, :t) * (abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ))
-    z  = φ/(q + l + t + ϵ)
+    z  = 1/(q + l + t + ϵ)
     return z
 end
 """
@@ -163,7 +162,6 @@ Returns a measure of similarity between routes `r₁` and `r₂` based on metric
 """
 function relatedness(m::Symbol, r₁::Route, r₂::Route, s::Solution)
     ϵ  = 1e-5
-    φ  = 1
     d₁ = s.D[r₁.iᵈ]
     d₂ = s.D[r₂.iᵈ]
     v₁ = d₁.V[r₁.iᵛ]
@@ -171,7 +169,7 @@ function relatedness(m::Symbol, r₁::Route, r₂::Route, s::Solution)
     q  = isequal(m, :q) * (abs(v₁.qᵛ - v₂.qᵛ))
     l  = isequal(m, :l) * (sqrt((r₁.x - r₂.x)^2 + (r₁.y - r₂.y)^2))
     t  = isequal(m, :t) * (abs(r₁.tˢ - r₂.tˢ) + abs(r₁.tᵉ - r₂.tᵉ))
-    z  = φ/(q + l + t + ϵ)
+    z  = 1/(q + l + t + ϵ)
     return z
 end
 """
@@ -193,11 +191,10 @@ function relatedness(m::Symbol, v₁::Vehicle, v₂::Vehicle, s::Solution)
         x₂ += r.n * r.x / v₂.n
         y₂ += r.n * r.y / v₂.n
     end
-    φ  = 1
     q  = isequal(m, :q) * (abs(v₁.qᵛ - v₂.qᵛ))
     l  = isequal(m, :l) * (sqrt((x₁ - x₂)^2 + (y₁ - y₂)^2))
     t  = isequal(m, :t) * (abs(v₁.tˢ - v₂.tˢ) + abs(v₁.tᵉ - v₂.tᵉ))
-    z  = φ/(q + l + t + ϵ)
+    z  = 1/(q + l + t + ϵ)
     return z
 end
 """
@@ -207,11 +204,10 @@ Returns a measure of similarity between depot nodes `d₁` and `d₂` based on m
 """
 function relatedness(m::Symbol, d₁::DepotNode, d₂::DepotNode, s::Solution)
     ϵ  = 1e-5
-    φ  = 1
     q  = isequal(m, :q) * (abs(d₁.qᵈ - d₂.qᵈ))
     l  = isequal(m, :l) * (s.A[(d₁.iⁿ, d₂.iⁿ)].l)
     t  = isequal(m, :t) * (abs(d₁.tˢ - d₂.tˢ) + abs(d₁.tᵉ - d₂.tᵉ))
-    z  = φ/(q + l + t + ϵ)
+    z  = 1/(q + l + t + ϵ)
     return z
 end
 
@@ -308,26 +304,28 @@ end
 Returns `Solution` as a sequence of nodes in the order of visits.
 """
 function vectorize(s::Solution)
-    Z = [Int[] for _ ∈ s.D]
+    Z = [[[Int[] for r ∈ v.R] for v ∈ d.V] for d ∈ s.D]
     for d ∈ s.D
         iⁿ = d.iⁿ
         if !isopt(d) continue end
         for v ∈ d.V
+            iᵛ = v.iᵛ
             if !isopt(v) continue end
             for r ∈ v.R
+                iʳ = r.iʳ
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
                 cᵉ = s.C[r.iᵉ] 
-                push!(Z[iⁿ], d.iⁿ)
+                push!(Z[iⁿ][iᵛ][iʳ], d.iⁿ)
                 c  = cˢ
                 while true
-                    push!(Z[iⁿ], c.iⁿ)
+                    push!(Z[iⁿ][iᵛ][iʳ], c.iⁿ)
                     if isequal(c, cᵉ) break end
                     c = s.C[c.iʰ]
                 end
+                push!(Z[iⁿ][iᵛ][iʳ], d.iⁿ)
             end
         end
-        push!(Z[iⁿ], d.iⁿ)
     end
     return Z
 end
