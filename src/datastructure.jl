@@ -16,10 +16,10 @@ end
     Route(iʳ::Int, iᵛ::Int, iᵈ::Int, x::Float64, y::Float64, iˢ::Int, iᵉ::Int, θⁱ::Float64, θˢ::Float64, θᵉ::Float64, tⁱ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, φ::Int64)
 
 A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`, depot
-node index `iᵈ`, centroid coordinates `x, y` , start node index `iˢ`, end node index 
-`iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition time `tⁱ`, start
-time `tˢ`, and end time `tᵉ`, repsectively, slack time `τ`, customers served `n`, 
-demand served `q`, route length `l`, and route initiaition status `φ`.
+node index `iᵈ`, centroid coordinates `(x, y)` , start node index `iˢ`, end node 
+index `iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition time `tⁱ`, 
+starttime `tˢ`, and end time `tᵉ`, repsectively, slack time `τ`, customers served 
+`n`, demand served `q`, route length `l`, and route initiaition status `φ`.
 """
 mutable struct Route
     iʳ::Int                                                                         # Route index
@@ -47,13 +47,13 @@ end
 """
     Vehicle(iᵛ::Int, jᵛ::Int, iᵈ::Int, qᵛ::Float64, lᵛ::Float64, sᵛ::Float64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, r̅::Int, τʷ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, πᵈ::Float64, πᵗ::Float64, πᶠ::Float64, R::Vector{Route})
 
-A `Vehicle` is a mode of delivery with index `iᵛ`, vehicle type index `jᵛ`, depot 
-node index `iᵈ`, capacity `qᵛ`, range `lᵛ`, speed `sᵛ`, refueling time `τᶠ`, 
-service time `τᵈ` at depot node (per unit demand), parking time `τᶜ` at customer 
-node, maximum routes permitted `r̅`, working-hours `τʷ`, initial departure time `tˢ`, 
-final arrival time `tᵉ`, slack time `τ`, customers served `n`, demand served `q`, 
-total route length `l`, operational cost `πᵈ` per unit distance and `πᵗ` per unit 
-time, fixed cost `πᶠ`, and set of routes `R`.
+A `Vehicle` is a mode of delivery with index `iᵛ`, type index `jᵛ`, depot node index 
+`iᵈ`, capacity `qᵛ`, range `lᵛ`, speed `sᵛ`, refueling time `τᶠ`, service time `τᵈ` 
+at depot node (per unit demand), parking time `τᶜ` at customer node, maximum routes 
+permitted `r̅`, working-hours `τʷ`, initial departure time `tˢ`, final arrival time 
+`tᵉ`, slack time `τ`, customers served `n`, demand served `q`, total route length 
+`l`, operational cost `πᵈ` per unit distance and `πᵗ` per unit time, fixed cost 
+`πᶠ`, and set of routes `R`.
 """
 mutable struct Vehicle
     iᵛ::Int                                                                         # Vehicle index
@@ -117,8 +117,8 @@ end
 A `CustomerNode` is a sink point on the graph at `(x,y)` with index `iⁿ`, demand 
 `qᶜ`, customer service time `τᶜ`, earliest service time `tᵉ`, latest service time 
 `tˡ`, tail node index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, departure time 
-`tᵈ`, on route `r` with route index `iʳ`, vehicle index `iᵛ`, and depot node index 
-`iᵈ`.
+`tᵈ`, serviced on route `r` with route index `iʳ`, vehicle index `iᵛ`, and depot 
+node index `iᵈ`.
 """
 mutable struct CustomerNode <: Node
     iⁿ::Int                                                                         # Customer node index
