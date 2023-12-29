@@ -71,8 +71,8 @@ function relatedcustomer!(rng::AbstractRNG, q::Int, s::Solution)
     # Step 2: Randomly select a pivot customer node
     i = sample(rng, eachindex(C), OffsetWeights(W))
     # Step 3: For each customer node, evaluate relatedness to this pivot customer node
-    f = sample(rng, [:q, :l, :t])
-    for iⁿ ∈ eachindex(C) X[iⁿ] = isone(W[iⁿ]) ? relatedness(f, C[iⁿ], C[i], s) : -Inf end
+    m = sample(rng, [:q, :l, :t])
+    for iⁿ ∈ eachindex(C) X[iⁿ] = isone(W[iⁿ]) ? relatedness(m, C[iⁿ], C[i], s) : -Inf end
     # Step 4: Remove q most related customer nodes
     n = 0
     while n < q
@@ -216,8 +216,8 @@ function relatedroute!(rng::AbstractRNG, q::Int, s::Solution)
     # Step 2: Randomly select a pivot route
     i = sample(rng, eachindex(R), Weights(W))  
     # Step 3: For each route, evaluate relatedness to this pivot route
-    f = sample(rng, [:q, :l, :t])
-    for iʳ ∈ eachindex(R) X[iʳ] = isone(W[iʳ]) ? relatedness(f, R[iʳ], R[i], s) : -Inf end
+    m = sample(rng, [:q, :l, :t])
+    for iʳ ∈ eachindex(R) X[iʳ] = isone(W[iʳ]) ? relatedness(m, R[iʳ], R[i], s) : -Inf end
     # Step 4: Remove exactly q customers from most related route to this pivot route
     n = 0
     while n < q
@@ -350,8 +350,8 @@ function relatedvehicle!(rng::AbstractRNG, q::Int, s::Solution)
     # Step 2: Select a random vehicle
     i = sample(rng, eachindex(V), Weights(W))
     # Step 3: For each vehicle, evaluate relatedness to this pivot vehicle
-    f = sample(rng, [:q, :l, :t])
-    for iᵛ ∈ eachindex(V) X[iᵛ] = isone(W[iᵛ]) ? relatedness(f, V[iᵛ], V[i], s) : -Inf end
+    m = sample(rng, [:q, :l, :t])
+    for iᵛ ∈ eachindex(V) X[iᵛ] = isone(W[iᵛ]) ? relatedness(m, V[iᵛ], V[i], s) : -Inf end
     # Step 4: Remove at least q customers from the most related vehicles to this pivot vehicle
     n = 0
     while n < q
@@ -480,8 +480,8 @@ function relateddepot!(rng::AbstractRNG, q::Int, s::Solution)
     # Step 1: Select a random closed depot node
     i = sample(rng, eachindex(D), Weights(W))
     # Step 2: Evaluate relatedness of this depot node to every depot node
-    f = sample(rng, [:q, :l, :t])
-    for iᵈ ∈ eachindex(D) X[iᵈ] = iszero(W[iᵈ]) ? relatedness(f, D[iᵈ], D[i], s) : -Inf end
+    m = sample(rng, [:q, :l, :t])
+    for iᵈ ∈ eachindex(D) X[iᵈ] = iszero(W[iᵈ]) ? relatedness(m, D[iᵈ], D[i], s) : -Inf end
     # Step 3: Remove at least q customer nodes most related to this pivot depot node
     n = 0
     while n < q
