@@ -143,41 +143,41 @@ hasslack(d::DepotNode) = d.q < d.qᵈ
 
 
 """
-    relatedness(f::Symbol, c₁::CustomerNode, c₂::CustomerNode, s::Solution)
+    relatedness(m::Symbol, c₁::CustomerNode, c₂::CustomerNode, s::Solution)
 
-Returns a measure of similarity between customer nodes `c₁` and `c₂` based on feature `f` in solution `s`.
+Returns a measure of similarity between customer nodes `c₁` and `c₂` based on metric `m` in solution `s`.
 """
-function relatedness(f::Symbol, c₁::CustomerNode, c₂::CustomerNode, s::Solution)
+function relatedness(m::Symbol, c₁::CustomerNode, c₂::CustomerNode, s::Solution)
     ϵ  = 1e-5
     r₁ = c₁.r
     r₂ = c₂.r
     φ  = (1 + isequal(r₁, r₂)) / 2
-    q  = isequal(f, :q) * (abs(c₁.qᶜ - c₂.qᶜ))
-    l  = isequal(f, :l) * (s.A[(c₁.iⁿ,c₂.iⁿ)].l)
-    t  = isequal(f, :t) * (abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ))
+    q  = isequal(m, :q) * (abs(c₁.qᶜ - c₂.qᶜ))
+    l  = isequal(m, :l) * (s.A[(c₁.iⁿ,c₂.iⁿ)].l)
+    t  = isequal(m, :t) * (abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ))
     z  = φ/(q + l + t + ϵ)
     return z
 end
 """
-    relatedness(f::Symbol, r₁::Route, r₂::Route, s::Solution)
+    relatedness(m::Symbol, r₁::Route, r₂::Route, s::Solution)
 
-Returns a measure of similarity between routes `r₁` and `r₂` based on feature `f` in solution `s`.
+Returns a measure of similarity between routes `r₁` and `r₂` based on metric `m` in solution `s`.
 """
-function relatedness(f::Symbol, r₁::Route, r₂::Route, s::Solution)
+function relatedness(m::Symbol, r₁::Route, r₂::Route, s::Solution)
     ϵ  = 1e-5
     φ  = 1
-    q  = isequal(f, :q) * (abs(r₁.q - r₂.q))
-    l  = isequal(f, :l) * (sqrt((r₁.x - r₂.x)^2 + (r₁.y - r₂.y)^2))
-    t  = isequal(f, :t) * (abs(r₁.tˢ - r₂.tˢ) + abs(r₁.tᵉ - r₂.tᵉ))
+    q  = isequal(m, :q) * (abs(r₁.q - r₂.q))
+    l  = isequal(m, :l) * (sqrt((r₁.x - r₂.x)^2 + (r₁.y - r₂.y)^2))
+    t  = isequal(m, :t) * (abs(r₁.tˢ - r₂.tˢ) + abs(r₁.tᵉ - r₂.tᵉ))
     z  = φ/(q + l + t + ϵ)
     return z
 end
 """
-    relatedness(f::Symbol, v₁::Vehicle, v₂::Vehicle, s::Solution)
+    relatedness(m::Symbol, v₁::Vehicle, v₂::Vehicle, s::Solution)
 
-Returns a measure of similarity between vehicles `v₁` and `v₂` based on feature `f` in solution `s`.
+Returns a measure of similarity between vehicles `v₁` and `v₂` based on metric `m` in solution `s`.
 """
-function relatedness(f::Symbol, v₁::Vehicle, v₂::Vehicle, s::Solution)
+function relatedness(m::Symbol, v₁::Vehicle, v₂::Vehicle, s::Solution)
     ϵ  = 1e-5
     x₁ = 0.
     y₁ = 0.
@@ -192,46 +192,46 @@ function relatedness(f::Symbol, v₁::Vehicle, v₂::Vehicle, s::Solution)
         y₂ += r.n * r.y / v₂.n
     end
     φ  = 1
-    q  = isequal(f, :q) * (abs(v₁.q - v₂.q))
-    l  = isequal(f, :l) * (sqrt((x₁ - x₂)^2 + (y₁ - y₂)^2))
-    t  = isequal(f, :t) * (abs(v₁.tˢ - v₂.tˢ) + abs(v₁.tᵉ - v₂.tᵉ))
+    q  = isequal(m, :q) * (abs(v₁.q - v₂.q))
+    l  = isequal(m, :l) * (sqrt((x₁ - x₂)^2 + (y₁ - y₂)^2))
+    t  = isequal(m, :t) * (abs(v₁.tˢ - v₂.tˢ) + abs(v₁.tᵉ - v₂.tᵉ))
     z  = φ/(q + l + t + ϵ)
     return z
 end
 """
-    relatedness(f::Symbol, d₁::DepotNode, d₂::DepotNode, s::Solution)
+    relatedness(m::Symbol, d₁::DepotNode, d₂::DepotNode, s::Solution)
 
-Returns a measure of similarity between depot nodes `d₁` and `d₂` based on feature `f` in solution `s`.
+Returns a measure of similarity between depot nodes `d₁` and `d₂` based on metric `m` in solution `s`.
 """
-function relatedness(f::Symbol, d₁::DepotNode, d₂::DepotNode, s::Solution)
+function relatedness(m::Symbol, d₁::DepotNode, d₂::DepotNode, s::Solution)
     ϵ  = 1e-5
     φ  = 1
-    q  = isequal(f, :q) * (abs(d₁.qᵈ - d₂.qᵈ))
-    l  = isequal(f, :l) * (s.A[(d₁.iⁿ, d₂.iⁿ)].l)
-    t  = isequal(f, :t) * (abs(d₁.tˢ - d₂.tˢ) + abs(d₁.tᵉ - d₂.tᵉ))
+    q  = isequal(m, :q) * (abs(d₁.qᵈ - d₂.qᵈ))
+    l  = isequal(m, :l) * (s.A[(d₁.iⁿ, d₂.iⁿ)].l)
+    t  = isequal(m, :t) * (abs(d₁.tˢ - d₂.tˢ) + abs(d₁.tᵉ - d₂.tᵉ))
     z  = φ/(q + l + t + ϵ)
     return z
 end
 """
-    relatedness(f::Symbol, c::CustomerNode, d::DepotNode, s::Solution)
+    relatedness(m::Symbol, c::CustomerNode, d::DepotNode, s::Solution)
 
-Returns a measure of similarity between customer nodes `c` and depot node `d` based on feature `f` in solution `s`.
+Returns a measure of similarity between customer nodes `c` and depot node `d` based on metric `m` in solution `s`.
 """
-function relatedness(f::Symbol, c::CustomerNode, d::DepotNode, s::Solution)
+function relatedness(m::Symbol, c::CustomerNode, d::DepotNode, s::Solution)
     ϵ  = 1e-5
     φ  = 1
-    q  = isequal(f, :q) * (0.)
-    l  = isequal(f, :l) * (s.A[(c.iⁿ,d.iⁿ)].l)
-    t  = isequal(f, :t) * (0.)
+    q  = isequal(m, :q) * (0.)
+    l  = isequal(m, :l) * (s.A[(c.iⁿ,d.iⁿ)].l)
+    t  = isequal(m, :t) * (0.)
     z  = φ/(q + l + t + ϵ)
     return z
 end
 """
-    relatedness(f::Symbol, d::DepotNode, c::CustomerNode, s::Solution)
+    relatedness(m::Symbol, d::DepotNode, c::CustomerNode, s::Solution)
 
-Returns a measure of similarity between depot node `d` and customer nodes `c` based on feature `f` in solution `s`.
+Returns a measure of similarity between depot node `d` and customer nodes `c` based on metric `m` in solution `s`.
 """
-relatedness(f::Symbol, d::DepotNode, c::CustomerNode, s::Solution) = relatedness(f, c, d, s)
+relatedness(m::Symbol, d::DepotNode, c::CustomerNode, s::Solution) = relatedness(m, c, d, s)
 
 
 
