@@ -149,9 +149,7 @@ Returns a measure of similarity between customer nodes `c₁` and `c₂` based o
 """
 function relatedness(m::Symbol, c₁::CustomerNode, c₂::CustomerNode, s::Solution)
     ϵ  = 1e-5
-    r₁ = c₁.r
-    r₂ = c₂.r
-    φ  = (1 + isequal(r₁, r₂)) / 2
+    φ  = 1
     q  = isequal(m, :q) * (abs(c₁.qᶜ - c₂.qᶜ))
     l  = isequal(m, :l) * (s.A[(c₁.iⁿ,c₂.iⁿ)].l)
     t  = isequal(m, :t) * (abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ))
@@ -166,7 +164,11 @@ Returns a measure of similarity between routes `r₁` and `r₂` based on metric
 function relatedness(m::Symbol, r₁::Route, r₂::Route, s::Solution)
     ϵ  = 1e-5
     φ  = 1
-    q  = isequal(m, :q) * (abs(r₁.q - r₂.q))
+    d₁ = s.D[r₁.iᵈ]
+    d₂ = s.D[r₂.iᵈ]
+    v₁ = d₁.V[r₁.iᵛ]
+    v₂ = d₂.V[r₂.iᵛ]
+    q  = isequal(m, :q) * (abs(v₁.qᵛ - v₂.qᵛ))
     l  = isequal(m, :l) * (sqrt((r₁.x - r₂.x)^2 + (r₁.y - r₂.y)^2))
     t  = isequal(m, :t) * (abs(r₁.tˢ - r₂.tˢ) + abs(r₁.tᵉ - r₂.tᵉ))
     z  = φ/(q + l + t + ϵ)
@@ -192,7 +194,7 @@ function relatedness(m::Symbol, v₁::Vehicle, v₂::Vehicle, s::Solution)
         y₂ += r.n * r.y / v₂.n
     end
     φ  = 1
-    q  = isequal(m, :q) * (abs(v₁.q - v₂.q))
+    q  = isequal(m, :q) * (abs(v₁.qᵛ - v₂.qᵛ))
     l  = isequal(m, :l) * (sqrt((x₁ - x₂)^2 + (y₁ - y₂)^2))
     t  = isequal(m, :t) * (abs(v₁.tˢ - v₂.tˢ) + abs(v₁.tᵉ - v₂.tᵉ))
     z  = φ/(q + l + t + ϵ)
