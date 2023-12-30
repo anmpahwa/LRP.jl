@@ -39,7 +39,7 @@ function best!(rng::AbstractRNG, s::Solution)
     P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]: best insertion postion of customer node L[i] in route R[j]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
-        # Step 2.1: Randomly select an open customer nodes and iterate through all possible insertion positions in each route
+        # Step 2.1: Randomly select an open customer node and iterate through all possible insertion positions in each route
         z = f(s)
         i = sample(rng, I, Weights(W))
         c = L[i]
@@ -153,7 +153,7 @@ function greedy!(rng::AbstractRNG, s::Solution; mode::Symbol)
                 end
             end
         end
-        # Step 2.2: Randomly select a customer node to insert at its best position
+        # Step 2.2: Insert the customer node with least insertion cost at its best position
         i,j= Tuple(argmin(X))
         c  = L[i]
         r  = R[j]
@@ -207,7 +207,8 @@ end
 
 Returns solution `s` after iteratively inserting customer nodes with 
 least insertion cost until all open customer nodes have been added 
-to the solution. Estimates insertion cost precisely.
+to the solution. 
+Estimates insertion cost precisely.
 """
 precise!(rng::AbstractRNG, s::Solution) = greedy!(rng, s; mode=:pcs)
 """
@@ -215,7 +216,8 @@ precise!(rng::AbstractRNG, s::Solution) = greedy!(rng, s; mode=:pcs)
 
 Returns solution `s` after iteratively inserting customer nodes with 
 least insertion cost until all open customer nodes have been added to 
-the solution. Estimates insertion cost with a perturbration.
+the solution. 
+Estimates insertion cost with a perturbration.
 """
 perturb!(rng::AbstractRNG, s::Solution) = greedy!(rng, s; mode=:ptb)
 
@@ -227,6 +229,8 @@ perturb!(rng::AbstractRNG, s::Solution) = greedy!(rng, s; mode=:ptb)
 Returns solution `s` after iteratively adding customer nodes with 
 highest regret-k cost at its best position until all open customer 
 nodes have been added to the solution.
+Note, regretk mechanism breaks any ties by inserting the 
+node with the lowest insertion cost.
 """
 function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
     # Step 1: Initialize
@@ -357,6 +361,8 @@ end
 Returns solution `s` after iteratively adding customer nodes with 
 highest regret-2 cost at its best position until all open customer 
 nodes have been added to the solution.
+Note, regret2 mechanism breaks any ties by inserting the 
+node with the lowest insertion cost.
 """
 regret2!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, 2)
 """
@@ -365,5 +371,7 @@ regret2!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, 2)
 Returns solution `s` after iteratively adding customer nodes with 
 highest regret-3 cost at its best position until all open customer 
 nodes have been added to the solution.
+Note, regret3 mechanism breaks any ties by inserting the 
+node with the lowest insertion cost.
 """
 regret3!(rng::AbstractRNG, s::Solution) = regretk!(rng, s, 3)
