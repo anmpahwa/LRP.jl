@@ -76,6 +76,8 @@ function best!(rng::AbstractRNG, s::Solution)
         insertnode!(c, nᵗ, nʰ, r, s)
         # Step 2.3: Revise vectors appropriately
         W[i] = 0
+        X[i,:] .= Inf
+        P[i,:] .= ((0, 0), )
         # Step 2.4: Update solution appropriately 
         if addroute(r, s)
             r = Route(v, d)
@@ -114,7 +116,7 @@ function greedy!(rng::AbstractRNG, s::Solution; mode::Symbol)
     preinsert!(s)
     D = s.D
     C = s.C
-    φ = isequal(mode,  :ptb)
+    φ = isequal(mode, :ptb)
     R = [r for d ∈ D for v ∈ d.V for r ∈ v.R if isactive(r)]
     L = [c for c ∈ C if isopen(c)]
     I = eachindex(L)
@@ -168,7 +170,7 @@ function greedy!(rng::AbstractRNG, s::Solution; mode::Symbol)
         ϕ .= 0
         for (j,r) ∈ pairs(R) 
             φʳ = isequal(r, c.r)
-            φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(φᵉ::Bool, true)
+            φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(s.φ, true)
             φᵈ = isequal(r.iᵈ, d.iⁿ) && !hasslack(d)
             φˢ = φʳ || φᵛ || φᵈ
             if isequal(φˢ, false) continue end
@@ -306,18 +308,18 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
         for (i,c) ∈ pairs(L)
             for k ∈ 1:k̅
                 if iszero(N[i,k]) break end
-                k′ = findfirst(r -> isequal(r.iʳ, N[i,k]), R)
-                r  = R[k′]
+                j = findfirst(r -> isequal(r.iʳ, N[i,k]), R)
+                r = R[j]
                 if isequal(r.iᵛ, v.iᵛ) Y[i,k], N[i,k] = Inf, 0 end
             end
-            k′ = sortperm(Y[i,:])
-            Y[i,:] .= Y[i,k′]
-            N[i,:] .= N[i,k′]
+            K = sortperm(Y[i,:])
+            Y[i,:] .= Y[i,K]
+            N[i,:] .= N[i,K]
         end
         ϕ .= 0
         for (j,r) ∈ pairs(R) 
             φʳ = isequal(r, c.r)
-            φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(φᵉ::Bool, true)
+            φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(s.φ, true)
             φᵈ = isequal(r.iᵈ, d.iⁿ) && !hasslack(d)
             φˢ = φʳ || φᵛ || φᵈ
             if isequal(φˢ, false) continue end
