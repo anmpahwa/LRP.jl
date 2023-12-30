@@ -94,11 +94,6 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         v  = Vehicle(iᵛ, jᵛ, iᵈ, qᵛ, lᵛ, sᵛ, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, τ, n, q, l, πᵈ, πᵗ, πᶠ, Route[])
         push!(d.V, v)
     end
-    V  = [v for d ∈ D for v ∈ d.V]
-    φᵈ = !iszero(getproperty.(D, :tˢ)) || !iszero(getproperty.(D, :tᵉ))
-    φᶜ = !iszero(getproperty.(C, :tᵉ)) || !iszero(getproperty.(C, :tˡ))
-    φᵛ = !iszero(getproperty.(V, :τʷ)) || !iszero(getproperty.(V, :πᵗ))
-    global φᵉ = (φᵈ || φᶜ || φᵛ)::Bool
     G  = (D, C, A)
     return G
 end
