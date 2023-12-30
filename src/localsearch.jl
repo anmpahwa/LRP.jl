@@ -89,6 +89,7 @@ function intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
     D  = s.D
     C  = s.C
     R  = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    m  = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
     Wᶜ = isactive.(C)
     # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
@@ -98,7 +99,6 @@ function intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
         r₁ = c.r
         if isdormant(r₁) continue end
         # Step 2.2: Select a random route
-        m  = sample(rng, φᵉ::Bool ? [:q, :l, :t] : [:q, :l])
         Wʳ = [isdormant(r₂) || isequal(r₁, r₂) ? 0. : relatedness(m, r₁, r₂, s) for r₂ ∈ R]
         r₂ = sample(rng, R, Weights(Wʳ))
         if isdormant(r₂) continue end
@@ -156,6 +156,7 @@ function intraswap!(rng::AbstractRNG, k̅::Int, s::Solution)
     z  = f(s)
     D  = s.D
     C  = s.C
+    m  = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
     W₂ = isactive.(C)
     # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
@@ -163,7 +164,6 @@ function intraswap!(rng::AbstractRNG, k̅::Int, s::Solution)
         # n₁ → n₂ → n₃ and n₄ → n₅ → n₆
         n₂ = sample(rng, C, OffsetWeights(W₂))
         if isdormant(n₂) continue end
-        m  = sample(rng, φᵉ::Bool ? [:q, :l, :t] : [:q, :l])
         W₅ = [isdormant(n₅) || !isequal(n₂.r, n₅.r) || isequal(n₂, n₅) ? 0. : relatedness(m, n₂, n₅, s) for n₅ ∈ C]
         n₅ = sample(rng, C, OffsetWeights(W₅))
         if isdormant(n₅) continue end
@@ -194,7 +194,7 @@ function intraswap!(rng::AbstractRNG, k̅::Int, s::Solution)
         Δ  = z′ - z
         # Step 2.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
         if Δ < 0 z = z′
-        # Step 2.4: Reswap the two customer nodes and go to step 1.1
+        # Step 2.4: Reswap the two customer nodes and go to step 2.1
         else
             # n₁ → n₂ (n₄) → n₃ (n₅) → n₆   ⇒   n₁ → n₃ (n₅) → n₂ (n₄) → n₆
             if isequal(n₃, n₅)
@@ -230,6 +230,7 @@ function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
     z  = f(s)
     D  = s.D
     C  = s.C
+    m  = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
     W₂ = isactive.(C)
     # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
@@ -237,7 +238,6 @@ function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
         # n₁ → n₂ → n₃ and n₄ → n₅ → n₆
         n₂ = sample(rng, C, OffsetWeights(W₂))
         if isdormant(n₂) continue end
-        m  = sample(rng, φᵉ::Bool ? [:q, :l, :t] : [:q, :l])
         W₅ = [isdormant(n₅) || isequal(n₂.r, n₅.r) || isequal(n₂, n₅) ? 0. : relatedness(m, n₂, n₅, s) for n₅ ∈ C]
         n₅ = sample(rng, C, OffsetWeights(W₅))
         if isdormant(n₅) continue end
@@ -268,7 +268,7 @@ function interswap!(rng::AbstractRNG, k̅::Int, s::Solution)
         Δ  = z′ - z
         # Step 2.3: If the swap results in reduction in objective function value then go to step 1, else go to step 1.4
         if Δ < 0 z = z′
-        # Step 2.4: Reswap the two customer nodes and go to step 1.1
+        # Step 2.4: Reswap the two customer nodes and go to step 2.1
         else
             # n₁ → n₂ (n₄) → n₃ (n₅) → n₆   ⇒   n₁ → n₃ (n₅) → n₂ (n₄) → n₆
             if isequal(n₃, n₅)
@@ -391,6 +391,7 @@ function interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
     D  = s.D
     C  = s.C
     R  = [r for d ∈ D for v ∈ d.V for r ∈ v.R]
+    m  = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
     W₂ = [!isopt(r₂) || isdormant(r₂) ? 0 : 1 for r₂ ∈ R]
     # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
@@ -398,7 +399,6 @@ function interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
         # d₂ → ... → n₁ → n₂ → n₃ → ... → d₂ and d₅ → ... → n₄ → n₅ → n₆ → ... → d₅
         r₂ = sample(rng, R, Weights(W₂))
         if !isopt(r₂) || isdormant(r₂) continue end
-        m  = sample(rng, φᵉ::Bool ? [:q, :l, :t] : [:q, :l])
         W₅ = [!isopt(r₅) || isdormant(r₅) || isequal(r₂, r₅)  ? 0. : relatedness(m, r₂, r₅, s) for r₅ ∈ R]
         r₅ = sample(rng, R, Weights(W₅))
         if !isopt(r₅) || isdormant(r₅) continue end
@@ -512,6 +512,7 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
     z  = f(s)
     D  = s.D
     C  = s.C
+    m  = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
     W₁ = isopt.(D)
     # Step 2: Iterate for k̅ iterations
     for _ ∈ 1:k̅
@@ -519,7 +520,6 @@ function swapdepot!(rng::AbstractRNG, k̅::Int, s::Solution)
         d₁ = sample(rng, D, Weights(W₁))
         R₁ = [r₁ for v₁ ∈ d₁.V for r₁ ∈ v₁.R]
         if any(isdormant, R₁) continue end
-        m  = sample(rng, φᵉ::Bool ? [:q, :l, :t] : [:q, :l])
         W₂ = [isequal(d₁, d₂) ? 0. : relatedness(m, d₁, d₂, s) for d₂ ∈ D]
         d₂ = sample(rng, D, Weights(W₂))
         R₂ = [r₂ for v₂ ∈ d₂.V for r₂ ∈ v₂.R]
