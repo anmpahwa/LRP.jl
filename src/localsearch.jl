@@ -402,6 +402,7 @@ function interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
         W₅ = [!isopt(r₅) || isdormant(r₅) || isequal(r₂, r₅)  ? 0. : relatedness(m, r₂, r₅, s) for r₅ ∈ R]
         r₅ = sample(rng, R, Weights(W₅))
         if !isopt(r₅) || isdormant(r₅) continue end
+        if isequal(r₂, r₅) continue end
         d₂ = D[r₂.iᵈ]
         d₅ = D[r₅.iᵈ]
         i  = rand(rng, 1:r₂.n)
