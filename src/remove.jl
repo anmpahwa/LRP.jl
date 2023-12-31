@@ -216,7 +216,7 @@ function relatedroute!(rng::AbstractRNG, q::Int, s::Solution)
     # Step 2: Randomly select a pivot route
     i = sample(rng, eachindex(R), Weights(W))  
     # Step 3: For each route, evaluate relatedness to this pivot route
-    m = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
+    m = sample(rng, s.φ ? [:l, :t] : [:l])
     for iʳ ∈ eachindex(R) X[iʳ] = isone(W[iʳ]) ? relatedness(m, R[iʳ], R[i], s) : -Inf end
     X[i] = Inf
     # Step 4: Remove exactly q customers from most related route to this pivot route
@@ -351,7 +351,7 @@ function relatedvehicle!(rng::AbstractRNG, q::Int, s::Solution)
     # Step 2: Select a random vehicle
     i = sample(rng, eachindex(V), Weights(W))
     # Step 3: For each vehicle, evaluate relatedness to this pivot vehicle
-    m = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
+    m = sample(rng, s.φ ? [:l, :t] : [:l])
     for iᵛ ∈ eachindex(V) X[iᵛ] = isone(W[iᵛ]) ? relatedness(m, V[iᵛ], V[i], s) : -Inf end
     X[i] = Inf
     # Step 4: Remove at least q customers from the most related vehicles to this pivot vehicle

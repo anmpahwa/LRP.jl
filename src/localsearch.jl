@@ -98,7 +98,7 @@ function intermove!(rng::AbstractRNG, k̅::Int, s::Solution)
         r₁ = c.r
         if isdormant(r₁) continue end
         # Step 2.2: Select a random route
-        m  = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
+        m  = sample(rng, s.φ ? [:l, :t] : [:l])
         Wʳ = [isdormant(r₂) || isequal(r₁, r₂) ? 0. : relatedness(m, r₁, r₂, s) for r₂ ∈ R]
         r₂ = sample(rng, R, Weights(Wʳ))
         if isdormant(r₂) continue end
@@ -398,7 +398,7 @@ function interopt!(rng::AbstractRNG, k̅::Int, s::Solution)
         # d₂ → ... → n₁ → n₂ → n₃ → ... → d₂ and d₅ → ... → n₄ → n₅ → n₆ → ... → d₅
         r₂ = sample(rng, R, Weights(W₂))
         if !isopt(r₂) || isdormant(r₂) continue end
-        m  = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
+        m  = sample(rng, s.φ ? [:l, :t] : [:l])
         W₅ = [!isopt(r₅) || isdormant(r₅) || isequal(r₂, r₅) ? 0. : relatedness(m, r₂, r₅, s) for r₅ ∈ R]
         r₅ = sample(rng, R, Weights(W₅))
         if !isopt(r₅) || isdormant(r₅) continue end
