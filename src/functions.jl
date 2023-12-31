@@ -308,7 +308,7 @@ end
 """
     vectorize(s::Solution)
 
-Returns `Solution` as a sequence of nodes in the order of visits.
+Returns `Solution` as a sequence of nodes in the order of visits for every depot, vehicle, and route.
 """
 function vectorize(s::Solution)
     Z = [[[Int[] for r ∈ v.R] for v ∈ d.V] for d ∈ s.D]
