@@ -148,12 +148,14 @@ hasslack(d::DepotNode) = d.q < d.qᵈ
 Returns a measure of similarity between customer nodes `c₁` and `c₂` based on metric `m` in solution `s`.
 """
 function relatedness(m::Symbol, c₁::CustomerNode, c₂::CustomerNode, s::Solution)
-    ϵ = 1e-5
-    φ = 1
-    q = isequal(m, :q) * (abs(c₁.qᶜ - c₂.qᶜ))
-    l = isequal(m, :l) * (s.A[(c₁.iⁿ,c₂.iⁿ)].l)
-    t = isequal(m, :t) * (abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ))
-    z = φ/(q + l + t + ϵ)
+    ϵ  = 1e-5
+    r₁ = c₁.r
+    r₂ = c₂.r
+    φ  = (1 + isequal(r₁, r₂)) / 2
+    q  = isequal(m, :q) * (abs(c₁.qᶜ - c₂.qᶜ))
+    l  = isequal(m, :l) * (s.A[(c₁.iⁿ,c₂.iⁿ)].l)
+    t  = isequal(m, :t) * (abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ))
+    z  = φ/(q + l + t + ϵ)
     return z
 end
 """
