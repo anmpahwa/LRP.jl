@@ -149,10 +149,17 @@ Returns a measure of similarity between customer nodes `c₁` and `c₂` based o
 """
 function relatedness(m::Symbol, c₁::CustomerNode, c₂::CustomerNode, s::Solution)
     ϵ  = 1e-5
+    r₁ = c₁.r
+    r₂ = c₂.r
+    d₁ = s.D[r₁.iᵈ]
+    d₂ = s.D[r₂.iᵈ]
+    v₁ = d₁.V[r₁.iᵛ]
+    v₂ = d₂.V[r₂.iᵛ]
+    φ  = (1 + isequal(d₁,d₂) + isequal(v₁,v₂) + isequal(r₁,r₂)) / 4
     q  = isequal(m, :q) * (abs(c₁.qᶜ - c₂.qᶜ))
     l  = isequal(m, :l) * (s.A[(c₁.iⁿ,c₂.iⁿ)].l)
     t  = isequal(m, :t) * (abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ))
-    z  = 1/(q + l + t + ϵ)
+    z  = φ/(q + l + t + ϵ)
     return z
 end
 """
@@ -166,10 +173,11 @@ function relatedness(m::Symbol, r₁::Route, r₂::Route, s::Solution)
     d₂ = s.D[r₂.iᵈ]
     v₁ = d₁.V[r₁.iᵛ]
     v₂ = d₂.V[r₂.iᵛ]
+    φ  = (1 + isequal(d₁,d₂) + isequal(v₁,v₂)) / 3
     q  = isequal(m, :q) * (1 / abs(r₁.q/v₁.qᵛ - r₂.q/v₂.qᵛ))
     l  = isequal(m, :l) * (sqrt((r₁.x - r₂.x)^2 + (r₁.y - r₂.y)^2))
     t  = isequal(m, :t) * (abs(r₁.tˢ - r₂.tˢ) + abs(r₁.tᵉ - r₂.tᵉ))
-    z  = 1/(q + l + t + ϵ)
+    z  = φ/(q + l + t + ϵ)
     return z
 end
 """
@@ -191,10 +199,13 @@ function relatedness(m::Symbol, v₁::Vehicle, v₂::Vehicle, s::Solution)
         x₂ += r.n * r.x / v₂.n
         y₂ += r.n * r.y / v₂.n
     end
+    d₁ = s.D[v₁.iᵈ]
+    d₂ = s.D[v₂.iᵈ]
+    φ  = (1 + isequal(d₁,d₂)) / 2
     q  = isequal(m, :q) * (1 / abs(v₁.q/(length(v₁.R) * v₁.qᵛ) - v₂.q/(length(v₂.R) * v₂.qᵛ)))
     l  = isequal(m, :l) * (sqrt((x₁ - x₂)^2 + (y₁ - y₂)^2))
     t  = isequal(m, :t) * (abs(v₁.tˢ - v₂.tˢ) + abs(v₁.tᵉ - v₂.tᵉ))
-    z  = 1/(q + l + t + ϵ)
+    z  = φ/(q + l + t + ϵ)
     return z
 end
 """
@@ -204,10 +215,11 @@ Returns a measure of similarity between depot nodes `d₁` and `d₂` based on m
 """
 function relatedness(m::Symbol, d₁::DepotNode, d₂::DepotNode, s::Solution)
     ϵ  = 1e-5
+    φ  = 1
     q  = isequal(m, :q) * (abs(d₁.qᵈ - d₂.qᵈ))
     l  = isequal(m, :l) * (s.A[(d₁.iⁿ, d₂.iⁿ)].l)
     t  = isequal(m, :t) * (abs(d₁.tˢ - d₂.tˢ) + abs(d₁.tᵉ - d₂.tᵉ))
-    z  = 1/(q + l + t + ϵ)
+    z  = φ/(q + l + t + ϵ)
     return z
 end
 
