@@ -359,51 +359,50 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
         end
     end
     # update en-route variables
-    if isequal(φᵉ::Bool, true)
-        s.πᵒ -= (v.tᵉ - v.tˢ) * v.πᵗ
-        s.πᵖ -= (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
-        s.πᵖ -= (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
-        s.πᵖ -= (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
-        tⁱ = d.tˢ
-        θⁱ = 1.
-        for r ∈ v.R
-            if isopt(r)
-                r.θⁱ = θⁱ
-                r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
-                r.tⁱ = tⁱ
-                r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
-                cˢ = s.C[r.iˢ]
-                cᵉ = s.C[r.iᵉ]
-                tᵈ = r.tˢ
-                c  = cˢ
-                while true
-                    s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
-                    c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
-                    c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
-                    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
-                    if isequal(c, cᵉ) break end
-                    tᵈ = c.tᵈ
-                    c  = s.C[c.iʰ]
-                end
-                r.θᵉ = r.θˢ - r.l/v.lᵛ
-                r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
-            else
-                r.θⁱ = θⁱ
-                r.θˢ = θⁱ
-                r.θᵉ = θⁱ
-                r.tⁱ = tⁱ
-                r.tˢ = tⁱ
-                r.tᵉ = tⁱ
+    if isequal(s.φ, false) return s end
+    s.πᵒ -= (v.tᵉ - v.tˢ) * v.πᵗ
+    s.πᵖ -= (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
+    s.πᵖ -= (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
+    s.πᵖ -= (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
+    tⁱ = d.tˢ
+    θⁱ = 1.
+    for r ∈ v.R
+        if isopt(r)
+            r.θⁱ = θⁱ
+            r.θˢ = θⁱ + max(0., (r.l/v.lᵛ - r.θⁱ))
+            r.tⁱ = tⁱ
+            r.tˢ = r.tⁱ + v.τᶠ * (r.θˢ - r.θⁱ) + v.τᵈ * r.q
+            cˢ = s.C[r.iˢ]
+            cᵉ = s.C[r.iᵉ]
+            tᵈ = r.tˢ
+            c  = cˢ
+            while true
+                s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
+                c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
+                c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
+                if isequal(c, cᵉ) break end
+                tᵈ = c.tᵈ
+                c  = s.C[c.iʰ]
             end
-            tⁱ = r.tᵉ
-            θⁱ = r.θᵉ
+            r.θᵉ = r.θˢ - r.l/v.lᵛ
+            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
+        else
+            r.θⁱ = θⁱ
+            r.θˢ = θⁱ
+            r.θᵉ = θⁱ
+            r.tⁱ = tⁱ
+            r.tˢ = tⁱ
+            r.tᵉ = tⁱ
         end
-        (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
-        s.πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
-        s.πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
-        s.πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
-        s.πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
+        tⁱ = r.tᵉ
+        θⁱ = r.θᵉ
     end
+    (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
+    s.πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
+    s.πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
+    s.πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
+    s.πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     return s
 end
 
