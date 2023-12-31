@@ -148,11 +148,12 @@ hasslack(d::DepotNode) = d.q < d.qᵈ
 Returns a measure of similarity between customer nodes `c₁` and `c₂` based on metric `m` in solution `s`.
 """
 function relatedness(m::Symbol, c₁::CustomerNode, c₂::CustomerNode, s::Solution)
-    ϵ  = 1e-5
-    q  = isequal(m, :q) * (abs(c₁.qᶜ - c₂.qᶜ))
-    l  = isequal(m, :l) * (s.A[(c₁.iⁿ,c₂.iⁿ)].l)
-    t  = isequal(m, :t) * (abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ))
-    z  = 1/(q + l + t + ϵ)
+    ϵ = 1e-5
+    φ = 1
+    q = isequal(m, :q) * (abs(c₁.qᶜ - c₂.qᶜ))
+    l = isequal(m, :l) * (s.A[(c₁.iⁿ,c₂.iⁿ)].l)
+    t = isequal(m, :t) * (abs(c₁.tᵉ - c₂.tᵉ) + abs(c₁.tˡ - c₂.tˡ))
+    z = φ/(q + l + t + ϵ)
     return z
 end
 """
@@ -161,11 +162,12 @@ end
 Returns a measure of similarity between routes `r₁` and `r₂` based on metric `m` in solution `s`.
 """
 function relatedness(m::Symbol, r₁::Route, r₂::Route, s::Solution)
-    ϵ  = 1e-5
-    q  = isequal(m, :q) * (0.)
-    l  = isequal(m, :l) * (sqrt((r₁.x - r₂.x)^2 + (r₁.y - r₂.y)^2))
-    t  = isequal(m, :t) * (abs(r₁.tˢ - r₂.tˢ) + abs(r₁.tᵉ - r₂.tᵉ))
-    z  = 1/(q + l + t + ϵ)
+    ϵ = 1e-5
+    φ = 1
+    q = isequal(m, :q) * (0.)
+    l = isequal(m, :l) * (sqrt((r₁.x - r₂.x)^2 + (r₁.y - r₂.y)^2))
+    t = isequal(m, :t) * (abs(r₁.tˢ - r₂.tˢ) + abs(r₁.tᵉ - r₂.tᵉ))
+    z = φ/(q + l + t + ϵ)
     return z
 end
 """
@@ -187,10 +189,11 @@ function relatedness(m::Symbol, v₁::Vehicle, v₂::Vehicle, s::Solution)
         x₂ += r.n * r.x / v₂.n
         y₂ += r.n * r.y / v₂.n
     end
-    q  = isequal(m, :q) * (0.)
-    l  = isequal(m, :l) * (sqrt((x₁ - x₂)^2 + (y₁ - y₂)^2))
-    t  = isequal(m, :t) * (abs(v₁.tˢ - v₂.tˢ) + abs(v₁.tᵉ - v₂.tᵉ))
-    z  = 1/(q + l + t + ϵ)
+    φ = 1
+    q = isequal(m, :q) * (0.)
+    l = isequal(m, :l) * (sqrt((x₁ - x₂)^2 + (y₁ - y₂)^2))
+    t = isequal(m, :t) * (abs(v₁.tˢ - v₂.tˢ) + abs(v₁.tᵉ - v₂.tᵉ))
+    z = φ/(q + l + t + ϵ)
     return z
 end
 """
@@ -199,14 +202,14 @@ end
 Returns a measure of similarity between depot nodes `d₁` and `d₂` based on metric `m` in solution `s`.
 """
 function relatedness(m::Symbol, d₁::DepotNode, d₂::DepotNode, s::Solution)
-    ϵ  = 1e-5
-    q  = isequal(m, :q) * (abs(d₁.qᵈ - d₂.qᵈ))
-    l  = isequal(m, :l) * (s.A[(d₁.iⁿ, d₂.iⁿ)].l)
-    t  = isequal(m, :t) * (abs(d₁.tˢ - d₂.tˢ) + abs(d₁.tᵉ - d₂.tᵉ))
-    z  = 1/(q + l + t + ϵ)
+    ϵ = 1e-5
+    φ = 1
+    q = isequal(m, :q) * (abs(d₁.qᵈ - d₂.qᵈ))
+    l = isequal(m, :l) * (s.A[(d₁.iⁿ, d₂.iⁿ)].l)
+    t = isequal(m, :t) * (abs(d₁.tˢ - d₂.tˢ) + abs(d₁.tᵉ - d₂.tᵉ))
+    z = φ/(q + l + t + ϵ)
     return z
 end
-
 
 
 """
