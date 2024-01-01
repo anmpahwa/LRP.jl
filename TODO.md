@@ -1,4 +1,5 @@
-# TODO LIST
+# TODO
+- Add more comments to insertnode!, removenode!, and movevehicle!
 
 In no particular order
 - Identify and if possible improve order of complexity of local search methods.
