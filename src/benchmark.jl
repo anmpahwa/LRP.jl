@@ -20,8 +20,6 @@ let
     # Dataframes to store solution quality and run time
     df₁ = DataFrame([instances, [zeros(length(instances)) for _ ∈ seeds]...], [iszero(i) ? "instance" : "$(seeds[i])" for i ∈ 0:length(seeds)])
     df₂ = DataFrame([instances, [zeros(length(instances)) for _ ∈ seeds]...], [iszero(i) ? "instance" : "$(seeds[i])" for i ∈ 0:length(seeds)])
-    df₃ = DataFrame([instances, [zeros(length(instances)) for _ ∈ seeds]...], [iszero(i) ? "instance" : "$(seeds[i])" for i ∈ 0:length(seeds)])
-    df₄ = DataFrame([instances, [zeros(length(instances)) for _ ∈ seeds]...], [iszero(i) ? "instance" : "$(seeds[i])" for i ∈ 0:length(seeds)])
     for i ∈ eachindex(instances)
         instance = instances[i]
         # Visualize instance
@@ -108,9 +106,9 @@ let
             println("   Number of routes: $nʳ")
             # Store Results
             df₁[i,j+1] = f(s₂)
-            df₂[i,j+1] = sum((LRP.isopt).(s₂.D))
-            df₃[i,j+1] = sum((LRP.isopt).([v for d ∈ s₂.D for v ∈ d.V]))
-            df₄[i,j+1] = t
+            df₂[i,j+1] = t
+            println(df₁)
+            println(df₂)
         end
     end
     return
