@@ -54,19 +54,6 @@ let
         θ   =   0.9985                  ,
         ρ   =   0.1
     );
-     # Vehicle Routing Problem
-     @testset "VRP" begin
-        instances = ["m-n101-k10", "tai150a", "cmt10"]
-        for instance ∈ instances
-            visualize(instance)
-            println(instance)
-            s₁ = initialize(instance)
-            s₂ = ALNS(χ, s₁)
-            visualize(s₂)
-            @test isfeasible(s₂)
-            @test f(s₂) ≤ f(s₁)
-        end
-    end
     # Vehicle Routing Problem with time-windows
     @testset "VRPTW" begin
         instances = ["r101", "c101", "rc101"]

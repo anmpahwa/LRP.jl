@@ -6,17 +6,15 @@ using DataFrames
 
 let
     # Set A
-    A = ["m-n101-k10", "tai150a", "cmt10", "x-n251-k28", "x-n303-k21"]
+    A = ["r101", "r201", "c101", "c201", "rc101", "rc201"]
     # Set B
-    B = ["r101", "r201", "c101", "c201", "rc101", "rc201"]
+    B = ["prins20-5-1", "gaskell36-5", "prins50-5-1b", "daskin88-8"];
     # Set C
-    C = ["prins20-5-1", "gaskell36-5", "prins50-5-1b", "daskin88-8"];
+    C = ["prins100-5-2", "prins100-10-2b", "christofides100-10"]
     # Set D
-    D = ["prins100-5-2", "prins100-10-2b", "christofides100-10"]
-    # Set E
-    E = ["min134-8", "daskin150-10", "prins200-10-3"] 
+    D = ["min134-8", "daskin150-10", "prins200-10-3"] 
     # Define instances
-    instances = [A..., B..., C..., D..., E...]
+    instances = [A..., B..., C..., D...]
     # Define random number generators
     seeds = [1010, 1106, 1509, 1604, 1905, 2104, 2412, 2703, 2710, 2807]
     # Dataframes to store solution quality and run time
