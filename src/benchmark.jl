@@ -6,7 +6,7 @@ using DataFrames
 
 let
     # Set A
-    A = ["r101", "r201", "c101", "c201", "rc101", "rc201"]
+    A = ["c101", "c201", "r101", "r201", "rc101", "rc201"]
     # Set B
     B = ["prins20-5-1", "gaskell36-5", "prins50-5-1b", "daskin88-8"];
     # Set C
