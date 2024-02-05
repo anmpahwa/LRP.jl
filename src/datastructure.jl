@@ -98,7 +98,7 @@ fixed cost `πᶠ`, operations mandate `φ`, and fleet of vehicles `V`.
 mutable struct DepotNode <: Node
     iⁿ::Int                                                                         # Depot node index
     x::Float64                                                                      # Location on the x-axis
-    y::Float64                                                                      # Locationocation in the y-axis
+    y::Float64                                                                      # Location in the y-axis
     qᵈ::Float64                                                                     # Capacity
     tˢ::Float64                                                                     # Working-hours start time
     tᵉ::Float64                                                                     # Working-hours end time
