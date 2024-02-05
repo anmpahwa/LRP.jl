@@ -165,9 +165,9 @@ function greedy!(rng::AbstractRNG, s::Solution; mode::Symbol)
         nʰ = iʰ ≤ lastindex(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
         # Step 2.3: Revise vectors appropriately
+        ϕ .= 0
         X[i,:] .= Inf
         P[i,:] .= ((0, 0), )
-        ϕ .= 0
         for (j,r) ∈ pairs(R) 
             φʳ = isequal(r, c.r)
             φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(s.φ, true)
@@ -304,11 +304,12 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
         nʰ = iʰ ≤ lastindex(D) ? D[iʰ] : C[iʰ]
         insertnode!(c, nᵗ, nʰ, r, s)
         # Step 2.3: Revise vectors appropriately
+        ϕ .= 0
+        Z .= -Inf 
         X[i,:] .= Inf
         P[i,:] .= ((0, 0), )
         Y[i,:] .= Inf
         N[i,:] .= 0
-        Z .= -Inf 
         for (i,c) ∈ pairs(L)
             for k ∈ 1:k̅
                 if iszero(N[i,k]) break end
@@ -320,7 +321,6 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
             Y[i,:] .= Y[i,K]
             N[i,:] .= N[i,K]
         end
-        ϕ .= 0
         for (j,r) ∈ pairs(R) 
             φʳ = isequal(r, c.r)
             φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(s.φ, true)

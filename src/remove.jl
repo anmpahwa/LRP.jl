@@ -142,8 +142,8 @@ function worstcustomer!(rng::AbstractRNG, q::Int, s::Solution)
         removenode!(c, nᵗ, nʰ, r, s)
         n += 1
         # Step 2.3: Update cost and selection weight vectors
-        X[i] = -Inf
         ϕ .= 0
+        X[i] = -Inf
         for (j,r) ∈ pairs(R) 
             φʳ = isequal(r, c.r)
             φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(s.φ, true)
