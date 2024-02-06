@@ -316,8 +316,8 @@ function randomvehicle!(rng::AbstractRNG, q::Int, s::Solution)
         d  = D[v.iᵈ]
         for r ∈ v.R
             if n ≥ q break end
-            if !isopt(r) || isdormant(r) continue end
             while true
+                if !isopt(r) || isdormant(r) break end
                 nᵗ = d
                 c  = C[r.iˢ]
                 nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ] 
@@ -364,8 +364,8 @@ function relatedvehicle!(rng::AbstractRNG, q::Int, s::Solution)
         d  = D[v.iᵈ] 
         for r ∈ v.R
             if n ≥ q break end
-            if !isopt(r) || isdormant(r) continue end
             while true
+                if !isopt(r) || isdormant(r) break end
                 nᵗ = d
                 c  = C[r.iˢ]
                 nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -407,8 +407,8 @@ function worstvehicle!(rng::AbstractRNG, q::Int, s::Solution)
         d  = D[v.iᵈ]
         for r ∈ v.R
             if n ≥ q break end
-            if !isopt(r) || isdormant(r) continue end
             while true
+                if !isopt(r) || isdormant(r) break end
                 nᵗ = d
                 c  = C[r.iˢ]
                 nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -448,8 +448,8 @@ function randomdepot!(rng::AbstractRNG, q::Int, s::Solution)
         for v ∈ d.V
             if n ≥ q break end
             for r ∈ v.R
-                if !isopt(r) || isdormant(r) continue end
                 while true
+                    if !isopt(r) || isdormant(r) break end
                     nᵗ = d
                     c  = C[r.iˢ]
                     nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -495,8 +495,8 @@ function relateddepot!(rng::AbstractRNG, q::Int, s::Solution)
         for v ∈ d.V
             if n ≥ q break end
             for r ∈ v.R
-                if !isopt(r) || isdormant(r) continue end
                 while true
+                    if !isopt(r) || isdormant(r) break end
                     nᵗ = d
                     c  = C[r.iˢ]
                     nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
@@ -538,8 +538,8 @@ function worstdepot!(rng::AbstractRNG, q::Int, s::Solution)
         for v ∈ d.V
             if n ≥ q break end
             for r ∈ v.R
-                if !isopt(r) || isdormant(r) continue end
                 while true
+                    if !isopt(r) || isdormant(r) break end
                     nᵗ = d
                     c  = C[r.iˢ]
                     nʰ = isequal(r.iᵉ, c.iⁿ) ? D[c.iʰ] : C[c.iʰ]
