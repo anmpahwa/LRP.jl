@@ -120,6 +120,7 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     # update associated customer nodes
     s.πᶠ -= 0.
     s.πᵒ -= 0.
+    s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
     c.iʳ  = 0
     c.iᵛ  = 0
     c.iᵈ  = 0
@@ -127,9 +128,12 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     isdepot(nʰ) ? r.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
     c.iʰ  = 0
     c.iᵗ  = 0
+    c.tᵃ  = 0.
+    c.tᵈ  = 0.
     c.r   = NullRoute
     s.πᶠ += 0.
     s.πᵒ += 0.
+    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
     s.πᵖ += c.qᶜ
     # update associated route
     s.πᶠ -= 0.
@@ -172,10 +176,6 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     tᵒ = r.tⁱ
     tⁱ = r.tⁱ
     θⁱ = r.θⁱ
-    s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
-    c.tᵃ = 0.
-    c.tᵈ = 0.
-    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
     for r ∈ v.R
         if r.tⁱ < tᵒ continue end
         if isopt(r)
