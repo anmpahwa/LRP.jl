@@ -243,7 +243,7 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
     J = eachindex(R)
     X = ElasticMatrix(fill(Inf, (I,J)))     # X[i,j]  : insertion cost of customer node L[i] at best position in route R[j]
     Y = ElasticArray(fill(Inf, (k̅,I,J)))    # Y[k,i,j]: insertion cost of customer node L[i] at kᵗʰ best position in route R[j]
-    Z = fill(-Inf, I)                       # Z[i]    : regret-k cost of customer node L[i]
+    Z = fill(0., I)                         # Z[i]    : regret-k cost of customer node L[i]
     P = ElasticMatrix(fill((0, 0), (I,J)))  # P[i,j]  : best insertion postion of customer node L[i] in route R[j]
     ϕ = ones(Int, J)                        # ϕ[j]    : binary weight for route R[j]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
@@ -281,7 +281,6 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
             end
             # Step 2.1.2: Compute regret cost for customer node c
             U = sort(vec(Y[:,i,:]))
-            Z[i] = 0.
             for k ∈ 1:k̅ Z[i] += U[k] - U[1] end
         end
         # Step 2.2: Insert customer node with highest regret cost in its best position (break ties by inserting the node with the lowest insertion cost)
@@ -299,7 +298,7 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
         insertnode!(c, nᵗ, nʰ, r, s)
         # Step 2.3: Revise vectors appropriately
         ϕ .= 0
-        Z .= -Inf 
+        Z .= 0.
         X[i,:] .= Inf
         Y[:,i,:] .= Inf
         P[i,:] .= ((0, 0), )
