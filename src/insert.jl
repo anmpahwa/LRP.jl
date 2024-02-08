@@ -246,7 +246,7 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
     Y = fill(Inf, (I,k̅))                    # Y[i,k]: insertion cost of customer node L[i] at kᵗʰ best position
     ϕ = ones(Int, J)                        # ϕ[j]  : binary weight for route R[j]
     N = zeros(Int, (I,k̅))                   # N[i,k]: route index of customer node L[j] at kᵗʰ best position
-    Z = fill(-Inf, I)                       # Z[i]  : regret-N cost of customer node L[i]
+    Z = fill(-Inf, I)                       # Z[i]  : regret-k cost of customer node L[i]
     # Step 2: Iterate until all open customer nodes have been inserted into the route
     for _ ∈ I
         # Step 2.1: Iterate through all open customer nodes and every route
@@ -269,7 +269,7 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
                     Δ  = z′ - z
                     # Step 2.1.1.3: Revise least insertion cost in route r and the corresponding best insertion position in route r
                     if Δ < X[i,j] X[i,j], P[i,j] = Δ, (nᵗ.iⁿ, nʰ.iⁿ) end
-                    # Step 2.1.1.4: Revise N least insertion costs
+                    # Step 2.1.1.4: Revise k least insertion costs
                     k̲ = 1
                     for k ∈ 1:k̅ 
                         k̲ = k
@@ -277,7 +277,7 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
                     end
                     for k ∈ k̅:-1:k̲ 
                         Y[i,k] = isequal(k, k̲) ? Δ : Y[i,k-1]
-                        N[i,k] = isequal(k, k̲) ? r.iʳ : N[i,k-1]
+                        N[i,k] = isequal(k, k̲) ? j : N[i,k-1]
                     end
                     # Step 2.1.1.5: Remove customer node c from its position between tail node nᵗ and head node nʰ in route r
                     removenode!(c, nᵗ, nʰ, r, s)
@@ -310,17 +310,6 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
         P[i,:] .= ((0, 0), )
         Y[i,:] .= Inf
         N[i,:] .= 0
-        for (i,c) ∈ pairs(L)
-            for k ∈ 1:k̅
-                if iszero(N[i,k]) break end
-                j = findfirst(r -> isequal(r.iʳ, N[i,k]), R)
-                r = R[j]
-                if isequal(r.iᵛ, v.iᵛ) Y[i,k], N[i,k] = Inf, 0 end
-            end
-            K = sortperm(Y[i,:])
-            Y[i,:] .= Y[i,K]
-            N[i,:] .= N[i,K]
-        end
         for (j,r) ∈ pairs(R) 
             φʳ = isequal(r, c.r)
             φᵛ = isequal(r.iᵛ, v.iᵛ) && isless(c.r.tⁱ, r.tⁱ) && isequal(s.φ, true)
@@ -330,6 +319,18 @@ function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
             X[:,j] .= Inf
             P[:,j] .= ((0, 0), )
             ϕ[j] = 1  
+        end
+        for (i,c) ∈ pairs(L)
+            if !isopen(c) continue end
+            for k ∈ 1:k̅
+                j = N[i,k]
+                if iszero(ϕ[j]) continue end
+                Y[i,k] = Inf
+                N[i,k] = 0
+            end
+            K = sortperm(Y[i,:])
+            Y[i,:] .= Y[i,K]
+            N[i,:] .= N[i,K]
         end
         # Step 2.4: Update solution appropriately     
         if addroute(r, s)
