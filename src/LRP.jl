@@ -11,11 +11,6 @@ using ProgressMeter
 using Random
 using StatsBase
 
-ElasticArrays.ElasticMatrix(A::OffsetMatrix) = OffsetMatrix(ElasticArray(A), A.offsets)
-Base.append!(A::OffsetMatrix, items) = (append!(A.parent, items); A)
-
-global φᵉ = false::Bool
-
 include("sample.jl")
 include("datastructure.jl")
 include("functions.jl")
