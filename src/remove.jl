@@ -391,15 +391,16 @@ Returns solution `s` after removing at least `q` customer
 nodes from routes of low-utilization vehicles.
 """
 function worstvehicle!(rng::AbstractRNG, q::Int, s::Solution)
+    # Step 1: Initialize
     preremove!(s)
     D = s.D
     C = s.C
     V = [v for d ∈ D for v ∈ d.V]
     X = fill(Inf, eachindex(V))     # X[iᵛ]: utilization of vehicle V[iᵛ]
     W = isopt.(V)                   # W[iᵛ]: selection weight for vehicle V[iᵛ]
-    # Step 1: Evaluate utilization for each vehicle
+    # Step 2: Evaluate utilization for each vehicle
     for (iᵛ,v) ∈ pairs(V) X[iᵛ] = isone(W[iᵛ]) ? v.q/(length(v.R) * v.qᵛ) : Inf end
-    # Step 2: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
+    # Step 3: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
     n = 0
     while n < q
         iᵛ = argmin(X)
@@ -421,7 +422,7 @@ function worstvehicle!(rng::AbstractRNG, q::Int, s::Solution)
         W[iᵛ] = 0
     end
     postremove!(s)
-    # Step 3: Return solution
+    # Step 4: Return solution
     return s
 end
 
@@ -436,11 +437,12 @@ removing customer nodes from its routes until at least `q` customer nodes
 are removed.
 """
 function randomdepot!(rng::AbstractRNG, q::Int, s::Solution)
+    # Step 1: Initialize
     preremove!(s)
     D = s.D
     C = s.C
     W = isopt.(D)                   # W[iᵈ]: selection weight for depot node D[iᵈ]
-    # Step 1: Iteratively select a random depot and remove customer nodes from it until at least q customer nodes are removed
+    # Step 2: Iteratively select a random depot and remove customer nodes from it until at least q customer nodes are removed
     n = 0
     while n < q
         iᵈ = sample(rng, eachindex(D), Weights(W))
@@ -462,7 +464,7 @@ function randomdepot!(rng::AbstractRNG, q::Int, s::Solution)
         W[iᵈ] = 0
     end
     postremove!(s)
-    # Step 2: Return solution
+    # Step 3: Return solution
     return s
 end
 
@@ -476,18 +478,19 @@ from the routes of the depots most related to a randomly selected
 pivot depot node.
 """
 function relateddepot!(rng::AbstractRNG, q::Int, s::Solution)
+    # Step 1: Initialize
     preremove!(s)
     D = s.D
     C = s.C
     X = fill(-Inf, eachindex(D))    # X[iᵛ]: relatedness of depot node D[iⁿ] with pivot depot node D[i]
     W = isclose.(D)                 # W[iᵈ]: selection weight for depot node D[iᵈ]
-    # Step 1: Select a random closed depot node
+    # Step 2: Select a random closed depot node
     i = sample(rng, eachindex(D), Weights(W))
-    # Step 2: Evaluate relatedness of this depot node to every depot node
+    # Step 3: Evaluate relatedness of this depot node to every depot node
     m = sample(rng, s.φ ? [:q, :l, :t] : [:q, :l])
     for iᵈ ∈ eachindex(D) X[iᵈ] = iszero(W[iᵈ]) ? relatedness(m, D[iᵈ], D[i], s) : -Inf end
     X[i] = Inf
-    # Step 3: Remove at least q customer nodes most related to this pivot depot node
+    # Step 4: Remove at least q customer nodes most related to this pivot depot node
     n = 0
     while n < q
         iᵈ = argmax(X)
@@ -510,7 +513,7 @@ function relateddepot!(rng::AbstractRNG, q::Int, s::Solution)
         W[iᵈ] = 0
     end
     postremove!(s)
-    # Step 4: Return solution
+    # Step 5: Return solution
     return s
 end
 
@@ -523,14 +526,15 @@ Returns solution `s` after removing at least `q` customer
 nodes from routes of low-utilization depot nodes.
 """
 function worstdepot!(rng::AbstractRNG, q::Int, s::Solution)
+    # Step 1: Initialize
     preremove!(s)
     D = s.D
     C = s.C
     X = fill(Inf, eachindex(D))     # X[iᵈ]: utilization of vehicle D[iᵈ]
     W = isopt.(D)                   # W[iᵈ]: selection weight for vehicle D[iᵈ]
-    # Step 1: Evaluate utilization for each depot
+    # Step 2: Evaluate utilization for each depot
     for (iᵈ,d) ∈ pairs(D) X[iᵈ] = isone(W[iᵈ]) ? d.q/d.qᵈ : Inf end
-    # Step 2: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
+    # Step 3: Iteratively select low-utilization route and remove customer nodes from it until at least q customer nodes are removed
     n = 0
     while n < q
         iᵈ = argmin(X)
@@ -553,6 +557,6 @@ function worstdepot!(rng::AbstractRNG, q::Int, s::Solution)
         W[iᵈ] = 0
     end
     postremove!(s)
-    # Step 3: Return solution
+    # Step 4: Return solution
     return s
 end
