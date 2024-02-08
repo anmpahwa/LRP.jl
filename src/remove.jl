@@ -395,7 +395,7 @@ function worstvehicle!(rng::AbstractRNG, q::Int, s::Solution)
     D = s.D
     C = s.C
     V = [v for d ∈ D for v ∈ d.V]
-    X = fill(Inf, eachindex(V))     # X[iʳ]: utilization of vehicle V[iᵛ]
+    X = fill(Inf, eachindex(V))     # X[iᵛ]: utilization of vehicle V[iᵛ]
     W = isopt.(V)                   # W[iᵛ]: selection weight for vehicle V[iᵛ]
     # Step 1: Evaluate utilization for each vehicle
     for (iᵛ,v) ∈ pairs(V) X[iᵛ] = isone(W[iᵛ]) ? v.q/(length(v.R) * v.qᵛ) : Inf end
