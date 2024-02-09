@@ -226,25 +226,35 @@ Returns solution `s` after moving vehicle `v` from fleet of `d₁` into fleet
 of depot node `d₂`.
 """
 function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
-    # remove vehicle from d₁
-    d = d₁
-    deleteat!(d.V, findfirst(isequal(v), d.V))
-    v.iᵈ = 0
+    deleteat!(d₁.V, findfirst(isequal(v), d₁.V))
+    push!(d₂.V, v)
+    v.iᵈ = d₂.iⁿ
     for r ∈ v.R
         if isopt(r)
-            nᵗ = s.C[r.iᵉ]
-            nʰ = s.C[r.iˢ]
-            aᵒ = s.A[(nᵗ.iⁿ, nʰ.iⁿ)]
-            aᵗ = s.A[(nᵗ.iⁿ, d.iⁿ)]
-            aʰ = s.A[(d.iⁿ, nʰ.iⁿ)]
+            nᵗ  = s.C[r.iᵉ]
+            nʰ  = s.C[r.iˢ]
+            aᵗ₁ = s.A[(nᵗ.iⁿ, d₁.iⁿ)]
+            aᵗ₂ = s.A[(nᵗ.iⁿ, d₂.iⁿ)]
+            aʰ₁ = s.A[(d₁.iⁿ, nʰ.iⁿ)]
+            aʰ₂ = s.A[(d₂.iⁿ, nʰ.iⁿ)]
+            # update depot d₁
+            s.πᶠ -= isopt(d₁) ? d₁.πᶠ : 0.
+            s.πᵒ -= d₁.q * d₁.πᵒ
+            s.πᵖ -= (d₁.q > d₁.qᵈ) * (d₁.q - d₁.qᵈ)
+            d₁.n -= r.n
+            d₁.q -= r.q
+            d₁.l -= r.l
+            s.πᶠ += isopt(d₁) ? d₁.πᶠ : 0.
+            s.πᵒ += d₁.q * d₁.πᵒ
+            s.πᵖ += (d₁.q > d₁.qᵈ) * (d₁.q - d₁.qᵈ)
             # update associated customer nodes
-            nᵗ.iʰ = nʰ.iⁿ
-            nʰ.iᵗ = nᵗ.iⁿ
+            nᵗ.iʰ = d₂.iⁿ
+            nʰ.iᵗ = d₂.iⁿ
             cˢ = nʰ
             cᵉ = nᵗ
             c  = cˢ
             while true
-                c.iᵈ = 0
+                c.iᵈ = d₂.iⁿ
                 if isequal(c, cᵉ) break end
                 c = s.C[c.iʰ]
             end
@@ -253,10 +263,11 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             s.πᵒ -= r.l * v.πᵈ
             s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ)
             s.πᵖ -= (r.l > v.lᵛ) * (r.l - v.lᵛ)
-            r.iᵈ  = 0
+            r.iᵈ  = d₂.iⁿ
             r.iˢ  = nʰ.iⁿ
             r.iᵉ  = nᵗ.iⁿ
-            r.l  -= aᵗ.l + aʰ.l - aᵒ.l
+            r.l  -= aᵗ₁.l + aʰ₁.l
+            r.l  += aᵗ₂.l + aʰ₂.l
             s.πᶠ += 0.
             s.πᵒ += r.l * v.πᵈ
             s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)
@@ -264,65 +275,41 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             # update associated vehicle
             s.πᶠ -= isopt(v) ? v.πᶠ : 0.
             s.πᵖ -= (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
-            v.l  -= aᵗ.l + aʰ.l - aᵒ.l
+            v.l  -= aᵗ₁.l + aʰ₁.l
+            v.l  += aᵗ₂.l + aʰ₂.l
             s.πᶠ += isopt(v) ? v.πᶠ : 0.
             s.πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
-            # update associated depot
-            s.πᶠ -= isopt(d) ? d.πᶠ : 0.
-            s.πᵒ -= d.q * d.πᵒ
-            s.πᵖ -= (d.q > d.qᵈ) * (d.q - d.qᵈ)
-            d.n  -= r.n
-            d.q  -= r.q
-            d.l  -= aᵗ.l + aʰ.l - aᵒ.l
-            s.πᶠ += isopt(d) ? d.πᶠ : 0.
-            s.πᵒ += d.q * d.πᵒ
-            s.πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)
+            # update depot d₂
+            s.πᶠ -= isopt(d₂) ? d₂.πᶠ : 0.
+            s.πᵒ -= d₂.q * d₂.πᵒ
+            s.πᵖ -= (d₂.q > d₂.qᵈ) * (d₂.q - d₂.qᵈ)
+            d₂.n += r.n
+            d₂.q += r.q
+            d₂.l += r.l
+            s.πᶠ += isopt(d₂) ? d₂.πᶠ : 0.
+            s.πᵒ += d₂.q * d₂.πᵒ
+            s.πᵖ += (d₂.q > d₂.qᵈ) * (d₂.q - d₂.qᵈ)
         else
+            # update depot d₁
+            s.πᶠ -= isopt(d₁) ? d₁.πᶠ : 0.
+            s.πᵒ -= d₁.q * d₁.πᵒ
+            s.πᵖ -= (d₁.q > d₁.qᵈ) * (d₁.q - d₁.qᵈ)
+            d₁.n -= r.n
+            d₁.q -= r.q
+            d₁.l -= r.l
+            s.πᶠ += isopt(d₁) ? d₁.πᶠ : 0.
+            s.πᵒ += d₁.q * d₁.πᵒ
+            s.πᵖ += (d₁.q > d₁.qᵈ) * (d₁.q - d₁.qᵈ)
             # update associated route
             s.πᶠ -= 0.
             s.πᵒ -= r.l * v.πᵈ
             s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ)
             s.πᵖ -= (r.l > v.lᵛ) * (r.l - v.lᵛ)
-            r.iᵈ  = 0
-            r.iˢ  = 0
-            r.iᵉ  = 0
-            s.πᶠ += 0.
-            s.πᵒ += r.l * v.πᵈ
-            s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)
-            s.πᵖ += (r.l > v.lᵛ) * (r.l - v.lᵛ)
-        end
-    end
-    # add vehicle to d₂
-    d = d₂
-    push!(d.V, v)
-    v.iᵈ = d.iⁿ
-    for r ∈ v.R
-        if isopt(r)
-            nᵗ = s.C[r.iᵉ]
-            nʰ = s.C[r.iˢ]
-            aᵒ = s.A[(nᵗ.iⁿ, nʰ.iⁿ)]
-            aᵗ = s.A[(nᵗ.iⁿ, d.iⁿ)]
-            aʰ = s.A[(d.iⁿ, nʰ.iⁿ)]
-            # update associated customer nodes
-            nᵗ.iʰ = d.iⁿ
-            nʰ.iᵗ = d.iⁿ
-            cˢ = nʰ
-            cᵉ = nᵗ
-            c  = cˢ
-            while true
-                c.iᵈ = d.iⁿ
-                if isequal(c, cᵉ) break end
-                c = s.C[c.iʰ]
-            end
-            # update associated route
-            s.πᶠ -= 0.
-            s.πᵒ -= r.l * v.πᵈ
-            s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ)
-            s.πᵖ -= (r.l > v.lᵛ) * (r.l - v.lᵛ)
-            r.iᵈ  = d.iⁿ
-            r.iˢ  = nʰ.iⁿ
-            r.iᵉ  = nᵗ.iⁿ
-            r.l  += aᵗ.l + aʰ.l - aᵒ.l
+            r.iᵈ  = d₂.iⁿ
+            r.iˢ  = d₂.iⁿ
+            r.iᵉ  = d₂.iⁿ
+            r.l  -= 0.
+            r.l  += 0.
             s.πᶠ += 0.
             s.πᵒ += r.l * v.πᵈ
             s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)
@@ -330,41 +317,29 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             # update associated vehicle
             s.πᶠ -= isopt(v) ? v.πᶠ : 0.
             s.πᵖ -= (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
-            v.l  += aᵗ.l + aʰ.l - aᵒ.l
+            v.l  -= 0.
+            v.l  += 0.
             s.πᶠ += isopt(v) ? v.πᶠ : 0.
             s.πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
-            # update associated depot
-            s.πᶠ -= isopt(d) ? d.πᶠ : 0.
-            s.πᵒ -= d.q * d.πᵒ
-            s.πᵖ -= (d.q > d.qᵈ) * (d.q - d.qᵈ)
-            d.n  += r.n
-            d.q  += r.q
-            d.l  += aᵗ.l + aʰ.l - aᵒ.l
-            s.πᶠ += isopt(d) ? d.πᶠ : 0.
-            s.πᵒ += d.q * d.πᵒ
-            s.πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)
-        else
-            # update associated route
-            s.πᶠ -= 0.
-            s.πᵒ -= r.l * v.πᵈ
-            s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ)
-            s.πᵖ -= (r.l > v.lᵛ) * (r.l - v.lᵛ)
-            r.iᵈ  = d.iⁿ
-            r.iˢ  = d.iⁿ
-            r.iᵉ  = d.iⁿ
-            s.πᶠ += 0.
-            s.πᵒ += r.l * v.πᵈ
-            s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)
-            s.πᵖ += (r.l > v.lᵛ) * (r.l - v.lᵛ)
+            # update depot d₂
+            s.πᶠ -= isopt(d₂) ? d₂.πᶠ : 0.
+            s.πᵒ -= d₂.q * d₂.πᵒ
+            s.πᵖ -= (d₂.q > d₂.qᵈ) * (d₂.q - d₂.qᵈ)
+            d₂.n += r.n
+            d₂.q += r.q
+            d₂.l += r.l
+            s.πᶠ += isopt(d₂) ? d₂.πᶠ : 0.
+            s.πᵒ += d₂.q * d₂.πᵒ
+            s.πᵖ += (d₂.q > d₂.qᵈ) * (d₂.q - d₂.qᵈ)
         end
     end
     # update en-route variables
     if isequal(s.φ, false) return s end
     s.πᵒ -= (v.tᵉ - v.tˢ) * v.πᵗ
-    s.πᵖ -= (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
-    s.πᵖ -= (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
+    s.πᵖ -= (d₁.tˢ > v.tˢ) * (d₁.tˢ - v.tˢ)
+    s.πᵖ -= (v.tᵉ > d₁.tᵉ) * (v.tᵉ - d₁.tᵉ)
     s.πᵖ -= (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
-    tⁱ = d.tˢ
+    tⁱ = d₂.tˢ
     θⁱ = 1.
     for r ∈ v.R
         if isopt(r)
@@ -386,7 +361,7 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
                 c  = s.C[c.iʰ]
             end
             r.θᵉ = r.θˢ - r.l/v.lᵛ
-            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d.iⁿ)].l/v.sᵛ
+            r.tᵉ = cᵉ.tᵈ + s.A[(cᵉ.iⁿ, d₂.iⁿ)].l/v.sᵛ
         else
             r.θⁱ = θⁱ
             r.θˢ = θⁱ
@@ -398,10 +373,10 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
         tⁱ = r.tᵉ
         θⁱ = r.θᵉ
     end
-    (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
+    (v.tˢ, v.tᵉ) = isempty(v.R) ? (d₂.tˢ, d₂.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
     s.πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
-    s.πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
-    s.πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
+    s.πᵖ += (d₂.tˢ > v.tˢ) * (d₂.tˢ - v.tˢ)
+    s.πᵖ += (v.tᵉ > d₂.tᵉ) * (v.tᵉ - d₂.tᵉ)
     s.πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     return s
 end
