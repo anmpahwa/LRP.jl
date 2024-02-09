@@ -290,47 +290,9 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             s.πᵒ += d₂.q * d₂.πᵒ
             s.πᵖ += (d₂.q > d₂.qᵈ) * (d₂.q - d₂.qᵈ)
         else
-            # update depot d₁
-            s.πᶠ -= isopt(d₁) ? d₁.πᶠ : 0.
-            s.πᵒ -= d₁.q * d₁.πᵒ
-            s.πᵖ -= (d₁.q > d₁.qᵈ) * (d₁.q - d₁.qᵈ)
-            d₁.n -= r.n
-            d₁.q -= r.q
-            d₁.l -= r.l
-            s.πᶠ += isopt(d₁) ? d₁.πᶠ : 0.
-            s.πᵒ += d₁.q * d₁.πᵒ
-            s.πᵖ += (d₁.q > d₁.qᵈ) * (d₁.q - d₁.qᵈ)
-            # update associated route
-            s.πᶠ -= 0.
-            s.πᵒ -= r.l * v.πᵈ
-            s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ)
-            s.πᵖ -= (r.l > v.lᵛ) * (r.l - v.lᵛ)
-            r.iᵈ  = d₂.iⁿ
-            r.iˢ  = d₂.iⁿ
-            r.iᵉ  = d₂.iⁿ
-            r.l  -= 0.
-            r.l  += 0.
-            s.πᶠ += 0.
-            s.πᵒ += r.l * v.πᵈ
-            s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)
-            s.πᵖ += (r.l > v.lᵛ) * (r.l - v.lᵛ)
-            # update associated vehicle
-            s.πᶠ -= isopt(v) ? v.πᶠ : 0.
-            s.πᵖ -= (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
-            v.l  -= 0.
-            v.l  += 0.
-            s.πᶠ += isopt(v) ? v.πᶠ : 0.
-            s.πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
-            # update depot d₂
-            s.πᶠ -= isopt(d₂) ? d₂.πᶠ : 0.
-            s.πᵒ -= d₂.q * d₂.πᵒ
-            s.πᵖ -= (d₂.q > d₂.qᵈ) * (d₂.q - d₂.qᵈ)
-            d₂.n += r.n
-            d₂.q += r.q
-            d₂.l += r.l
-            s.πᶠ += isopt(d₂) ? d₂.πᶠ : 0.
-            s.πᵒ += d₂.q * d₂.πᵒ
-            s.πᵖ += (d₂.q > d₂.qᵈ) * (d₂.q - d₂.qᵈ)
+            r.iᵈ = d₂.iⁿ
+            r.iˢ = d₂.iⁿ
+            r.iᵉ = d₂.iⁿ
         end
     end
     # update en-route variables
