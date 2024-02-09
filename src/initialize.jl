@@ -9,8 +9,8 @@ as follows,
     <dir>
     |-<instance>
         |-arcs.csv
-        |-depot_nodes.csv
         |-customer_nodes.csv
+        |-depot_nodes.csv
         |-vehicles.csv
 """
 function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
@@ -36,7 +36,7 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
     end
     # Customer nodes
     df = DataFrame(CSV.File(joinpath(dir, "$instance/customer_nodes.csv")))
-    I  = (df[1,1]:df[nrow(df),1])
+    I  = (df[1,1]:df[nrow(df),1])::UnitRange{Int64}
     C  = OffsetVector{CustomerNode}(undef, I)
     for k ∈ 1:nrow(df)
         iⁿ = df[k,1]
@@ -116,8 +116,8 @@ as follows,
     <dir>
     |-<instance>
         |-arcs.csv
-        |-depot_nodes.csv
         |-customer_nodes.csv
+        |-depot_nodes.csv
         |-vehicles.csv
 """
 function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
@@ -244,8 +244,8 @@ as follows,
     <dir>
     |-<instance>
         |-arcs.csv
-        |-depot_nodes.csv
         |-customer_nodes.csv
+        |-depot_nodes.csv
         |-vehicles.csv
 
 Optionally specify a random number generator `rng` as the first argument
