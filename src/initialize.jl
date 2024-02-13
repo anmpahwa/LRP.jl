@@ -34,6 +34,33 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         d  = DepotNode(iⁿ, x, y, qᵈ, tˢ, tᵉ, τ, n, q, l, πᵒ, πᶠ, φ, Vehicle[])
         D[iⁿ] = d
     end
+    # Vehicles
+    df = DataFrame(CSV.File(joinpath(dir, "$instance/vehicles.csv")))
+    for k ∈ 1:nrow(df)
+        d  = D[df[k,3]]
+        iᵛ = df[k,1]
+        jᵛ = df[k,2]
+        iᵈ = df[k,3]
+        qᵛ = df[k,4]
+        lᵛ = df[k,5]
+        sᵛ = df[k,6]
+        τᶠ = df[k,7]
+        τᵈ = df[k,8]
+        τᶜ = df[k,9]
+        τʷ = df[k,10]
+        r̅  = df[k,11]
+        tˢ = d.tˢ
+        tᵉ = d.tˢ
+        τ  = Inf
+        n  = 0
+        q  = 0.
+        l  = 0.
+        πᵈ = df[k,12]
+        πᵗ = df[k,13]
+        πᶠ = df[k,14]
+        v  = Vehicle(iᵛ, jᵛ, iᵈ, qᵛ, lᵛ, sᵛ, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, τ, n, q, l, πᵈ, πᵗ, πᶠ, Route[])
+        push!(d.V, v)
+    end
     # Customer nodes
     df = DataFrame(CSV.File(joinpath(dir, "$instance/customer_nodes.csv")))
     I  = (df[1,1]:df[nrow(df),1])::UnitRange{Int64}
@@ -66,33 +93,6 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
             a = Arc(iᵗ, iʰ, l)
             A[(iᵗ,iʰ)] = a
         end
-    end
-    # Vehicles
-    df = DataFrame(CSV.File(joinpath(dir, "$instance/vehicles.csv")))
-    for k ∈ 1:nrow(df)
-        d  = D[df[k,3]]
-        iᵛ = df[k,1]
-        jᵛ = df[k,2]
-        iᵈ = df[k,3]
-        qᵛ = df[k,4]
-        lᵛ = df[k,5]
-        sᵛ = df[k,6]
-        τᶠ = df[k,7]
-        τᵈ = df[k,8]
-        τᶜ = df[k,9]
-        τʷ = df[k,10]
-        r̅  = df[k,11]
-        tˢ = d.tˢ
-        tᵉ = d.tˢ
-        τ  = Inf
-        n  = 0
-        q  = 0.
-        l  = 0.
-        πᵈ = df[k,12]
-        πᵗ = df[k,13]
-        πᶠ = df[k,14]
-        v  = Vehicle(iᵛ, jᵛ, iᵈ, qᵛ, lᵛ, sᵛ, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, τ, n, q, l, πᵈ, πᵗ, πᶠ, Route[])
-        push!(d.V, v)
     end
     G  = (D, C, A)
     return G
