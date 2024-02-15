@@ -45,15 +45,15 @@ end
 
 
 """
-    Vehicle(iᵛ::Int, jᵛ::Int, iᵈ::Int, qᵛ::Float64, lᵛ::Float64, sᵛ::Float64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, τʷ::Float64, r̅::Int, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, πᵈ::Float64, πᵗ::Float64, πᶠ::Float64, R::Vector{Route})
+    Vehicle(iᵛ::Int, jᵛ::Int, iᵈ::Int, qᵛ::Float64, lᵛ::Float64, sᵛ::Float64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, τʷ::Float64, r̅::Int, πᵈ::Float64, πᵗ::Float64, πᶠ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, R::Vector{Route})
 
 A `Vehicle` is a mode of delivery with index `iᵛ`, type index `jᵛ`, depot node index 
 `iᵈ`, capacity `qᵛ`, range `lᵛ`, speed `sᵛ`, refueling time `τᶠ`, service time `τᵈ` 
-at depot node (per unit demand), parking time `τᶜ` at customer node, maximum routes 
-permitted `r̅`, working-hours `τʷ`, initial departure time `tˢ`, final arrival time 
-`tᵉ`, slack time `τ`, customers served `n`, demand served `q`, route length `l`, 
-operational cost `πᵈ` per unit distance and `πᵗ` per unit time, fixed cost `πᶠ`, 
-and set of routes `R`.
+at depot node (per unit demand), parking time `τᶜ` at customer node, working-hours 
+`τʷ`, maximum routes permitted `r̅`, operational cost `πᵈ` per unit distance and `πᵗ` 
+per unit time, fixed cost `πᶠ`, initial departure time `tˢ`, final arrival time `tᵉ`, 
+slack time `τ`, customers served `n`, demand served `q`, route length `l`, and set 
+of routes `R`.
 """
 mutable struct Vehicle
     iᵛ::Int                                                                         # Vehicle index
@@ -67,15 +67,15 @@ mutable struct Vehicle
     τᶜ::Float64                                                                     # Parking time at customer node
     τʷ::Float64                                                                     # Driver working-hours duration
     r̅::Int                                                                          # Driver work-load (maximum vehicle routes)
+    πᵈ::Float64                                                                     # Distance-based operational cost
+    πᵗ::Float64                                                                     # Time-based operational cost
+    πᶠ::Float64                                                                     # Fixed cost
     tˢ::Float64                                                                     # Start time (initial departure time from the depot node)
     tᵉ::Float64                                                                     # End time (final arrival time at the depot node)
     τ::Float64                                                                      # Slack time
     n::Int                                                                          # Customers served
     q::Float64                                                                      # Demand served
     l::Float64                                                                      # Route length
-    πᵈ::Float64                                                                     # Distance-based operational cost
-    πᵗ::Float64                                                                     # Time-based operational cost
-    πᶠ::Float64                                                                     # Fixed cost
     R::Vector{Route}                                                                # Vector of vehicle routes
 end
 
@@ -88,12 +88,12 @@ A `Node` is a point on the graph.
 """
 abstract type Node end
 """
-    DepotNode(iⁿ::Int, x::Float64, y::Float64, qᵈ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, πᵒ::Float64, πᶠ::Float64, φ::Int, V::Vector{Vehicle})
+    DepotNode(iⁿ::Int, x::Float64, y::Float64, qᵈ::Float64, tˢ::Float64, tᵉ::Float64, πᵒ::Float64, πᶠ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, φ::Int, V::Vector{Vehicle})
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ`, capacity 
-`qᵈ`, working-hours start time `tˢ` and end time `tᵉ`, slack time `τ`, customers 
-served `n`, demand served `q`, route length `l`, operational cost `πᵒ` per package, 
-fixed cost `πᶠ`, operations mandate `φ`, and fleet of vehicles `V`.
+`qᵈ`, working-hours start time `tˢ` and end time `tᵉ`, operational cost `πᵒ` per 
+package, fixed cost `πᶠ`, operations mandate `φ`, slack time `τ`, customers served 
+`n`, demand served `q`, route length `l`, and fleet of vehicles `V`.
 """
 mutable struct DepotNode <: Node
     iⁿ::Int                                                                         # Depot node index
@@ -102,13 +102,13 @@ mutable struct DepotNode <: Node
     qᵈ::Float64                                                                     # Capacity
     tˢ::Float64                                                                     # Working-hours start time
     tᵉ::Float64                                                                     # Working-hours end time
+    πᵒ::Float64                                                                     # Operational cost
+    πᶠ::Float64                                                                     # Fixed cost
+    φ::Int                                                                          # Operations mandate
     τ::Float64                                                                      # Depot slack time
     n::Int                                                                          # Customers served
     q::Float64                                                                      # Demand served
     l::Float64                                                                      # Route length
-    πᵒ::Float64                                                                     # Operational cost
-    πᶠ::Float64                                                                     # Fixed cost
-    φ::Int                                                                          # Operations mandate
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
 end
 """

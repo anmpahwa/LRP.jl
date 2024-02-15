@@ -24,14 +24,14 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         qᵈ = df[k,4]
         tˢ = df[k,5]
         tᵉ = df[k,6]
+        πᵒ = df[k,7]
+        πᶠ = df[k,8]
+        φ  = df[k,9]
         τ  = Inf
         n  = 0
         q  = 0.
         l  = 0.
-        πᵒ = df[k,7]
-        πᶠ = df[k,8]
-        φ  = df[k,9]
-        d  = DepotNode(iⁿ, x, y, qᵈ, tˢ, tᵉ, τ, n, q, l, πᵒ, πᶠ, φ, Vehicle[])
+        d  = DepotNode(iⁿ, x, y, qᵈ, tˢ, tᵉ, πᵒ, πᶠ, φ, τ, n, q, l, Vehicle[])
         D[iⁿ] = d
     end
     # Vehicles
@@ -49,16 +49,16 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         τᶜ = df[k,9]
         τʷ = df[k,10]
         r̅  = df[k,11]
+        πᵈ = df[k,12]
+        πᵗ = df[k,13]
+        πᶠ = df[k,14]
         tˢ = d.tˢ
         tᵉ = d.tˢ
         τ  = Inf
         n  = 0
         q  = 0.
         l  = 0.
-        πᵈ = df[k,12]
-        πᵗ = df[k,13]
-        πᶠ = df[k,14]
-        v  = Vehicle(iᵛ, jᵛ, iᵈ, qᵛ, lᵛ, sᵛ, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, τ, n, q, l, πᵈ, πᵗ, πᶠ, Route[])
+        v  = Vehicle(iᵛ, jᵛ, iᵈ, qᵛ, lᵛ, sᵛ, τᶠ, τᵈ, τᶜ, τʷ, r̅, πᵈ, πᵗ, πᶠ, tˢ, tᵉ, τ, n, q, l, Route[])
         push!(d.V, v)
     end
     # Customer nodes

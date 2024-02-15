@@ -265,17 +265,17 @@ function Vehicle(v::Vehicle, d::DepotNode)
     τᶜ = v.τᶜ
     τʷ = v.τʷ
     r̅  = v.r̅
+    πᵈ = v.πᵈ
+    πᵗ = v.πᵗ
+    πᶠ = v.πᶠ
     tˢ = d.tˢ
     tᵉ = d.tˢ
     τ  = Inf
     n  = 0
     q  = 0.
     l  = 0.
-    πᵈ = v.πᵈ
-    πᵗ = v.πᵗ
-    πᶠ = v.πᶠ
     R  = Route[]
-    v  = Vehicle(iᵛ, jᵛ, iᵈ, qᵛ, lᵛ, sᵛ, τᶠ, τᵈ, τᶜ, τʷ, r̅, tˢ, tᵉ, τ, n, q, l, πᵈ, πᵗ, πᶠ, R)
+    v  = Vehicle(iᵛ, jᵛ, iᵈ, qᵛ, lᵛ, sᵛ, τᶠ, τᵈ, τᶜ, τʷ, r̅, πᵈ, πᵗ, πᶠ, tˢ, tᵉ, τ, n, q, l, R)
     return v
 end
 
