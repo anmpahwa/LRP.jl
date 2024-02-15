@@ -14,9 +14,6 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᶠ -= 0.
     s.πᵒ -= 0.
     s.πᵖ -= c.qᶜ
-    c.iʳ  = r.iʳ
-    c.iᵛ  = r.iᵛ
-    c.iᵈ  = r.iᵈ
     isdepot(nᵗ) ? r.iˢ = c.iⁿ : nᵗ.iʰ = c.iⁿ
     isdepot(nʰ) ? r.iᵉ = c.iⁿ : nʰ.iᵗ = c.iⁿ
     c.iʰ  = nʰ.iⁿ
@@ -121,9 +118,6 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᶠ -= 0.
     s.πᵒ -= 0.
     s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
-    c.iʳ  = 0
-    c.iᵛ  = 0
-    c.iᵈ  = 0
     isdepot(nᵗ) ? r.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
     isdepot(nʰ) ? r.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
     c.iʰ  = 0
@@ -250,14 +244,6 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             # update associated customer nodes
             nᵗ.iʰ = d₂.iⁿ
             nʰ.iᵗ = d₂.iⁿ
-            cˢ = nʰ
-            cᵉ = nᵗ
-            c  = cˢ
-            while true
-                c.iᵈ = d₂.iⁿ
-                if isequal(c, cᵉ) break end
-                c = s.C[c.iʰ]
-            end
             # update associated route
             s.πᶠ -= 0.
             s.πᵒ -= r.l * v.πᵈ
@@ -445,7 +431,6 @@ function postinitialize!(s::Solution)
             end
         end
     end
-    for c ∈ s.C c.iᵛ, c.iʳ = c.r.iᵛ, c.r.iʳ end
     # update slack
     if isequal(s.φ, false) return s end
     for d ∈ s.D
@@ -568,7 +553,6 @@ function postinsert!(s::Solution)
             end
         end
     end
-    for c ∈ s.C c.iᵛ, c.iʳ = c.r.iᵛ, c.r.iʳ end
     # update slack
     if isequal(s.φ, false) return s end
     for d ∈ s.D

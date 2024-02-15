@@ -19,7 +19,8 @@ A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`,
 node index `iᵈ`, centroid coordinates `(x, y)` , start node index `iˢ`, end node 
 index `iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition time `tⁱ`, 
 starttime `tˢ`, and end time `tᵉ`, repsectively, slack time `τ`, customers served 
-`n`, demand served `q`, length `l`, and initiaition status `φ`.
+`n`, demand served `q`, length `l`, and initiaition status `φ` (usage in dynamic 
+execution and simulation)
 """
 mutable struct Route
     iʳ::Int                                                                         # Route index
@@ -88,7 +89,7 @@ A `Node` is a point on the graph.
 """
 abstract type Node end
 """
-    DepotNode(iⁿ::Int, x::Float64, y::Float64, qᵈ::Float64, tˢ::Float64, tᵉ::Float64, πᵒ::Float64, πᶠ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, φ::Int, V::Vector{Vehicle})
+    DepotNode(iⁿ::Int, x::Float64, y::Float64, qᵈ::Float64, tˢ::Float64, tᵉ::Float64, πᵒ::Float64, πᶠ::Float64, φ::Int, τ::Float64, n::Int, q::Float64, l::Float64, V::Vector{Vehicle})
 
 A `DepotNode` is a source point on the graph at `(x,y)` with index `iⁿ`, capacity 
 `qᵈ`, working-hours start time `tˢ` and end time `tᵉ`, operational cost `πᵒ` per 
@@ -112,19 +113,15 @@ mutable struct DepotNode <: Node
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
 end
 """
-    CustomerNode(iⁿ::Int, iʳ::Int, iᵛ::Int, iᵈ::Int, x::Float64, y::Float64, qᶜ::Float64, τᶜ::Float64, tᵉ::Float64, tˡ::Float64, iᵗ::Int, iʰ::Int, tᵃ::Float64, tᵈ::Float64, r::Route)
+    CustomerNode(iⁿ::Int, x::Float64, y::Float64, qᶜ::Float64, τᶜ::Float64, tᵉ::Float64, tˡ::Float64, iᵗ::Int, iʰ::Int, tᵃ::Float64, tᵈ::Float64, r::Route)
 
 A `CustomerNode` is a sink point on the graph at `(x,y)` with index `iⁿ`, demand 
 `qᶜ`, customer service time `τᶜ`, earliest service time `tᵉ`, latest service time 
-`tˡ`, tail node index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, departure time 
-`tᵈ`, serviced on route `r` with route index `iʳ`, vehicle index `iᵛ`, and depot 
-node index `iᵈ`.
+`tˡ`, tail node index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, and departure 
+time `tᵈ`, serviced on route `r`.
 """
 mutable struct CustomerNode <: Node
     iⁿ::Int                                                                         # Customer node index
-    iʳ::Int                                                                         # Route index
-    iᵛ::Int                                                                         # Vehicle index
-    iᵈ::Int                                                                         # Depot node index
     x::Float64                                                                      # Location on the x-axis
     y::Float64                                                                      # Location on the y-axis
     qᶜ::Float64                                                                     # Demand

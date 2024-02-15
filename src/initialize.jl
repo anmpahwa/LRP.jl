@@ -67,9 +67,6 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
     C  = OffsetVector{CustomerNode}(undef, I)
     for k ∈ 1:nrow(df)
         iⁿ = df[k,1]
-        iʳ = 0
-        iᵛ = 0
-        iᵈ = 0
         x  = df[k,2]
         y  = df[k,3]
         qᶜ = df[k,4]
@@ -80,7 +77,8 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         iʰ = 0
         tᵃ = 0.
         tᵈ = 0.
-        c  = CustomerNode(iⁿ, iʳ, iᵛ, iᵈ, x, y, qᶜ, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, NullRoute)
+        r  = NullRoute
+        c  = CustomerNode(iⁿ, x, y, qᶜ, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, r)
         C[iⁿ] = c
     end
     # Arcs
