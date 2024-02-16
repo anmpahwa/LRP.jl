@@ -18,7 +18,7 @@ end
 A `Route` is a connection between nodes, with index `iʳ`, vehicle index `iᵛ`, depot
 node index `iᵈ`, centroid coordinates `(x, y)` , start node index `iˢ`, end node 
 index `iᵉ`, vehicle tank status `θⁱ`, `θˢ`, and `θᵉ` at route initiaition time `tⁱ`, 
-starttime `tˢ`, and end time `tᵉ`, repsectively, slack time `τ`, customers served 
+start time `tˢ`, and end time `tᵉ`, repsectively, slack time `τ`, customers served 
 `n`, demand served `q`, length `l`, and initiaition status `φ` (usage in dynamic 
 execution and simulation)
 """
