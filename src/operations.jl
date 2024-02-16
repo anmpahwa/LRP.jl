@@ -14,10 +14,10 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᶠ -= 0.
     s.πᵒ -= 0.
     s.πᵖ -= c.qᶜ
-    isdepot(nᵗ) ? r.iˢ = c.iⁿ : nᵗ.iʰ = c.iⁿ
-    isdepot(nʰ) ? r.iᵉ = c.iⁿ : nʰ.iᵗ = c.iⁿ
-    c.iʰ  = nʰ.iⁿ
+    if iscustomer(nᵗ) nᵗ.iʰ = c.iⁿ end
+    if iscustomer(nʰ) nʰ.iᵗ = c.iⁿ end
     c.iᵗ  = nᵗ.iⁿ
+    c.iʰ  = nʰ.iⁿ
     c.r   = r
     s.πᶠ += 0.
     s.πᵒ += 0.
@@ -28,6 +28,8 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
     r.x   = (r.n * r.x + c.x)/(r.n + 1)
     r.y   = (r.n * r.y + c.y)/(r.n + 1)
+    if isdepot(nᵗ) r.iˢ = c.iⁿ end
+    if isdepot(nʰ) r.iᵉ = c.iⁿ end
     r.n  += 1
     r.q  += c.qᶜ
     r.l  += aᵗ.l + aʰ.l - aᵒ.l
@@ -121,10 +123,10 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᶠ -= 0.
     s.πᵒ -= 0.
     s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
-    isdepot(nᵗ) ? r.iˢ = nʰ.iⁿ : nᵗ.iʰ = nʰ.iⁿ
-    isdepot(nʰ) ? r.iᵉ = nᵗ.iⁿ : nʰ.iᵗ = nᵗ.iⁿ
-    c.iʰ  = 0
+    if iscustomer(nᵗ) nᵗ.iʰ = nʰ.iⁿ end
+    if iscustomer(nʰ) nʰ.iᵗ = nᵗ.iⁿ end
     c.iᵗ  = 0
+    c.iʰ  = 0
     c.tᵃ  = 0.
     c.tᵈ  = 0.
     c.r   = NullRoute
@@ -137,6 +139,8 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
     r.x   = isone(r.n) ? 0. : (r.n * r.x - c.x)/(r.n - 1)
     r.y   = isone(r.n) ? 0. : (r.n * r.y - c.y)/(r.n - 1)
+    if isdepot(nᵗ) r.iˢ = nʰ.iⁿ end
+    if isdepot(nʰ) r.iᵉ = nᵗ.iⁿ end
     r.n  -= 1
     r.q  -= c.qᶜ
     r.l  -= aᵗ.l + aʰ.l - aᵒ.l
