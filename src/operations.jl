@@ -21,11 +21,11 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     c.r   = r
     s.πᶠ += 0.
     s.πᵒ += 0.
+    s.πᵖ += 0.
     # update associated route
     s.πᶠ -= 0.
     s.πᵒ -= r.l * v.πᵈ
-    s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ)
-    s.πᵖ -= (r.l > v.lᵛ) * (r.l - v.lᵛ)
+    s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
     r.x   = (r.n * r.x + c.x)/(r.n + 1)
     r.y   = (r.n * r.y + c.y)/(r.n + 1)
     r.n  += 1
@@ -33,15 +33,16 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     r.l  += aᵗ.l + aʰ.l - aᵒ.l
     s.πᶠ += 0.
     s.πᵒ += r.l * v.πᵈ
-    s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)
-    s.πᵖ += (r.l > v.lᵛ) * (r.l - v.lᵛ)
+    s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
     # update associated vehicle
     s.πᶠ -= isopt(v) ? v.πᶠ : 0.
+    s.πᵒ -= 0.
     s.πᵖ -= (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
     v.n  += 1
     v.q  += c.qᶜ
     v.l  += aᵗ.l + aʰ.l - aᵒ.l
     s.πᶠ += isopt(v) ? v.πᶠ : 0.
+    s.πᵒ += 0.
     s.πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
     # update associated depot
     s.πᶠ -= isopt(d) ? d.πᶠ : 0.
@@ -55,10 +56,9 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)
     # update en-route parameters
     if isequal(s.φ, false) return s end
+    s.πᶠ -= 0.
     s.πᵒ -= (v.tᵉ - v.tˢ) * v.πᵗ
-    s.πᵖ -= (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
-    s.πᵖ -= (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
-    s.πᵖ -= (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
+    s.πᵖ -= (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ) + (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ) + (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     tᵒ = r.tⁱ
     tⁱ = r.tⁱ
     θⁱ = r.θⁱ
@@ -74,9 +74,13 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
             tᵈ = r.tˢ
             c  = cˢ
             while true
+                s.πᶠ -= 0.
+                s.πᵒ -= 0.
                 s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                 c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
                 c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                s.πᶠ += 0.
+                s.πᵒ += 0.
                 s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                 if isequal(c, cᵉ) break end
                 tᵈ = c.tᵈ
@@ -96,10 +100,9 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
         θⁱ = r.θᵉ
     end
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
+    s.πᶠ += 0.
     s.πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
-    s.πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
-    s.πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
-    s.πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
+    s.πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ) + (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ) + (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     return s
 end
 """
@@ -127,13 +130,11 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     c.r   = NullRoute
     s.πᶠ += 0.
     s.πᵒ += 0.
-    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
-    s.πᵖ += c.qᶜ
+    s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ) + c.qᶜ
     # update associated route
     s.πᶠ -= 0.
     s.πᵒ -= r.l * v.πᵈ
-    s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ)
-    s.πᵖ -= (r.l > v.lᵛ) * (r.l - v.lᵛ)
+    s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
     r.x   = isone(r.n) ? 0. : (r.n * r.x - c.x)/(r.n - 1)
     r.y   = isone(r.n) ? 0. : (r.n * r.y - c.y)/(r.n - 1)
     r.n  -= 1
@@ -141,15 +142,16 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     r.l  -= aᵗ.l + aʰ.l - aᵒ.l
     s.πᶠ += 0.
     s.πᵒ += r.l * v.πᵈ
-    s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)
-    s.πᵖ += (r.l > v.lᵛ) * (r.l - v.lᵛ)
+    s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
     # update associated vehicle
     s.πᶠ -= isopt(v) ? v.πᶠ : 0.
+    s.πᵒ -= 0.
     s.πᵖ -= (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
     v.n  -= 1
     v.q  -= c.qᶜ
     v.l  -= aᵗ.l + aʰ.l - aᵒ.l
     s.πᶠ += isopt(v) ? v.πᶠ : 0.
+    s.πᵒ += 0.
     s.πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
     # update associated depot
     s.πᶠ -= isopt(d) ? d.πᶠ : 0.
@@ -163,10 +165,9 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)
     # update en-route variables
     if isequal(s.φ, false) return s end
+    s.πᶠ -= 0.
     s.πᵒ -= (v.tᵉ - v.tˢ) * v.πᵗ
-    s.πᵖ -= (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
-    s.πᵖ -= (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
-    s.πᵖ -= (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
+    s.πᵖ -= (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ) + (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ) + (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     tᵒ = r.tⁱ
     tⁱ = r.tⁱ
     θⁱ = r.θⁱ
@@ -182,9 +183,13 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
             tᵈ = r.tˢ
             c  = cˢ
             while true
+                s.πᶠ -= 0.
+                s.πᵒ -= 0.
                 s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                 c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
                 c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                s.πᶠ += 0.
+                s.πᵒ += 0.
                 s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                 if isequal(c, cᵉ) break end
                 tᵈ = c.tᵈ
@@ -204,10 +209,9 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
         θⁱ = r.θᵉ
     end
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d.tˢ, d.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
+    s.πᶠ += 0.
     s.πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
-    s.πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ)
-    s.πᵖ += (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ)
-    s.πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
+    s.πᵖ += (d.tˢ > v.tˢ) * (d.tˢ - v.tˢ) + (v.tᵉ > d.tᵉ) * (v.tᵉ - d.tᵉ) + (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     return s
 end
 
@@ -247,8 +251,7 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             # update associated route
             s.πᶠ -= 0.
             s.πᵒ -= r.l * v.πᵈ
-            s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ)
-            s.πᵖ -= (r.l > v.lᵛ) * (r.l - v.lᵛ)
+            s.πᵖ -= (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
             r.iᵈ  = d₂.iⁿ
             r.iˢ  = nʰ.iⁿ
             r.iᵉ  = nᵗ.iⁿ
@@ -256,14 +259,15 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             r.l  += aᵗ₂.l + aʰ₂.l
             s.πᶠ += 0.
             s.πᵒ += r.l * v.πᵈ
-            s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ)
-            s.πᵖ += (r.l > v.lᵛ) * (r.l - v.lᵛ)
+            s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
             # update associated vehicle
             s.πᶠ -= isopt(v) ? v.πᶠ : 0.
+            s.πᵒ -= 0.
             s.πᵖ -= (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
             v.l  -= aᵗ₁.l + aʰ₁.l
             v.l  += aᵗ₂.l + aʰ₂.l
             s.πᶠ += isopt(v) ? v.πᶠ : 0.
+            s.πᵒ += 0.
             s.πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
             # update depot d₂
             s.πᶠ -= isopt(d₂) ? d₂.πᶠ : 0.
@@ -283,10 +287,9 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
     end
     # update en-route variables
     if isequal(s.φ, false) return s end
+    s.πᶠ -= 0.
     s.πᵒ -= (v.tᵉ - v.tˢ) * v.πᵗ
-    s.πᵖ -= (d₁.tˢ > v.tˢ) * (d₁.tˢ - v.tˢ)
-    s.πᵖ -= (v.tᵉ > d₁.tᵉ) * (v.tᵉ - d₁.tᵉ)
-    s.πᵖ -= (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
+    s.πᵖ -= (d₁.tˢ > v.tˢ) * (d₁.tˢ - v.tˢ) + (v.tᵉ > d₁.tᵉ) * (v.tᵉ - d₁.tᵉ) + (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     tⁱ = d₂.tˢ
     θⁱ = 1.
     for r ∈ v.R
@@ -300,9 +303,13 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             tᵈ = r.tˢ
             c  = cˢ
             while true
+                s.πᶠ -= 0.
+                s.πᵒ -= 0.
                 s.πᵖ -= (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                 c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
                 c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
+                s.πᶠ += 0.
+                s.πᵒ += 0.
                 s.πᵖ += (c.tᵃ > c.tˡ) * (c.tᵃ - c.tˡ)
                 if isequal(c, cᵉ) break end
                 tᵈ = c.tᵈ
@@ -322,10 +329,9 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
         θⁱ = r.θᵉ
     end
     (v.tˢ, v.tᵉ) = isempty(v.R) ? (d₂.tˢ, d₂.tˢ) : (v.R[firstindex(v.R)].tⁱ, v.R[lastindex(v.R)].tᵉ)
+    s.πᶠ += 0.
     s.πᵒ += (v.tᵉ - v.tˢ) * v.πᵗ
-    s.πᵖ += (d₂.tˢ > v.tˢ) * (d₂.tˢ - v.tˢ)
-    s.πᵖ += (v.tᵉ > d₂.tᵉ) * (v.tᵉ - d₂.tᵉ)
-    s.πᵖ += (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
+    s.πᵖ += (d₂.tˢ > v.tˢ) * (d₂.tˢ - v.tˢ) + (v.tᵉ > d₂.tᵉ) * (v.tᵉ - d₂.tᵉ) + (v.tᵉ - v.tˢ > v.τʷ) * ((v.tᵉ - v.tˢ) - v.τʷ)
     return s
 end
 
