@@ -37,23 +37,23 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᵒ += r.l * v.πᵈ
     s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
     # update associated vehicle
-    s.πᶠ -= isopt(v) ? v.πᶠ : 0.
+    s.πᶠ -= isopt(v) * v.πᶠ
     s.πᵒ -= 0.
     s.πᵖ -= (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
     v.n  += 1
     v.q  += c.qᶜ
     v.l  += aᵗ.l + aʰ.l - aᵒ.l
-    s.πᶠ += isopt(v) ? v.πᶠ : 0.
+    s.πᶠ += isopt(v) * v.πᶠ
     s.πᵒ += 0.
     s.πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
     # update associated depot
-    s.πᶠ -= isopt(d) ? d.πᶠ : 0.
+    s.πᶠ -= isopt(d) * d.πᶠ
     s.πᵒ -= d.q * d.πᵒ
     s.πᵖ -= (d.q > d.qᵈ) * (d.q - d.qᵈ)
     d.n  += 1
     d.q  += c.qᶜ
     d.l  += aᵗ.l + aʰ.l - aᵒ.l
-    s.πᶠ += isopt(d) ? d.πᶠ : 0.
+    s.πᶠ += isopt(d) * d.πᶠ
     s.πᵒ += d.q * d.πᵒ
     s.πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)
     # update en-route parameters
@@ -148,23 +148,23 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     s.πᵒ += r.l * v.πᵈ
     s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ)
     # update associated vehicle
-    s.πᶠ -= isopt(v) ? v.πᶠ : 0.
+    s.πᶠ -= isopt(v) * v.πᶠ
     s.πᵒ -= 0.
     s.πᵖ -= (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
     v.n  -= 1
     v.q  -= c.qᶜ
     v.l  -= aᵗ.l + aʰ.l - aᵒ.l
-    s.πᶠ += isopt(v) ? v.πᶠ : 0.
+    s.πᶠ += isopt(v) * v.πᶠ
     s.πᵒ += 0.
     s.πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
     # update associated depot
-    s.πᶠ -= isopt(d) ? d.πᶠ : 0.
+    s.πᶠ -= isopt(d) * d.πᶠ
     s.πᵒ -= d.q * d.πᵒ
     s.πᵖ -= (d.q > d.qᵈ) * (d.q - d.qᵈ)
     d.n  -= 1
     d.q  -= c.qᶜ
     d.l  -= aᵗ.l + aʰ.l - aᵒ.l
-    s.πᶠ += isopt(d) ? d.πᶠ : 0.
+    s.πᶠ += isopt(d) * d.πᶠ
     s.πᵒ += d.q * d.πᵒ
     s.πᵖ += (d.q > d.qᵈ) * (d.q - d.qᵈ)
     # update en-route variables
@@ -240,13 +240,13 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             aʰ₁ = s.A[(d₁.iⁿ, nʰ.iⁿ)]
             aʰ₂ = s.A[(d₂.iⁿ, nʰ.iⁿ)]
             # update depot d₁
-            s.πᶠ -= isopt(d₁) ? d₁.πᶠ : 0.
+            s.πᶠ -= isopt(d₁) * d₁.πᶠ
             s.πᵒ -= d₁.q * d₁.πᵒ
             s.πᵖ -= (d₁.q > d₁.qᵈ) * (d₁.q - d₁.qᵈ)
             d₁.n -= r.n
             d₁.q -= r.q
             d₁.l -= r.l
-            s.πᶠ += isopt(d₁) ? d₁.πᶠ : 0.
+            s.πᶠ += isopt(d₁) * d₁.πᶠ
             s.πᵒ += d₁.q * d₁.πᵒ
             s.πᵖ += (d₁.q > d₁.qᵈ) * (d₁.q - d₁.qᵈ)
             # update associated customer nodes
@@ -265,22 +265,22 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             s.πᵒ += r.l * v.πᵈ
             s.πᵖ += (r.q > v.qᵛ) * (r.q - v.qᵛ) + (r.l > v.lᵛ) * (r.l - v.lᵛ) 
             # update associated vehicle
-            s.πᶠ -= isopt(v) ? v.πᶠ : 0.
+            s.πᶠ -= isopt(v) * v.πᶠ
             s.πᵒ -= 0.
             s.πᵖ -= (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
             v.l  -= aᵗ₁.l + aʰ₁.l
             v.l  += aᵗ₂.l + aʰ₂.l
-            s.πᶠ += isopt(v) ? v.πᶠ : 0.
+            s.πᶠ += isopt(v) * v.πᶠ
             s.πᵒ += 0.
             s.πᵖ += (length(v.R) > v.r̅) * (length(v.R) - v.r̅)
             # update depot d₂
-            s.πᶠ -= isopt(d₂) ? d₂.πᶠ : 0.
+            s.πᶠ -= isopt(d₂) * d₂.πᶠ
             s.πᵒ -= d₂.q * d₂.πᵒ
             s.πᵖ -= (d₂.q > d₂.qᵈ) * (d₂.q - d₂.qᵈ)
             d₂.n += r.n
             d₂.q += r.q
             d₂.l += r.l
-            s.πᶠ += isopt(d₂) ? d₂.πᶠ : 0.
+            s.πᶠ += isopt(d₂) * d₂.πᶠ
             s.πᵒ += d₂.q * d₂.πᵒ
             s.πᵖ += (d₂.q > d₂.qᵈ) * (d₂.q - d₂.qᵈ)
         else
