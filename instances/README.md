@@ -39,6 +39,7 @@ Each instance folder contains the following files
     - cd: distance-based operational cost
     - ct: time-based operational cost
     - cf: fixed cost
+
 Note, at least one vehicle of every type at each depot node must be detailed. 
 The size of the fleet at the depot nodes is optimized by this tool. 
 
