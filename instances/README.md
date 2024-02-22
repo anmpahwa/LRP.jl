@@ -34,7 +34,7 @@ Each instance folder contains the following files
     - tf: re-fueling time at the depot node
     - td: service time per package at the depot node
     - tc: parking time at a customer node
-    - tw: driver working-hours
+    - tw: driver working-hours (duration)
     - r: driver work-load (maximum vehicle-routes)
     - cd: distance-based operational cost
     - ct: time-based operational cost

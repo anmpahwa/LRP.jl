@@ -51,10 +51,10 @@ end
 A `Vehicle` is a mode of delivery with index `iᵛ`, type index `jᵛ`, depot node index 
 `iᵈ`, capacity `qᵛ`, range `lᵛ`, speed `sᵛ`, re-fueling time at the depot ndoe `τᶠ`, 
 service time per package at the depot node `τᵈ`, parking time at a customer node 
-`τᶜ`, driver working-hours `τʷ`, driver work-load (maximum vehicle-routes) `r̅`, 
-operational cost `πᵈ` per unit distance and `πᵗ` per unit time, fixed cost `πᶠ`, 
-initial departure time `tˢ`, final arrival time `tᵉ`, slack time `τ`, customers 
-served `n`, demand served `q`, route length `l`, and set of routes `R`.
+`τᶜ`, driver working-hours (duration) `τʷ`, driver work-load (maximum vehicle-
+routes) `r̅`, operational cost `πᵈ` per unit distance and `πᵗ` per unit time, fixed 
+cost `πᶠ`, initial departure time `tˢ`, final arrival time `tᵉ`, slack time `τ`, 
+customers served `n`, demand served `q`, route length `l`, and set of routes `R`.
 """
 mutable struct Vehicle
     iᵛ::Int                                                                         # Vehicle index
@@ -66,7 +66,7 @@ mutable struct Vehicle
     τᶠ::Float64                                                                     # Re-fueling time at the depot node
     τᵈ::Float64                                                                     # service time per package at the depot node
     τᶜ::Float64                                                                     # Parking time at customer node
-    τʷ::Float64                                                                     # Driver working-hours duration
+    τʷ::Float64                                                                     # Driver working-hours (duration)
     r̅::Int                                                                          # Driver work-load (maximum vehicle-routes)
     πᵈ::Float64                                                                     # Distance-based operational cost
     πᵗ::Float64                                                                     # Time-based operational cost
