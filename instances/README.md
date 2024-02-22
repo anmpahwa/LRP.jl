@@ -31,7 +31,7 @@ Each instance folder contains the following files
     - qv: capacity
     - lv: range
     - sv: speed
-    - tf: re-fueling time at the depot node
+    - tf: refueling time at the depot node
     - td: service time per package at the depot node
     - tc: parking time at a customer node
     - tw: driver working-hours (duration)
