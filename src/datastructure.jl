@@ -49,12 +49,12 @@ end
     Vehicle(iᵛ::Int, jᵛ::Int, iᵈ::Int, qᵛ::Float64, lᵛ::Float64, sᵛ::Float64, τᶠ::Float64, τᵈ::Float64, τᶜ::Float64, τʷ::Float64, r̅::Int, πᵈ::Float64, πᵗ::Float64, πᶠ::Float64, tˢ::Float64, tᵉ::Float64, τ::Float64, n::Int, q::Float64, l::Float64, R::Vector{Route})
 
 A `Vehicle` is a mode of delivery with index `iᵛ`, type index `jᵛ`, depot node index 
-`iᵈ`, capacity `qᵛ`, range `lᵛ`, speed `sᵛ`, refueling time `τᶠ`, service time `τᵈ` 
-at depot node (per unit demand), parking time `τᶜ` at customer node, working-hours 
-`τʷ`, maximum routes permitted `r̅`, operational cost `πᵈ` per unit distance and `πᵗ` 
-per unit time, fixed cost `πᶠ`, initial departure time `tˢ`, final arrival time `tᵉ`, 
-slack time `τ`, customers served `n`, demand served `q`, route length `l`, and set 
-of routes `R`.
+`iᵈ`, capacity `qᵛ`, range `lᵛ`, speed `sᵛ`, re-fueling time at the depot ndoe `τᶠ`, 
+service time per package at the depot node `τᵈ`, parking time at a customer node 
+`τᶜ`, driver working-hours `τʷ`, driver work-load (maximum vehicle-routes) `r̅`, 
+operational cost `πᵈ` per unit distance and `πᵗ` per unit time, fixed cost `πᶠ`, 
+initial departure time `tˢ`, final arrival time `tᵉ`, slack time `τ`, customers 
+served `n`, demand served `q`, route length `l`, and set of routes `R`.
 """
 mutable struct Vehicle
     iᵛ::Int                                                                         # Vehicle index
@@ -63,11 +63,11 @@ mutable struct Vehicle
     qᵛ::Float64                                                                     # Capacity
     lᵛ::Float64                                                                     # Range
     sᵛ::Float64                                                                     # Speed
-    τᶠ::Float64                                                                     # Refueling time
-    τᵈ::Float64                                                                     # Depot node service time per unit demand
+    τᶠ::Float64                                                                     # Re-fueling time at the depot node
+    τᵈ::Float64                                                                     # service time per package at the depot node
     τᶜ::Float64                                                                     # Parking time at customer node
     τʷ::Float64                                                                     # Driver working-hours duration
-    r̅::Int                                                                          # Driver work-load (maximum vehicle routes)
+    r̅::Int                                                                          # Driver work-load (maximum vehicle-routes)
     πᵈ::Float64                                                                     # Distance-based operational cost
     πᵗ::Float64                                                                     # Time-based operational cost
     πᶠ::Float64                                                                     # Fixed cost
@@ -116,16 +116,16 @@ end
     CustomerNode(iⁿ::Int, x::Float64, y::Float64, qᶜ::Float64, τᶜ::Float64, tᵉ::Float64, tˡ::Float64, iᵗ::Int, iʰ::Int, tᵃ::Float64, tᵈ::Float64, r::Route)
 
 A `CustomerNode` is a sink point on the graph at `(x,y)` with index `iⁿ`, demand 
-`qᶜ`, customer service time `τᶜ`, earliest service time `tᵉ`, latest service time 
-`tˡ`, tail node index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, and departure 
-time `tᵈ`, serviced on route `r`.
+`qᶜ`, customer service time (duration) `τᶜ`, earliest service time `tᵉ`, latest 
+service time `tˡ`, tail node index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, 
+and departure time `tᵈ`, serviced on route `r`.
 """
 mutable struct CustomerNode <: Node
     iⁿ::Int                                                                         # Customer node index
     x::Float64                                                                      # Location on the x-axis
     y::Float64                                                                      # Location on the y-axis
     qᶜ::Float64                                                                     # Demand
-    τᶜ::Float64                                                                     # Service time
+    τᶜ::Float64                                                                     # Service time (duration)
     tᵉ::Float64                                                                     # Earliest service time
     tˡ::Float64                                                                     # Latest service time
     iᵗ::Int                                                                         # Tail (predecessor) node index
