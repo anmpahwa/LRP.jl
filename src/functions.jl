@@ -304,7 +304,7 @@ function Solution(D::Vector{DepotNode}, C::OffsetVector{CustomerNode, Vector{Cus
             πᵖ += (v.tᵉ > d.tᵉ) ? (v.tᵉ - d.tᵉ) : 0.
             πᵖ += ((v.tᵉ - v.tˢ) > v.τʷ) ? ((v.tᵉ - v.tˢ) - v.τʷ) : 0.
             φ   = φ || (!iszero(v.τʷ) || !iszero(v.πᵗ))
-            for r ∈ v.r
+            for r ∈ v.R
                 πᶠ += 0.
                 πᵒ += r.l * v.πᵈ
                 πᵖ += (r.q > v.qᵛ) ? (r.q - v.qᵛ) : 0.
