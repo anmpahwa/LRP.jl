@@ -216,7 +216,7 @@ function cluster(rng::AbstractRNG, k::Int, instance::String; dir=joinpath(dirnam
         end
     end
     # Step 5: Insert any remaining open customer nodes 
-    if any(isopen, C) best!(rng, s) end
+    best!(rng, s)
     postinitialize!(s)
     # Step 6: Return initial solution
     return s
