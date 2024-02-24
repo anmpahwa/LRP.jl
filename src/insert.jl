@@ -26,7 +26,7 @@ at its best position until all open nodes have been inserted to the
 solution.
 """
 function best!(rng::AbstractRNG, s::Solution)
-    if all(isclose(s.C)) return s end
+    if all(isclose, s.C) return s end
     # Step 1: Initialize
     preinsert!(s)
     D = s.D
@@ -113,7 +113,7 @@ Available modes include `:pcs` (precise estimation of insertion cost) and
 `:ptb` (perturbed estimation of insertion cost).
 """
 function greedy!(rng::AbstractRNG, s::Solution; mode::Symbol)
-    if all(isclose(s.C)) return s end
+    if all(isclose, s.C) return s end
     # Step 1: Initialize
     preinsert!(s)
     D = s.D
@@ -235,7 +235,7 @@ Note, regretk mechanism breaks any ties by inserting the
 node with the lowest insertion cost.
 """
 function regretk!(rng::AbstractRNG, s::Solution, k̅::Int)
-    if all(isclose(s.C)) return s end
+    if all(isclose, s.C) return s end
     # Step 1: Initialize
     preinsert!(s)
     D = s.D
