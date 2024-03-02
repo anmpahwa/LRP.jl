@@ -465,7 +465,7 @@ function postinitialize!(s::Solution)
     for d ∈ s.D
         τ = Inf
         for v ∈ d.V
-            τ = d.tᵉ - v.tᵉ
+            τ = min(d.tᵉ - v.tᵉ, v.τʷ - (d.tᵉ - d.tˢ))
             for r ∈ reverse(v.R)
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
@@ -506,7 +506,7 @@ function postremove!(s::Solution)
     for d ∈ s.D
         τ = Inf
         for v ∈ d.V
-            τ = d.tᵉ - v.tᵉ
+            τ = min(d.tᵉ - v.tᵉ, v.τʷ - (d.tᵉ - d.tˢ))
             for r ∈ reverse(v.R)
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
@@ -587,7 +587,7 @@ function postinsert!(s::Solution)
     for d ∈ s.D
         τ = Inf
         for v ∈ d.V
-            τ = d.tᵉ - v.tᵉ
+            τ = min(d.tᵉ - v.tᵉ, v.τʷ - (d.tᵉ - d.tˢ))
             for r ∈ reverse(v.R)
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
@@ -628,7 +628,7 @@ function postlocalsearch!(s::Solution)
     for d ∈ s.D
         τ = Inf
         for v ∈ d.V
-            τ = d.tᵉ - v.tᵉ
+            τ = min(d.tᵉ - v.tᵉ, v.τʷ - (d.tᵉ - d.tˢ))
             for r ∈ reverse(v.R)
                 if !isopt(r) continue end
                 cˢ = s.C[r.iˢ]
