@@ -113,12 +113,13 @@ mutable struct DepotNode <: Node
     V::Vector{Vehicle}                                                              # Vector of depot vehicles
 end
 """
-    CustomerNode(iⁿ::Int, x::Float64, y::Float64, qᶜ::Float64, τᶜ::Float64, tᵉ::Float64, tˡ::Float64, iᵗ::Int, iʰ::Int, tᵃ::Float64, tᵈ::Float64, r::Route)
+    CustomerNode(iⁿ::Int, x::Float64, y::Float64, qᶜ::Float64, τᶜ::Float64, tʳ::Float64, tᵉ::Float64, tˡ::Float64, iᵗ::Int, iʰ::Int, tˢ::Float64, tᵃ::Float64, tᵈ::Float64, r::Route)
 
 A `CustomerNode` is a sink point on the graph at `(x,y)` with index `iⁿ`, demand 
-`qᶜ`, customer service time (duration) `τᶜ`, earliest service time `tᵉ`, latest 
-service time `tˡ`, tail node index `iᵗ`, head node index `iʰ`, arrival time `tᵃ`, 
-and departure time `tᵈ`, serviced on route `r`.
+`qᶜ`, customer service time (duration) `τᶜ`, service request time `tʳ`, earliest 
+service time `tᵉ`, latest service time `tˡ`, tail node index `iᵗ`, head node index 
+`iʰ`, service start time `tˢ`, arrival time `tᵃ`, and departure time `tᵈ`, serviced 
+on route `r`.
 """
 mutable struct CustomerNode <: Node
     iⁿ::Int                                                                         # Customer node index
@@ -126,10 +127,12 @@ mutable struct CustomerNode <: Node
     y::Float64                                                                      # Location on the y-axis
     qᶜ::Float64                                                                     # Demand
     τᶜ::Float64                                                                     # Service time (duration)
+    tʳ::Float64                                                                     # Request time
     tᵉ::Float64                                                                     # Earliest service time
     tˡ::Float64                                                                     # Latest service time
     iᵗ::Int                                                                         # Tail (predecessor) node index
     iʰ::Int                                                                         # Head (successor) node index
+    tˢ::Float64                                                                     # Service start time
     tᵃ::Float64                                                                     # Vehicle arrival time
     tᵈ::Float64                                                                     # Vehicle departure time
     r::Route                                                                        # Route visiting the customer

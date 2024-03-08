@@ -82,11 +82,14 @@ function insertnode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
             while true
                 s.πᶠ -= 0.
                 s.πᵒ -= 0.
+                s.πᵖ -= (c.tʳ > c.tˢ) ? (c.tʳ - c.tˢ) : 0.
                 s.πᵖ -= (c.tᵃ > c.tˡ) ? (c.tᵃ - c.tˡ) : 0.
+                c.tˢ  = r.tˢ
                 c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
                 c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
                 s.πᶠ += 0.
                 s.πᵒ += 0.
+                s.πᵖ += (c.tʳ > c.tˢ) ? (c.tʳ - c.tˢ) : 0.
                 s.πᵖ += (c.tᵃ > c.tˡ) ? (c.tᵃ - c.tˡ) : 0.
                 if isequal(c, cᵉ) break end
                 tᵈ = c.tᵈ
@@ -128,16 +131,19 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     # update associated customer nodes
     s.πᶠ -= 0.
     s.πᵒ -= 0.
+    s.πᵖ -= (c.tʳ > c.tˢ) ? (c.tʳ - c.tˢ) : 0.
     s.πᵖ -= (c.tᵃ > c.tˡ) ? (c.tᵃ - c.tˡ) : 0.
     if iscustomer(nᵗ) nᵗ.iʰ = nʰ.iⁿ end
     if iscustomer(nʰ) nʰ.iᵗ = nᵗ.iⁿ end
     c.iᵗ  = 0
     c.iʰ  = 0
+    c.tˢ  = 0.
     c.tᵃ  = 0.
     c.tᵈ  = 0.
     c.r   = NullRoute
     s.πᶠ += 0.
     s.πᵒ += 0.
+    s.πᵖ += (c.tʳ > c.tˢ) ? (c.tʳ - c.tˢ) : 0.
     s.πᵖ += (c.tᵃ > c.tˡ) ? (c.tᵃ - c.tˡ) : 0.
     s.πᵖ += c.qᶜ
     # update associated route
@@ -200,11 +206,14 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
             while true
                 s.πᶠ -= 0.
                 s.πᵒ -= 0.
+                s.πᵖ -= (c.tʳ > c.tˢ) ? (c.tʳ - c.tˢ) : 0.
                 s.πᵖ -= (c.tᵃ > c.tˡ) ? (c.tᵃ - c.tˡ) : 0.
+                c.tˢ  = r.tˢ
                 c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
                 c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
                 s.πᶠ += 0.
                 s.πᵒ += 0.
+                s.πᵖ += (c.tʳ > c.tˢ) ? (c.tʳ - c.tˢ) : 0.
                 s.πᵖ += (c.tᵃ > c.tˡ) ? (c.tᵃ - c.tˡ) : 0.
                 if isequal(c, cᵉ) break end
                 tᵈ = c.tᵈ
@@ -326,11 +335,14 @@ function movevehicle!(v::Vehicle, d₁::DepotNode, d₂::DepotNode, s::Solution)
             while true
                 s.πᶠ -= 0.
                 s.πᵒ -= 0.
+                s.πᵖ -= (c.tʳ > c.tˢ) ? (c.tʳ - c.tˢ) : 0.
                 s.πᵖ -= (c.tᵃ > c.tˡ) ? (c.tᵃ - c.tˡ) : 0.
+                c.tˢ  = r.tˢ
                 c.tᵃ  = tᵈ + s.A[(c.iᵗ, c.iⁿ)].l/v.sᵛ
                 c.tᵈ  = c.tᵃ + v.τᶜ + max(0., c.tᵉ - c.tᵃ - v.τᶜ) + c.τᶜ
                 s.πᶠ += 0.
                 s.πᵒ += 0.
+                s.πᵖ += (c.tʳ > c.tˢ) ? (c.tʳ - c.tˢ) : 0.
                 s.πᵖ += (c.tᵃ > c.tˡ) ? (c.tᵃ - c.tˡ) : 0.
                 if isequal(c, cᵉ) break end
                 tᵈ = c.tᵈ

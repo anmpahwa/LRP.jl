@@ -71,14 +71,16 @@ function build(instance::String; dir=joinpath(dirname(@__DIR__), "instances"))
         y  = df[k,3]
         qᶜ = df[k,4]
         τᶜ = df[k,5]
-        tᵉ = df[k,6]
-        tˡ = df[k,7]
+        tʳ = df[k,6]
+        tᵉ = df[k,7]
+        tˡ = df[k,8]
         iᵗ = 0
         iʰ = 0
+        tˢ = 0.
         tᵃ = 0.
         tᵈ = 0.
         r  = NullRoute
-        c  = CustomerNode(iⁿ, x, y, qᶜ, τᶜ, tᵉ, tˡ, iᵗ, iʰ, tᵃ, tᵈ, r)
+        c  = CustomerNode(iⁿ, x, y, qᶜ, τᶜ, tʳ, tᵉ, tˡ, iᵗ, iʰ, tˢ, tᵃ, tᵈ, r)
         C[iⁿ] = c
     end
     # Arcs

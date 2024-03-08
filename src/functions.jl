@@ -383,6 +383,7 @@ function isfeasible(s::Solution)
                 cᵉ = s.C[r.iᵉ] 
                 c  = cˢ
                 while true
+                    if c.tʳ > c.tˢ return false end                         # Service constraint
                     if c.tᵃ > c.tˡ return false end                         # Time-window constraint
                     if isequal(c, cᵉ) break end
                     c = s.C[c.iʰ]
