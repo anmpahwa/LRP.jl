@@ -315,6 +315,7 @@ function Solution(D::Vector{DepotNode}, C::OffsetVector{CustomerNode, Vector{Cus
     for c ∈ C
         πᶠ += 0.
         πᵒ += 0.
+        πᵖ += (c.tʳ > c.tˢ) ? (c.tʳ - c.tˢ) : 0.
         πᵖ += (c.tᵃ > c.tˡ) ? (c.tᵃ - c.tˡ) : 0.
         πᵖ += isopen(c) * c.qᶜ
         φ   = φ || (!iszero(c.tᵉ) || !iszero(c.tˡ))

@@ -137,7 +137,7 @@ function removenode!(c::CustomerNode, nᵗ::Node, nʰ::Node, r::Route, s::Soluti
     if iscustomer(nʰ) nʰ.iᵗ = nᵗ.iⁿ end
     c.iᵗ  = 0
     c.iʰ  = 0
-    c.tˢ  = 0.
+    c.tˢ  = c.tʳ
     c.tᵃ  = 0.
     c.tᵈ  = 0.
     c.r   = NullRoute
