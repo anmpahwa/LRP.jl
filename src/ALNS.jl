@@ -71,7 +71,7 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution; mute=false)
                 z = z′
                 z⃰ = z′
                 Πᵣ[r] += σ₁
-                Πᵢ[i] += σ₂
+                Πᵢ[i] += σ₁
             # Step 2.3.4: Else if this new solution is only better than the current solution, then set the current solution to the new solution and accordingly update scores of the selected removal and insertion operators by σ₂.
             elseif z′ < z
                 s = s′
@@ -125,4 +125,5 @@ function ALNS(rng::AbstractRNG, χ::ALNSparameters, sₒ::Solution; mute=false)
     if !mute display(pltcnv(Z)) end
     return s⃰
 end
+
 ALNS(χ::ALNSparameters, s::Solution; mute=false) = ALNS(Random.GLOBAL_RNG, χ, s; mute=mute)
